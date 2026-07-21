@@ -110,6 +110,46 @@
   .lname { display: block; font-weight: 600; font-size: 0.9rem; }
   .lnote { display: block; color: var(--muted); font-size: 0.75rem; margin-top: 4px; }
   .larrow { position: absolute; top: 14px; right: 16px; color: var(--gold); opacity: 0.7; }
+
+  .flip-card { perspective: 1200px; padding: 0; background: transparent; border: none; }
+  .flip-inner {
+    position: relative; width: 100%; min-height: 132px; transform-style: preserve-3d;
+    transition: transform 0.45s cubic-bezier(0.4,0,0.2,1);
+  }
+  .flip-card.flipped .flip-inner { transform: rotateY(180deg); }
+  .flip-face {
+    position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden;
+    padding: 14px 16px; border-radius: 10px; display: flex; flex-direction: column; box-sizing: border-box;
+  }
+  .flip-front { background: rgba(255,255,255,0.025); border: 1px solid var(--border); border-left: 3px solid var(--muted); }
+  .flip-card.flag-blocked .flip-front { border-left-color: var(--red); }
+  .flip-card.flag-aging .flip-front { border-left-color: var(--gold); }
+  .flip-card.flag-ok .flip-front { border-left-color: var(--green); }
+  .flip-card.flag-deferred .flip-front { border-left-color: var(--muted); opacity: 0.75; }
+  .flip-back { background: var(--surface-2); border: 1px solid var(--gold); transform: rotateY(180deg); gap: 7px; }
+  .resolve-hint {
+    margin-top: auto; align-self: flex-start; background: none; border: none; color: var(--gold);
+    font-size: 0.72rem; font-weight: 700; padding: 4px 0 0; cursor: pointer; font-family: inherit;
+  }
+  .resolve-hint:hover { text-decoration: underline; }
+  .flip-label { margin: 0; font-size: 0.72rem; color: var(--muted); font-weight: 600; }
+  .flip-input {
+    flex: 1; resize: none; background: var(--bg); border: 1px solid var(--border); border-radius: 6px;
+    color: var(--text); font-size: 0.82rem; padding: 8px; font-family: inherit; min-height: 50px;
+  }
+  .flip-input:focus { outline: 1px solid var(--gold); }
+  .flip-actions { display: flex; gap: 8px; justify-content: flex-end; }
+  .flip-actions button {
+    font-size: 0.75rem; font-weight: 600; padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border);
+    cursor: pointer; font-family: inherit; background: transparent; color: var(--muted);
+  }
+  .btn-resolve { background: var(--gold); color: var(--navy-deep); border-color: var(--gold); }
+  .btn-resolve:disabled { opacity: 0.5; cursor: default; }
+  .flip-status { margin: 0; font-size: 0.72rem; min-height: 14px; }
+  .flip-status.error { color: var(--red); }
+  .flip-status.ok { color: var(--green); }
+  .flip-card.resolved { opacity: 0; transform: scale(0.96); transition: opacity 0.35s ease, transform 0.35s ease; pointer-events: none; }
+
   footer { text-align: center; color: var(--muted); font-size: 0.75rem; padding: 24px 20px 40px; }
   @media (max-width: 780px) {
     .shell { flex-direction: column; }
@@ -126,9 +166,9 @@
       <div class="sub">Command Center</div>
     </div>
     <a class="nav-item" href="#attention"><span class="nav-icon">🚨</span><span class="nav-label">Attention</span><span class="nav-count">6</span></a>
-<a class="nav-item" href="#next-actions"><span class="nav-icon">⚡</span><span class="nav-label">Next Actions</span><span class="nav-count">12</span></a>
+<a class="nav-item" href="#next-actions"><span class="nav-icon">⚡</span><span class="nav-label">Next Actions</span><span class="nav-count">14</span></a>
 <a class="nav-item" href="#clients"><span class="nav-icon">👥</span><span class="nav-label">Clients</span><span class="nav-count">4</span></a>
-<a class="nav-item" href="#projects"><span class="nav-icon">🏗</span><span class="nav-label">Projects</span><span class="nav-count">10</span></a>
+<a class="nav-item" href="#projects"><span class="nav-icon">🏗</span><span class="nav-label">Projects</span><span class="nav-count">11</span></a>
 <a class="nav-item" href="#parked"><span class="nav-icon">⏸</span><span class="nav-label">Parked</span><span class="nav-count">1</span></a>
     
   </nav>
@@ -136,290 +176,242 @@
     <header>
       <p class="eyebrow">Diaz Consulting Firm</p>
       <h1>Command Center</h1>
-      <p class="sub">Live mirror of the second-brain vault · updated Jul 20, 2026 · 08:34 PM</p>
+      <p class="sub">Live mirror of the second-brain vault · updated Jul 20, 2026 · 08:47 PM</p>
       <p class="mode">Public mirror — Job Search and interview detail intentionally excluded.</p>
       <div class="kpis">
         <div class="kpi"><div class="num">6</div><div class="lbl">Needs attention</div></div>
-        <div class="kpi"><div class="num">12</div><div class="lbl">Active items</div></div>
+        <div class="kpi"><div class="num">14</div><div class="lbl">Active items</div></div>
         <div class="kpi"><div class="num">4</div><div class="lbl">Clients</div></div>
-        <div class="kpi"><div class="num">10</div><div class="lbl">Projects</div></div>
+        <div class="kpi"><div class="num">11</div><div class="lbl">Projects</div></div>
       </div>
     </header>
     <main>
       <details class="panel" id="attention" open>
         <summary><span class="icon">🚨</span><span class="title">Attention</span><span class="count">6</span><span class="chev">›</span></summary>
-        <div class="panel-body"><div class="grid"><article class="card flag-aging">
-          <div class="card-top">
+        <div class="panel-body"><div class="grid"><article class="card flag-aging"><div class="card-top">
             <span class="pill flag-aging">Aging</span>
             <h3>project_registry</h3>
           </div>
           <p class="na">Weekly review of registry vs reality</p>
-          <p class="meta">active · idle 8d</p>
-        </article>
-<article class="card flag-blocked">
-          <div class="card-top">
+          <p class="meta">active · idle 8d</p></article>
+<article class="card flag-blocked"><div class="card-top">
             <span class="pill flag-blocked">Blocked</span>
             <h3>robert_davis_growth_strategy</h3>
           </div>
           <p class="na">Awaiting Robert&#x27;s b-roll recording time</p>
-          <p class="meta">blocked · idle 8d</p>
-        </article>
-<article class="card flag-aging">
-          <div class="card-top">
+          <p class="meta">blocked · idle 8d</p></article>
+<article class="card flag-aging"><div class="card-top">
             <span class="pill flag-aging">Aging</span>
             <h3>website_factory_v2_plan</h3>
           </div>
           <p class="na">Phase build per v2 plan (Astro shell)</p>
-          <p class="meta">active · idle 8d</p>
-        </article>
-<article class="card flag-blocked">
-          <div class="card-top">
+          <p class="meta">active · idle 8d</p></article>
+<article class="card flag-blocked"><div class="card-top">
             <span class="pill flag-blocked">Blocked</span>
             <h3>dcf_content_engine_ee_framework</h3>
           </div>
           <p class="na">Record b-roll — all 3 entities</p>
-          <p class="meta">blocked · idle 2d</p>
-        </article>
-<article class="card flag-blocked">
-          <div class="card-top">
+          <p class="meta">blocked · idle 2d</p></article>
+<article class="card flag-blocked"><div class="card-top">
             <span class="pill flag-blocked">Blocked</span>
             <h3>income_stream_2_tiktok_affiliate</h3>
           </div>
           <p class="na">Evans: create TikTok account + pick niche</p>
-          <p class="meta">blocked · idle 2d</p>
-        </article>
-<article class="card flag-blocked">
-          <div class="card-top">
+          <p class="meta">blocked · idle 2d</p></article>
+<article class="card flag-blocked"><div class="card-top">
             <span class="pill flag-blocked">Blocked</span>
             <h3>income_stream_3_ai_model_character</h3>
           </div>
           <p class="na">Evans: top up Higgsfield credits, train Soul character from refs</p>
-          <p class="meta">blocked · idle 0d</p>
-        </article></div></div>
+          <p class="meta">blocked · idle 0d</p></article></div></div>
         </details><details class="panel" id="next-actions" open>
-        <summary><span class="icon">⚡</span><span class="title">Next Actions</span><span class="count">12</span><span class="chev">›</span></summary>
-        <div class="panel-body"><div class="grid"><article class="card flag-aging">
-          <div class="card-top">
+        <summary><span class="icon">⚡</span><span class="title">Next Actions</span><span class="count">14</span><span class="chev">›</span></summary>
+        <div class="panel-body"><div class="grid"><article class="card flag-aging"><div class="card-top">
             <span class="pill flag-aging">Aging</span>
             <h3>project_registry</h3>
           </div>
           <p class="na">Weekly review of registry vs reality</p>
-          <p class="meta">active · touched 2026-07-12</p>
-        </article>
-<article class="card flag-blocked">
-          <div class="card-top">
+          <p class="meta">active · touched 2026-07-12</p></article>
+<article class="card flag-blocked"><div class="card-top">
             <span class="pill flag-blocked">Blocked</span>
             <h3>robert_davis_growth_strategy</h3>
           </div>
           <p class="na">Awaiting Robert&#x27;s b-roll recording time</p>
-          <p class="meta">blocked · touched 2026-07-12</p>
-        </article>
-<article class="card flag-aging">
-          <div class="card-top">
+          <p class="meta">blocked · touched 2026-07-12</p></article>
+<article class="card flag-aging"><div class="card-top">
             <span class="pill flag-aging">Aging</span>
             <h3>website_factory_v2_plan</h3>
           </div>
           <p class="na">Phase build per v2 plan (Astro shell)</p>
-          <p class="meta">active · touched 2026-07-12</p>
-        </article>
-<article class="card flag-ok">
-          <div class="card-top">
+          <p class="meta">active · touched 2026-07-12</p></article>
+<article class="card flag-ok"><div class="card-top">
             <span class="pill flag-ok">On track</span>
             <h3>gerlach_hosting_setup</h3>
           </div>
           <p class="na">Rotate SFTP credentials (post-leak, redacted 7/17)</p>
-          <p class="meta">live · touched 2026-07-17</p>
-        </article>
-<article class="card flag-blocked">
-          <div class="card-top">
+          <p class="meta">live · touched 2026-07-17</p></article>
+<article class="card flag-blocked"><div class="card-top">
             <span class="pill flag-blocked">Blocked</span>
             <h3>dcf_content_engine_ee_framework</h3>
           </div>
           <p class="na">Record b-roll — all 3 entities</p>
-          <p class="meta">blocked · touched 2026-07-18</p>
-        </article>
-<article class="card flag-blocked">
-          <div class="card-top">
+          <p class="meta">blocked · touched 2026-07-18</p></article>
+<article class="card flag-blocked"><div class="card-top">
             <span class="pill flag-blocked">Blocked</span>
             <h3>income_stream_2_tiktok_affiliate</h3>
           </div>
           <p class="na">Evans: create TikTok account + pick niche</p>
-          <p class="meta">blocked · touched 2026-07-18</p>
-        </article>
-<article class="card flag-ok">
-          <div class="card-top">
+          <p class="meta">blocked · touched 2026-07-18</p></article>
+<article class="card flag-ok"><div class="card-top">
             <span class="pill flag-ok">On track</span>
             <h3>techparsed_explainer_channel_revival</h3>
           </div>
           <p class="na">Decide revival go/no-go; build posting pipeline</p>
-          <p class="meta">planned · touched 2026-07-18</p>
-        </article>
-<article class="card flag-ok">
-          <div class="card-top">
+          <p class="meta">planned · touched 2026-07-18</p></article>
+<article class="card flag-ok"><div class="card-top">
             <span class="pill flag-ok">On track</span>
             <h3>davis_motion_pipeline</h3>
           </div>
           <p class="na">Build motion pipeline v2 — due 2026-07-22</p>
-          <p class="meta">active · touched 2026-07-19</p>
-        </article>
-<article class="card flag-ok">
-          <div class="card-top">
+          <p class="meta">active · touched 2026-07-19</p></article>
+<article class="card flag-ok"><div class="card-top">
             <span class="pill flag-ok">On track</span>
             <h3>next_actions_awaiting_evans</h3>
           </div>
           <p class="na">Review blocked-on-Evans list</p>
-          <p class="meta">active · touched 2026-07-19</p>
-        </article>
-<article class="card flag-ok">
-          <div class="card-top">
+          <p class="meta">active · touched 2026-07-19</p></article>
+<article class="card flag-ok"><div class="card-top">
+            <span class="pill flag-ok">On track</span>
+            <h3>claude_design_dcf_system</h3>
+          </div>
+          <p class="na">Decide whether to extend this design system to cover the Command Center dashboard, or use it for the next client/prospect piece</p>
+          <p class="meta">active · touched 2026-07-20</p></article>
+<article class="card flag-ok"><div class="card-top">
             <span class="pill flag-ok">On track</span>
             <h3>command_center_dashboard_build</h3>
           </div>
           <p class="na">Evans: confirm Euro Motorsport pitch status (live prospect or dead concept) before it gets logged into Project Registry</p>
-          <p class="meta">active · touched 2026-07-20</p>
-        </article>
-<article class="card flag-ok">
-          <div class="card-top">
+          <p class="meta">active · touched 2026-07-20</p></article>
+<article class="card flag-ok"><div class="card-top">
             <span class="pill flag-ok">On track</span>
             <h3>factory_learnings_audit_2026-07-19</h3>
           </div>
           <p class="na">Push + deploy merge 4645ce2; Design-feature pilot</p>
-          <p class="meta">active · touched 2026-07-20</p>
-        </article>
-<article class="card flag-blocked">
-          <div class="card-top">
+          <p class="meta">active · touched 2026-07-20</p></article>
+<article class="card flag-blocked"><div class="card-top">
             <span class="pill flag-blocked">Blocked</span>
             <h3>income_stream_3_ai_model_character</h3>
           </div>
           <p class="na">Evans: top up Higgsfield credits, train Soul character from refs</p>
-          <p class="meta">blocked · touched 2026-07-20</p>
-        </article></div></div>
+          <p class="meta">blocked · touched 2026-07-20</p></article>
+<article class="card flag-ok"><div class="card-top">
+            <span class="pill flag-ok">On track</span>
+            <h3>weekly_wall_usage_tool</h3>
+          </div>
+          <p class="na">Evans: open the tool, read current % from Claude.ai usage page, enter it to calibrate</p>
+          <p class="meta">active · touched 2026-07-20</p></article></div></div>
         </details><details class="panel" id="clients">
         <summary><span class="icon">👥</span><span class="title">Clients</span><span class="count">4</span><span class="chev">›</span></summary>
-        <div class="panel-body"><div class="grid"><article class="card flag-aging">
-          <div class="card-top">
+        <div class="panel-body"><div class="grid"><article class="card flag-aging"><div class="card-top">
             <span class="pill flag-aging">Aging</span>
             <h3>client_contacts</h3>
           </div>
           
-          <p class="meta">touched 2026-07-12</p>
-        </article>
-<article class="card flag-ok">
-          <div class="card-top">
+          <p class="meta">touched 2026-07-12</p></article>
+<article class="card flag-ok"><div class="card-top">
             <span class="pill flag-ok">On track</span>
             <h3>davis_motion_pipeline</h3>
           </div>
           <p class="na">Build motion pipeline v2 — due 2026-07-22</p>
-          <p class="meta">active · touched 2026-07-19</p>
-        </article>
-<article class="card flag-blocked">
-          <div class="card-top">
+          <p class="meta">active · touched 2026-07-19</p></article>
+<article class="card flag-blocked"><div class="card-top">
             <span class="pill flag-blocked">Blocked</span>
             <h3>dcf_content_engine_ee_framework</h3>
           </div>
           <p class="na">Record b-roll — all 3 entities</p>
-          <p class="meta">blocked · touched 2026-07-18</p>
-        </article>
-<article class="card flag-blocked">
-          <div class="card-top">
+          <p class="meta">blocked · touched 2026-07-18</p></article>
+<article class="card flag-blocked"><div class="card-top">
             <span class="pill flag-blocked">Blocked</span>
             <h3>robert_davis_growth_strategy</h3>
           </div>
           <p class="na">Awaiting Robert&#x27;s b-roll recording time</p>
-          <p class="meta">blocked · touched 2026-07-12</p>
-        </article></div></div>
+          <p class="meta">blocked · touched 2026-07-12</p></article></div></div>
         </details><details class="panel" id="projects">
-        <summary><span class="icon">🏗</span><span class="title">Projects</span><span class="count">10</span><span class="chev">›</span></summary>
-        <div class="panel-body"><div class="grid"><article class="card flag-ok">
-          <div class="card-top">
+        <summary><span class="icon">🏗</span><span class="title">Projects</span><span class="count">11</span><span class="chev">›</span></summary>
+        <div class="panel-body"><div class="grid"><article class="card flag-ok"><div class="card-top">
+            <span class="pill flag-ok">On track</span>
+            <h3>claude_design_dcf_system</h3>
+          </div>
+          <p class="na">Decide whether to extend this design system to cover the Command Center dashboard, or use it for the next client/prospect piece</p>
+          <p class="meta">active · touched 2026-07-20</p></article>
+<article class="card flag-ok"><div class="card-top">
             <span class="pill flag-ok">On track</span>
             <h3>command_center_dashboard_build</h3>
           </div>
           <p class="na">Evans: confirm Euro Motorsport pitch status (live prospect or dead concept) before it gets logged into Project Registry</p>
-          <p class="meta">active · touched 2026-07-20</p>
-        </article>
-<article class="card flag-ok">
-          <div class="card-top">
+          <p class="meta">active · touched 2026-07-20</p></article>
+<article class="card flag-ok"><div class="card-top">
             <span class="pill flag-ok">On track</span>
             <h3>davis_motion_pipeline</h3>
           </div>
           <p class="na">Build motion pipeline v2 — due 2026-07-22</p>
-          <p class="meta">active · touched 2026-07-19</p>
-        </article>
-<article class="card flag-blocked">
-          <div class="card-top">
+          <p class="meta">active · touched 2026-07-19</p></article>
+<article class="card flag-blocked"><div class="card-top">
             <span class="pill flag-blocked">Blocked</span>
             <h3>dcf_content_engine_ee_framework</h3>
           </div>
           <p class="na">Record b-roll — all 3 entities</p>
-          <p class="meta">blocked · touched 2026-07-18</p>
-        </article>
-<article class="card flag-ok">
-          <div class="card-top">
+          <p class="meta">blocked · touched 2026-07-18</p></article>
+<article class="card flag-ok"><div class="card-top">
             <span class="pill flag-ok">On track</span>
             <h3>factory_learnings_audit_2026-07-19</h3>
           </div>
           <p class="na">Push + deploy merge 4645ce2; Design-feature pilot</p>
-          <p class="meta">active · touched 2026-07-20</p>
-        </article>
-<article class="card flag-blocked">
-          <div class="card-top">
+          <p class="meta">active · touched 2026-07-20</p></article>
+<article class="card flag-blocked"><div class="card-top">
             <span class="pill flag-blocked">Blocked</span>
             <h3>income_stream_2_tiktok_affiliate</h3>
           </div>
           <p class="na">Evans: create TikTok account + pick niche</p>
-          <p class="meta">blocked · touched 2026-07-18</p>
-        </article>
-<article class="card flag-blocked">
-          <div class="card-top">
+          <p class="meta">blocked · touched 2026-07-18</p></article>
+<article class="card flag-blocked"><div class="card-top">
             <span class="pill flag-blocked">Blocked</span>
             <h3>income_stream_3_ai_model_character</h3>
           </div>
           <p class="na">Evans: top up Higgsfield credits, train Soul character from refs</p>
-          <p class="meta">blocked · touched 2026-07-20</p>
-        </article>
-<article class="card flag-ok">
-          <div class="card-top">
+          <p class="meta">blocked · touched 2026-07-20</p></article>
+<article class="card flag-ok"><div class="card-top">
             <span class="pill flag-ok">On track</span>
             <h3>next_actions_awaiting_evans</h3>
           </div>
           <p class="na">Review blocked-on-Evans list</p>
-          <p class="meta">active · touched 2026-07-19</p>
-        </article>
-<article class="card flag-aging">
-          <div class="card-top">
+          <p class="meta">active · touched 2026-07-19</p></article>
+<article class="card flag-aging"><div class="card-top">
             <span class="pill flag-aging">Aging</span>
             <h3>project_registry</h3>
           </div>
           <p class="na">Weekly review of registry vs reality</p>
-          <p class="meta">active · touched 2026-07-12</p>
-        </article>
-<article class="card flag-blocked">
-          <div class="card-top">
+          <p class="meta">active · touched 2026-07-12</p></article>
+<article class="card flag-blocked"><div class="card-top">
             <span class="pill flag-blocked">Blocked</span>
             <h3>robert_davis_growth_strategy</h3>
           </div>
           <p class="na">Awaiting Robert&#x27;s b-roll recording time</p>
-          <p class="meta">blocked · touched 2026-07-12</p>
-        </article>
-<article class="card flag-ok">
-          <div class="card-top">
+          <p class="meta">blocked · touched 2026-07-12</p></article>
+<article class="card flag-ok"><div class="card-top">
             <span class="pill flag-ok">On track</span>
             <h3>techparsed_explainer_channel_revival</h3>
           </div>
           <p class="na">Decide revival go/no-go; build posting pipeline</p>
-          <p class="meta">planned · touched 2026-07-18</p>
-        </article></div></div>
+          <p class="meta">planned · touched 2026-07-18</p></article></div></div>
         </details><details class="panel" id="parked">
         <summary><span class="icon">⏸</span><span class="title">Parked</span><span class="count">1</span><span class="chev">›</span></summary>
-        <div class="panel-body"><div class="grid"><article class="card flag-deferred">
-          <div class="card-top">
+        <div class="panel-body"><div class="grid"><article class="card flag-deferred"><div class="card-top">
             <span class="pill flag-deferred">Deferred</span>
             <h3>industree_recovery_status</h3>
           </div>
           <p class="na">2026-08-01 follow-up: triage Payhip access or decommission</p>
-          <p class="meta">deferred · touched 2026-07-17</p>
-        </article></div></div>
+          <p class="meta">deferred · touched 2026-07-17</p></article></div></div>
         </details>
       <section style="margin-top: 28px;">
         <p class="eyebrow" style="margin-bottom: 10px;">🚀 Launchers</p>
@@ -433,5 +425,61 @@
     <footer>The vault is the system of record — this page is a read-only mirror.</footer>
   </div>
 </div>
+<script>
+document.querySelectorAll('.flip-card').forEach(function (cardEl) {
+  var note = cardEl.dataset.note;
+  var textarea = cardEl.querySelector('.flip-input');
+  var status = cardEl.querySelector('.flip-status');
+  var resolveBtn = cardEl.querySelector('.btn-resolve');
+  var cancelBtn = cardEl.querySelector('.btn-cancel');
+  var hintBtn = cardEl.querySelector('.resolve-hint');
+
+  function flip(on) {
+    cardEl.classList.toggle('flipped', on);
+    status.textContent = '';
+    status.className = 'flip-status';
+    if (on) { textarea.value = ''; setTimeout(function () { textarea.focus(); }, 200); }
+  }
+
+  hintBtn.addEventListener('click', function () { flip(true); });
+  cancelBtn.addEventListener('click', function () { flip(false); });
+
+  resolveBtn.addEventListener('click', function () {
+    var text = textarea.value.trim();
+    if (!text) {
+      status.textContent = 'Type what resolves this first.';
+      status.className = 'flip-status error';
+      return;
+    }
+    resolveBtn.disabled = true;
+    status.textContent = 'Saving…';
+    status.className = 'flip-status';
+    fetch('/api/resolve', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ note: note, resolution: text }),
+    })
+      .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+      .then(function (res) {
+        if (!res.ok || !res.j.ok) { throw new Error((res.j && res.j.error) || 'save failed'); }
+        status.textContent = 'Resolved — updating…';
+        status.className = 'flip-status ok';
+        setTimeout(function () {
+          cardEl.classList.add('resolved');
+          var badge = document.querySelector('#next-actions .count');
+          if (badge) {
+            var n = parseInt(badge.textContent, 10) - 1;
+            badge.textContent = n > 0 ? n : '';
+          }
+        }, 500);
+      })
+      .catch(function (e) {
+        resolveBtn.disabled = false;
+        status.textContent = "Couldn't save — open this page via Open-Command-Center.bat (needs the local server), not the file directly. " + e.message;
+        status.className = 'flip-status error';
+      });
+  });
+});
+</script>
 </body>
 </html>
