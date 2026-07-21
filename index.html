@@ -5,433 +5,512 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DCF Command Center</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Manrope:wght@400;500;600;700;800&display=swap');
   :root {
-    /* DCF Design System — dark-primary/light-secondary rule: dashboards are a
-       light secondary surface (per Diaz Consulting Design System, claude.ai). */
-    --bg: #F7F3EC; --surface: #FFFFFF; --surface-hover: #FBF8F2; --surface-2: #FBF8F2;
-    --navy: #0E1F28; --navy-mid: #16303D; --navy-deep: #0A1720;
-    --gold: #E8A838; --gold-ink: #9C6F1C; --gold-dim: #B9852C;
-    --border: #E5DFD1; --border-dark: #23404F;
-    --text: #16232B; --muted: #6B7680; --muted-dark: #9FB0BA;
-    --red: #C23B30; --green: #2F8F5D; --sidebar-w: 236px;
+    --navy: #1B3A4B; --navy-deep: #0f2634; --gold: #E8A838; --gold-deep: #b9852c;
+    --bg: #f6f7f9; --surface: #ffffff; --surface-2: #f0f2f5;
+    --border: #e2e6ea; --text: #1c2733; --muted: #66788a;
+    --red: #dc4c3f; --green: #2f9268; --amber: #d98a3d;
   }
   * { box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
   body {
     margin: 0; background: var(--bg); color: var(--text);
-    font-family: "Manrope", -apple-system, "Segoe UI", Roboto, sans-serif; -webkit-font-smoothing: antialiased;
+    font-family: -apple-system, "Segoe UI", Roboto, sans-serif; -webkit-font-smoothing: antialiased;
   }
+  a { color: inherit; }
   .shell { display: flex; min-height: 100vh; }
   .sidebar {
-    width: var(--sidebar-w); flex-shrink: 0; background: var(--navy-deep); border-right: 1px solid var(--border-dark);
-    position: sticky; top: 0; height: 100vh; overflow-y: auto; padding: 22px 14px;
+    width: 240px; flex-shrink: 0; background: var(--surface); border-right: 1px solid var(--border);
+    position: sticky; top: 0; height: 100vh; overflow-y: auto; padding: 20px 14px; display: flex; flex-direction: column;
   }
-  .brand { padding: 6px 10px 20px; }
-  .brand .mark { color: var(--gold); font-family: "Newsreader", Georgia, serif; font-size: 1.3rem; font-weight: 600; letter-spacing: 0.02em; }
-  .brand .sub { color: var(--muted-dark); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.12em; margin-top: 2px; }
+  .brand { padding: 4px 10px 18px; display: flex; align-items: center; gap: 10px; }
+  .brand-mark { width: 34px; height: 34px; border-radius: 9px; background: var(--navy); color: var(--gold);
+    display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.95rem; }
+  .brand .name { font-weight: 800; font-size: 0.92rem; letter-spacing: 0.02em; line-height: 1.15; }
+  .brand .ver { color: var(--muted); font-size: 0.68rem; }
   .nav-item {
-    display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 6px;
-    color: #eef3f5; text-decoration: none; font-size: 0.86rem; margin-bottom: 2px;
-    transition: background 0.15s ease, color 0.15s ease;
+    display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px;
+    color: var(--text); text-decoration: none; font-size: 0.86rem; margin-bottom: 2px;
+    transition: background 0.15s ease;
   }
-  .nav-item:hover { background: rgba(232,168,56,0.12); color: var(--gold); }
-  .nav-icon { font-size: 1rem; width: 20px; text-align: center; }
+  .nav-item:hover { background: var(--surface-2); }
+  .nav-icon { width: 18px; text-align: center; }
   .nav-label { flex: 1; }
-  .nav-count {
-    background: rgba(255,255,255,0.08); color: var(--muted-dark); font-size: 0.68rem; font-weight: 700;
-    padding: 1px 7px; border-radius: 999px;
-  }
-  .nav-divider {
-    color: var(--muted-dark); font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.1em;
-    padding: 18px 12px 8px; font-weight: 600;
-  }
-  .nav-ext-arrow { color: var(--gold); opacity: 0.85; }
+  .nav-count { background: var(--surface-2); color: var(--muted); font-size: 0.68rem; font-weight: 700; padding: 1px 7px; border-radius: 999px; }
+  .nav-divider { color: var(--muted); font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.1em; padding: 16px 12px 6px; font-weight: 700; }
+  .nav-ext-arrow { color: var(--gold-deep); }
+  .ai-widget { margin-top: auto; background: var(--navy); color: #fff; border-radius: 12px; padding: 14px; }
+  .ai-widget-title { margin: 0 0 10px; font-size: 0.74rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--gold); }
+  .ai-row { display: flex; justify-content: space-between; font-size: 0.78rem; margin-bottom: 4px; }
+  .ai-val { color: #cfe0ea; }
+  .ai-bar { height: 4px; background: rgba(255,255,255,0.15); border-radius: 999px; margin: 6px 0 10px; overflow: hidden; }
+  .ai-bar-fill { height: 100%; background: var(--gold); }
+  .ai-widget-link { display: block; text-align: right; font-size: 0.74rem; color: var(--gold); text-decoration: none; font-weight: 600; }
   .content { flex: 1; min-width: 0; }
-  header {
-    background: var(--surface); padding: 34px 36px 26px; border-bottom: 1px solid var(--border);
-    position: relative; overflow: hidden;
+  header.top {
+    background: var(--surface); border-bottom: 1px solid var(--border); padding: 22px 32px;
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
   }
-  .eyebrow { color: var(--gold-ink); font-size: 0.72rem; letter-spacing: 0.18em; text-transform: uppercase; font-weight: 700; margin: 0 0 6px; }
-  header h1 { margin: 0; font-family: "Newsreader", Georgia, serif; font-size: 2.1rem; font-weight: 600; letter-spacing: -0.01em; color: var(--navy); }
-  header .sub { margin: 10px 0 0; color: var(--muted); font-size: 0.9rem; font-family: "Newsreader", Georgia, serif; font-style: italic; }
-  header .mode { margin: 6px 0 0; color: var(--gold-ink); font-size: 0.74rem; }
-  header .rule { border: none; border-top: 1px solid var(--gold); width: 64px; margin: 16px 0 0; opacity: 0.8; }
-  .kpis { display: flex; gap: 14px; margin-top: 22px; flex-wrap: wrap; position: relative; z-index: 1; }
-  .kpi { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 12px 18px; min-width: 110px; }
-  .kpi .num { font-family: "Newsreader", Georgia, serif; font-size: 1.7rem; color: var(--navy); line-height: 1; font-weight: 600; }
-  .kpi .lbl { color: var(--gold-ink); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.08em; margin-top: 5px; font-weight: 700; }
-  main { max-width: 900px; margin: 0 auto; padding: 28px 28px 60px; }
-  .panel {
-    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
-    margin-bottom: 16px; overflow: hidden; transition: border-color 0.2s ease; scroll-margin-top: 16px;
-  }
-  .panel[open] { border-color: var(--gold-dim); }
-  summary {
-    list-style: none; cursor: pointer; padding: 16px 20px; display: flex; align-items: center; gap: 12px;
-    user-select: none;
-  }
-  summary::-webkit-details-marker { display: none; }
-  summary .icon { font-size: 1.1rem; }
-  summary .title { font-weight: 700; font-size: 0.96rem; flex: 1; color: var(--navy); }
-  summary .count {
-    background: rgba(232,168,56,0.16); color: var(--gold-ink); font-size: 0.74rem; font-weight: 700;
-    padding: 3px 10px; border-radius: 999px; min-width: 22px; text-align: center;
-  }
-  summary .chev { color: var(--muted); transition: transform 0.2s ease; font-size: 1.15rem; }
-  .panel[open] summary .chev { transform: rotate(90deg); color: var(--gold-ink); }
-  summary:hover { background: var(--surface-hover); }
-  .panel-body { padding: 4px 20px 20px; }
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
-  .card {
-    background: var(--bg); border: 1px solid var(--border); border-left: 3px solid var(--muted);
-    border-radius: 6px; padding: 14px 16px; transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
-  }
-  .card:hover { transform: translateY(-2px); background: var(--surface-hover); border-color: var(--gold); }
-  .card.flag-blocked { border-left-color: var(--red); }
-  .card.flag-aging { border-left-color: var(--gold-dim); }
-  .card.flag-ok { border-left-color: var(--green); }
-  .card.flag-deferred { border-left-color: var(--muted); opacity: 0.75; }
-  .card-top { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
-  .card h3 { margin: 0; font-size: 0.9rem; font-weight: 700; color: var(--navy); }
-  .pill { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; padding: 2px 7px; border-radius: 4px; white-space: nowrap; }
-  .pill.flag-blocked { background: rgba(194,59,48,0.13); color: var(--red); }
-  .pill.flag-aging { background: rgba(232,168,56,0.18); color: var(--gold-ink); }
-  .pill.flag-ok { background: rgba(47,143,93,0.14); color: var(--green); }
-  .pill.flag-deferred { background: rgba(107,118,128,0.14); color: var(--muted); }
-  .card .na { margin: 0 0 8px; font-size: 0.83rem; color: var(--text); line-height: 1.4; }
-  .card .meta { margin: 0; font-size: 0.73rem; color: var(--muted); }
-  .empty-state { color: var(--muted); font-size: 0.85rem; font-style: italic; padding: 6px 2px 10px; }
-  .launchers { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
-  .launcher {
-    background: var(--surface); border: 1px solid var(--border); border-radius: 6px;
-    padding: 16px 18px; color: var(--text); text-decoration: none; display: block; position: relative;
-    transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
-  }
-  .launcher:hover { transform: translateY(-2px); border-color: var(--gold); background: var(--surface-hover); }
-  .lname { display: block; font-weight: 700; font-size: 0.9rem; color: var(--navy); }
-  .lnote { display: block; color: var(--muted); font-size: 0.75rem; margin-top: 4px; }
-  .larrow { position: absolute; top: 14px; right: 16px; color: var(--gold-ink); opacity: 0.85; }
-
-  .flip-card { perspective: 1200px; padding: 0; background: transparent; border: none; }
-  .flip-inner {
-    position: relative; width: 100%; min-height: 132px; transform-style: preserve-3d;
-    transition: transform 0.45s cubic-bezier(0.4,0,0.2,1);
-  }
+  header.top h1 { margin: 0; font-size: 1.35rem; font-weight: 800; }
+  header.top h1 span { color: var(--gold-deep); }
+  header.top .sub { margin: 3px 0 0; color: var(--muted); font-size: 0.82rem; }
+  .tagline { color: var(--muted); font-size: 0.82rem; text-align: right; }
+  .who { display: flex; align-items: center; gap: 10px; }
+  .avatar-img { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 2px solid var(--gold); }
+  .avatar-fallback { width: 38px; height: 38px; border-radius: 50%; background: var(--navy); color: var(--gold);
+    display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.82rem; }
+  .who .name { font-weight: 700; font-size: 0.86rem; }
+  main { max-width: 1320px; margin: 0 auto; padding: 22px 28px 60px; }
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; margin-bottom: 22px; }
+  .kpi-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px; }
+  .kpi-top { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+  .kpi-icon { font-size: 0.95rem; }
+  .kpi-label { color: var(--muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; }
+  .kpi-value { font-size: 1.7rem; font-weight: 800; line-height: 1; }
+  .kpi-delta { font-size: 0.72rem; color: var(--green); margin-top: 4px; }
+  .kpi-delta.muted { color: var(--muted); }
+  .spark { display: block; margin-top: 8px; }
+  .grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; margin-bottom: 16px; }
+  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px 18px; scroll-margin-top: 16px; }
+  .panel-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; }
+  .panel-head h3 { margin: 0; font-size: 0.88rem; font-weight: 800; }
+  .panel-head .count { color: var(--muted); font-size: 0.76rem; }
+  .mini-grid { display: flex; flex-direction: column; gap: 8px; max-height: 340px; overflow-y: auto; }
+  .mini-card { background: var(--surface-2); border-left: 3px solid var(--muted); border-radius: 8px; padding: 10px 12px; }
+  .mini-card.flag-blocked { border-left-color: var(--red); }
+  .mini-card.flag-aging { border-left-color: var(--amber); }
+  .mini-card.flag-ok { border-left-color: var(--green); }
+  .mini-card.flag-deferred { border-left-color: var(--muted); opacity: 0.7; }
+  .mini-card-top { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+  .mini-card h4 { margin: 0 0 3px; font-size: 0.84rem; font-weight: 700; }
+  .pill { font-size: 0.6rem; text-transform: uppercase; font-weight: 800; padding: 2px 7px; border-radius: 5px; }
+  .pill.flag-blocked { background: #fbe7e5; color: var(--red); }
+  .pill.flag-aging { background: #faf0e0; color: var(--amber); }
+  .pill.flag-ok { background: #e5f3ec; color: var(--green); }
+  .pill.flag-deferred { background: var(--border); color: var(--muted); }
+  .type-badge { font-size: 0.6rem; font-weight: 700; color: var(--muted); background: var(--border); padding: 2px 7px; border-radius: 5px; margin-left: auto; }
+  .mini-card .na { margin: 0 0 3px; font-size: 0.79rem; color: #384656; }
+  .mini-card .meta { margin: 0; font-size: 0.7rem; color: var(--muted); }
+  .empty-state { color: var(--muted); font-size: 0.82rem; font-style: italic; }
+  .deadline-item { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .deadline-item:last-child { border-bottom: none; }
+  .deadline-date { display: flex; flex-direction: column; align-items: center; background: var(--surface-2); border-radius: 8px; padding: 4px 9px; min-width: 44px; }
+  .dd-month { font-size: 0.62rem; font-weight: 700; color: var(--gold-deep); }
+  .dd-day { font-size: 1rem; font-weight: 800; }
+  .deadline-body { flex: 1; min-width: 0; }
+  .deadline-body h4 { margin: 0; font-size: 0.82rem; font-weight: 700; }
+  .deadline-body .meta { margin: 2px 0 0; font-size: 0.72rem; color: var(--muted); }
+  .launch-card { display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 10px; background: var(--surface-2); text-decoration: none; margin-bottom: 8px; }
+  .launch-icon { font-size: 1.1rem; }
+  .launch-name { flex: 1; font-size: 0.82rem; font-weight: 700; }
+  .launch-arrow { color: var(--gold-deep); }
+  .activity-item, .alert-item { display: flex; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--border); }
+  .activity-item:last-child, .alert-item:last-child { border-bottom: none; }
+  .activity-text, .alert-text { margin: 0; font-size: 0.79rem; }
+  .activity-ts, .alert-ts { margin: 1px 0 0; font-size: 0.68rem; color: var(--muted); }
+  footer { text-align: center; color: var(--muted); font-size: 0.75rem; padding: 20px; }
+  /* flip-card */
+  .flip-card { perspective: 1100px; padding: 0; background: transparent; border: none; }
+  .flip-inner { position: relative; min-height: 112px; transform-style: preserve-3d; transition: transform 0.4s ease; }
   .flip-card.flipped .flip-inner { transform: rotateY(180deg); }
-  .flip-face {
-    position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden;
-    padding: 14px 16px; border-radius: 6px; display: flex; flex-direction: column; box-sizing: border-box;
-  }
-  .flip-front { background: var(--bg); border: 1px solid var(--border); border-left: 3px solid var(--muted); }
+  .flip-face { position: absolute; inset: 0; backface-visibility: hidden; padding: 10px 12px; border-radius: 8px; box-sizing: border-box; display: flex; flex-direction: column; }
+  .flip-front { background: var(--surface-2); border-left: 3px solid var(--muted); }
   .flip-card.flag-blocked .flip-front { border-left-color: var(--red); }
-  .flip-card.flag-aging .flip-front { border-left-color: var(--gold-dim); }
+  .flip-card.flag-aging .flip-front { border-left-color: var(--amber); }
   .flip-card.flag-ok .flip-front { border-left-color: var(--green); }
-  .flip-card.flag-deferred .flip-front { border-left-color: var(--muted); opacity: 0.75; }
-  .flip-back { background: var(--surface-2); border: 1px solid var(--gold); transform: rotateY(180deg); gap: 7px; }
-  .resolve-hint {
-    margin-top: auto; align-self: flex-start; background: none; border: none; color: var(--gold-ink);
-    font-size: 0.72rem; font-weight: 700; padding: 4px 0 0; cursor: pointer; font-family: inherit;
-  }
-  .resolve-hint:hover { text-decoration: underline; }
-  .flip-label { margin: 0; font-size: 0.72rem; color: var(--muted); font-weight: 600; }
-  .flip-input {
-    flex: 1; resize: none; background: var(--surface); border: 1px solid var(--border); border-radius: 4px;
-    color: var(--text); font-size: 0.82rem; padding: 8px; font-family: inherit; min-height: 50px;
-  }
-  .flip-input:focus { outline: 1px solid var(--gold); }
-  .flip-actions { display: flex; gap: 8px; justify-content: flex-end; }
-  .flip-actions button {
-    font-size: 0.75rem; font-weight: 600; padding: 6px 12px; border-radius: 4px; border: 1px solid var(--border);
-    cursor: pointer; font-family: inherit; background: transparent; color: var(--muted);
-  }
-  .btn-resolve { background: var(--gold); color: var(--navy); border-color: var(--gold); }
-  .btn-resolve:disabled { opacity: 0.5; cursor: default; }
-  .flip-status { margin: 0; font-size: 0.72rem; min-height: 14px; }
+  .flip-back { background: #fffaf0; border: 1px solid var(--gold); transform: rotateY(180deg); gap: 6px; }
+  .resolve-hint { margin-top: auto; align-self: flex-start; background: none; border: none; color: var(--gold-deep); font-size: 0.7rem; font-weight: 700; padding: 3px 0 0; cursor: pointer; font-family: inherit; }
+  .flip-label { margin: 0; font-size: 0.7rem; color: var(--muted); font-weight: 700; }
+  .flip-input { flex: 1; resize: none; background: #fff; border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-size: 0.78rem; padding: 6px; font-family: inherit; min-height: 42px; }
+  .flip-actions { display: flex; gap: 6px; justify-content: flex-end; }
+  .flip-actions button { font-size: 0.72rem; font-weight: 700; padding: 4px 10px; border-radius: 6px; border: 1px solid var(--border); cursor: pointer; font-family: inherit; background: #fff; color: var(--muted); }
+  .btn-resolve { background: var(--gold); color: var(--navy-deep); border-color: var(--gold); }
+  .btn-resolve:disabled { opacity: 0.5; }
+  .flip-status { margin: 0; font-size: 0.68rem; min-height: 12px; }
   .flip-status.error { color: var(--red); }
   .flip-status.ok { color: var(--green); }
   .flip-card.resolved { opacity: 0; transform: scale(0.96); transition: opacity 0.35s ease, transform 0.35s ease; pointer-events: none; }
-
-  footer { text-align: center; color: var(--muted); font-size: 0.75rem; padding: 24px 20px 40px; }
   @media (max-width: 780px) {
     .shell { flex-direction: column; }
-    .sidebar { width: 100%; height: auto; position: relative; border-right: none; border-bottom: 1px solid var(--border-dark); }
-    header { padding: 26px 20px 20px; } header h1 { font-size: 1.6rem; } main { padding: 22px 16px 50px; }
+    .sidebar { width: 100%; height: auto; position: relative; }
   }
 </style>
 </head>
 <body>
 <div class="shell">
   <nav class="sidebar">
-    <div class="brand">
-      <div class="mark">DCF</div>
-      <div class="sub">Command Center</div>
-    </div>
-    <a class="nav-item" href="#attention"><span class="nav-icon">🚨</span><span class="nav-label">Attention</span><span class="nav-count">5</span></a>
-<a class="nav-item" href="#next-actions"><span class="nav-icon">⚡</span><span class="nav-label">Next Actions</span><span class="nav-count">15</span></a>
+    <div class="brand"><div class="brand-mark">CC</div><div><div class="name">COMMAND<br>CENTER</div><div class="ver">v2.0</div></div></div>
+    <a class="nav-item" href="#attention"><span class="nav-icon">🚨</span><span class="nav-label">Attention</span><span class="nav-count">6</span></a>
+<a class="nav-item" href="#next-actions"><span class="nav-icon">⚡</span><span class="nav-label">Next Actions</span><span class="nav-count">20</span></a>
 <a class="nav-item" href="#clients"><span class="nav-icon">👥</span><span class="nav-label">Clients</span><span class="nav-count">4</span></a>
-<a class="nav-item" href="#projects"><span class="nav-icon">🏗</span><span class="nav-label">Projects</span><span class="nav-count">12</span></a>
+<a class="nav-item" href="#projects"><span class="nav-icon">🏗</span><span class="nav-label">Projects</span><span class="nav-count">16</span></a>
 <a class="nav-item" href="#parked"><span class="nav-icon">⏸</span><span class="nav-label">Parked</span><span class="nav-count">1</span></a>
+    
     
   </nav>
   <div class="content">
-    <header>
-      <p class="eyebrow">Diaz Consulting Firm</p>
-      <h1>Command Center</h1>
-      <p class="sub">Live mirror of the second-brain vault · updated Jul 21, 2026 · 02:24 PM</p>
-      <p class="mode">Public mirror — Job Search and interview detail intentionally excluded.</p>
-      <hr class="rule">
-      <div class="kpis">
-        <div class="kpi"><div class="num">5</div><div class="lbl">Needs attention</div></div>
-        <div class="kpi"><div class="num">16</div><div class="lbl">Active items</div></div>
-        <div class="kpi"><div class="num">4</div><div class="lbl">Clients</div></div>
-        <div class="kpi"><div class="num">12</div><div class="lbl">Projects</div></div>
+    <header class="top">
+      <div>
+        <h1>Good afternoon, Evans.</h1>
+        <p class="sub">Jul 21, 2026 · 02:46 PM · Public mirror — Job Search and interview detail intentionally excluded.</p>
       </div>
+      <div class="who"><div class="avatar-fallback">ED</div><span class="name">Evans Díaz</span></div>
     </header>
     <main>
-      <details class="panel" id="attention" open>
-        <summary><span class="icon">🚨</span><span class="title">Attention</span><span class="count">5</span><span class="chev">›</span></summary>
-        <div class="panel-body"><div class="grid"><article class="card flag-blocked"><div class="card-top">
-            <span class="pill flag-blocked">Blocked</span>
-            <h3>robert_davis_growth_strategy</h3>
-          </div>
-          <p class="na">Awaiting Robert&#x27;s b-roll recording time</p>
-          <p class="meta">blocked · idle 9d</p></article>
-<article class="card flag-aging"><div class="card-top">
-            <span class="pill flag-aging">Aging</span>
-            <h3>website_factory_v2_plan</h3>
-          </div>
-          <p class="na">Phase build per v2 plan (Astro shell)</p>
-          <p class="meta">active · idle 9d</p></article>
-<article class="card flag-blocked"><div class="card-top">
-            <span class="pill flag-blocked">Blocked</span>
-            <h3>dcf_content_engine_ee_framework</h3>
-          </div>
-          <p class="na">Record b-roll — all 3 entities</p>
-          <p class="meta">blocked · idle 3d</p></article>
-<article class="card flag-blocked"><div class="card-top">
-            <span class="pill flag-blocked">Blocked</span>
-            <h3>income_stream_2_tiktok_affiliate</h3>
-          </div>
-          <p class="na">Evans: create TikTok account + pick niche</p>
-          <p class="meta">blocked · idle 3d</p></article>
-<article class="card flag-blocked"><div class="card-top">
-            <span class="pill flag-blocked">Blocked</span>
-            <h3>income_stream_3_ai_model_character</h3>
-          </div>
-          <p class="na">Evans: top up Higgsfield credits, train Soul character from refs</p>
-          <p class="meta">blocked · idle 1d</p></article></div></div>
-        </details><details class="panel" id="next-actions" open>
-        <summary><span class="icon">⚡</span><span class="title">Next Actions</span><span class="count">15</span><span class="chev">›</span></summary>
-        <div class="panel-body"><div class="grid"><article class="card flag-blocked"><div class="card-top">
-            <span class="pill flag-blocked">Blocked</span>
-            <h3>robert_davis_growth_strategy</h3>
-          </div>
-          <p class="na">Awaiting Robert&#x27;s b-roll recording time</p>
-          <p class="meta">blocked · touched 2026-07-12</p></article>
-<article class="card flag-aging"><div class="card-top">
-            <span class="pill flag-aging">Aging</span>
-            <h3>website_factory_v2_plan</h3>
-          </div>
-          <p class="na">Phase build per v2 plan (Astro shell)</p>
-          <p class="meta">active · touched 2026-07-12</p></article>
-<article class="card flag-ok"><div class="card-top">
-            <span class="pill flag-ok">On track</span>
-            <h3>gerlach_hosting_setup</h3>
-          </div>
-          <p class="na">Rotate SFTP credentials (post-leak, redacted 7/17)</p>
-          <p class="meta">live · touched 2026-07-17</p></article>
-<article class="card flag-blocked"><div class="card-top">
-            <span class="pill flag-blocked">Blocked</span>
-            <h3>dcf_content_engine_ee_framework</h3>
-          </div>
-          <p class="na">Record b-roll — all 3 entities</p>
-          <p class="meta">blocked · touched 2026-07-18</p></article>
-<article class="card flag-blocked"><div class="card-top">
-            <span class="pill flag-blocked">Blocked</span>
-            <h3>income_stream_2_tiktok_affiliate</h3>
-          </div>
-          <p class="na">Evans: create TikTok account + pick niche</p>
-          <p class="meta">blocked · touched 2026-07-18</p></article>
-<article class="card flag-ok"><div class="card-top">
-            <span class="pill flag-ok">On track</span>
-            <h3>techparsed_explainer_channel_revival</h3>
-          </div>
-          <p class="na">Decide revival go/no-go; build posting pipeline</p>
-          <p class="meta">planned · touched 2026-07-18</p></article>
-<article class="card flag-ok"><div class="card-top">
-            <span class="pill flag-ok">On track</span>
-            <h3>davis_motion_pipeline</h3>
-          </div>
-          <p class="na">Build motion pipeline v2 — due 2026-07-22</p>
-          <p class="meta">active · touched 2026-07-19</p></article>
-<article class="card flag-ok"><div class="card-top">
-            <span class="pill flag-ok">On track</span>
-            <h3>next_actions_awaiting_evans</h3>
-          </div>
-          <p class="na">Review blocked-on-Evans list</p>
-          <p class="meta">active · touched 2026-07-19</p></article>
-<article class="card flag-ok"><div class="card-top">
-            <span class="pill flag-ok">On track</span>
-            <h3>claude_design_dcf_system</h3>
-          </div>
-          <p class="na">Decide whether to extend this design system to cover the Command Center dashboard, or use it for the next client/prospect piece</p>
-          <p class="meta">active · touched 2026-07-20</p></article>
-<article class="card flag-ok"><div class="card-top">
-            <span class="pill flag-ok">On track</span>
-            <h3>command_center_dashboard_build</h3>
-          </div>
-          <p class="na">Evans: confirm Euro Motorsport pitch status (live prospect or dead concept) before it gets logged into Project Registry</p>
-          <p class="meta">active · touched 2026-07-20</p></article>
-<article class="card flag-ok"><div class="card-top">
-            <span class="pill flag-ok">On track</span>
-            <h3>factory_learnings_audit_2026-07-19</h3>
-          </div>
-          <p class="na">Push + deploy merge 4645ce2; Design-feature pilot</p>
-          <p class="meta">active · touched 2026-07-20</p></article>
-<article class="card flag-blocked"><div class="card-top">
-            <span class="pill flag-blocked">Blocked</span>
-            <h3>income_stream_3_ai_model_character</h3>
-          </div>
-          <p class="na">Evans: top up Higgsfield credits, train Soul character from refs</p>
-          <p class="meta">blocked · touched 2026-07-20</p></article>
-<article class="card flag-ok"><div class="card-top">
-            <span class="pill flag-ok">On track</span>
-            <h3>weekly_wall_usage_tool</h3>
-          </div>
-          <p class="na">Evans: open the tool, read current % from Claude.ai usage page, enter it to calibrate</p>
-          <p class="meta">active · touched 2026-07-20</p></article>
-<article class="card flag-ok"><div class="card-top">
-            <span class="pill flag-ok">On track</span>
-            <h3>linkedin_banner_project</h3>
-          </div>
-          <p class="na">Evans: upload LinkedIn_Banner_2026_v6_dcfsystem.png to LinkedIn profile if approved</p>
-          <p class="meta">active · touched 2026-07-21</p></article>
-<article class="card flag-ok"><div class="card-top">
-            <span class="pill flag-ok">On track</span>
-            <h3>project_registry</h3>
-          </div>
-          <p class="na">Weekly review of registry vs reality</p>
-          <p class="meta">active · touched 2026-07-21</p></article></div></div>
-        </details><details class="panel" id="clients">
-        <summary><span class="icon">👥</span><span class="title">Clients</span><span class="count">4</span><span class="chev">›</span></summary>
-        <div class="panel-body"><div class="grid"><article class="card flag-aging"><div class="card-top">
-            <span class="pill flag-aging">Aging</span>
-            <h3>client_contacts</h3>
-          </div>
-          
-          <p class="meta">touched 2026-07-12</p></article>
-<article class="card flag-ok"><div class="card-top">
-            <span class="pill flag-ok">On track</span>
-            <h3>davis_motion_pipeline</h3>
-          </div>
-          <p class="na">Build motion pipeline v2 — due 2026-07-22</p>
-          <p class="meta">active · touched 2026-07-19</p></article>
-<article class="card flag-blocked"><div class="card-top">
-            <span class="pill flag-blocked">Blocked</span>
-            <h3>dcf_content_engine_ee_framework</h3>
-          </div>
-          <p class="na">Record b-roll — all 3 entities</p>
-          <p class="meta">blocked · touched 2026-07-18</p></article>
-<article class="card flag-blocked"><div class="card-top">
-            <span class="pill flag-blocked">Blocked</span>
-            <h3>robert_davis_growth_strategy</h3>
-          </div>
-          <p class="na">Awaiting Robert&#x27;s b-roll recording time</p>
-          <p class="meta">blocked · touched 2026-07-12</p></article></div></div>
-        </details><details class="panel" id="projects">
-        <summary><span class="icon">🏗</span><span class="title">Projects</span><span class="count">12</span><span class="chev">›</span></summary>
-        <div class="panel-body"><div class="grid"><article class="card flag-ok"><div class="card-top">
-            <span class="pill flag-ok">On track</span>
-            <h3>claude_design_dcf_system</h3>
-          </div>
-          <p class="na">Decide whether to extend this design system to cover the Command Center dashboard, or use it for the next client/prospect piece</p>
-          <p class="meta">active · touched 2026-07-20</p></article>
-<article class="card flag-ok"><div class="card-top">
-            <span class="pill flag-ok">On track</span>
-            <h3>command_center_dashboard_build</h3>
-          </div>
-          <p class="na">Evans: confirm Euro Motorsport pitch status (live prospect or dead concept) before it gets logged into Project Registry</p>
-          <p class="meta">active · touched 2026-07-20</p></article>
-<article class="card flag-ok"><div class="card-top">
-            <span class="pill flag-ok">On track</span>
-            <h3>davis_motion_pipeline</h3>
-          </div>
-          <p class="na">Build motion pipeline v2 — due 2026-07-22</p>
-          <p class="meta">active · touched 2026-07-19</p></article>
-<article class="card flag-blocked"><div class="card-top">
-            <span class="pill flag-blocked">Blocked</span>
-            <h3>dcf_content_engine_ee_framework</h3>
-          </div>
-          <p class="na">Record b-roll — all 3 entities</p>
-          <p class="meta">blocked · touched 2026-07-18</p></article>
-<article class="card flag-ok"><div class="card-top">
-            <span class="pill flag-ok">On track</span>
-            <h3>factory_learnings_audit_2026-07-19</h3>
-          </div>
-          <p class="na">Push + deploy merge 4645ce2; Design-feature pilot</p>
-          <p class="meta">active · touched 2026-07-20</p></article>
-<article class="card flag-blocked"><div class="card-top">
-            <span class="pill flag-blocked">Blocked</span>
-            <h3>income_stream_2_tiktok_affiliate</h3>
-          </div>
-          <p class="na">Evans: create TikTok account + pick niche</p>
-          <p class="meta">blocked · touched 2026-07-18</p></article>
-<article class="card flag-blocked"><div class="card-top">
-            <span class="pill flag-blocked">Blocked</span>
-            <h3>income_stream_3_ai_model_character</h3>
-          </div>
-          <p class="na">Evans: top up Higgsfield credits, train Soul character from refs</p>
-          <p class="meta">blocked · touched 2026-07-20</p></article>
-<article class="card flag-ok"><div class="card-top">
-            <span class="pill flag-ok">On track</span>
-            <h3>linkedin_banner_project</h3>
-          </div>
-          <p class="na">Evans: upload LinkedIn_Banner_2026_v6_dcfsystem.png to LinkedIn profile if approved</p>
-          <p class="meta">active · touched 2026-07-21</p></article>
-<article class="card flag-ok"><div class="card-top">
-            <span class="pill flag-ok">On track</span>
-            <h3>next_actions_awaiting_evans</h3>
-          </div>
-          <p class="na">Review blocked-on-Evans list</p>
-          <p class="meta">active · touched 2026-07-19</p></article>
-<article class="card flag-ok"><div class="card-top">
-            <span class="pill flag-ok">On track</span>
-            <h3>project_registry</h3>
-          </div>
-          <p class="na">Weekly review of registry vs reality</p>
-          <p class="meta">active · touched 2026-07-21</p></article>
-<article class="card flag-blocked"><div class="card-top">
-            <span class="pill flag-blocked">Blocked</span>
-            <h3>robert_davis_growth_strategy</h3>
-          </div>
-          <p class="na">Awaiting Robert&#x27;s b-roll recording time</p>
-          <p class="meta">blocked · touched 2026-07-12</p></article>
-<article class="card flag-ok"><div class="card-top">
-            <span class="pill flag-ok">On track</span>
-            <h3>techparsed_explainer_channel_revival</h3>
-          </div>
-          <p class="na">Decide revival go/no-go; build posting pipeline</p>
-          <p class="meta">planned · touched 2026-07-18</p></article></div></div>
-        </details><details class="panel" id="parked">
-        <summary><span class="icon">⏸</span><span class="title">Parked</span><span class="count">1</span><span class="chev">›</span></summary>
-        <div class="panel-body"><div class="grid"><article class="card flag-deferred"><div class="card-top">
-            <span class="pill flag-deferred">Deferred</span>
-            <h3>industree_recovery_status</h3>
-          </div>
-          <p class="na">2026-08-01 follow-up: triage Payhip access or decommission</p>
-          <p class="meta">deferred · touched 2026-07-17</p></article></div></div>
-        </details>
-      <section style="margin-top: 28px;">
-        <p class="eyebrow" style="margin-bottom: 10px;">🚀 Launchers</p>
-        <div class="launchers">
-          <a class="launcher" href="https://diazconsultingfirm.github.io/gerlachlegal-website/dashboard/" target="_blank" rel="noopener"><span class="lname">Gerlach Legal</span><span class="lnote">Client dashboard — shareable with Angela</span><span class="larrow">↗</span></a>
-<a class="launcher" href="https://diazconsultingfirm.github.io/robertdavispa-website/dashboard/" target="_blank" rel="noopener"><span class="lname">Robert Davis PA</span><span class="lnote">Client dashboard — shareable with Robert</span><span class="larrow">↗</span></a>
-<a class="launcher" href="https://diazconsultingfirm.github.io/fusionauth-plan/" target="_blank" rel="noopener"><span class="lname">FusionAuth Plan</span><span class="lnote">Interview artifact</span><span class="larrow">↗</span></a>
+      <div class="kpis"><div class="kpi-card">
+      <div class="kpi-top"><span class="kpi-icon">⚠️</span><span class="kpi-label">Needs Attention</span></div>
+      <div class="kpi-value">6</div>
+      
+      
+    </div><div class="kpi-card">
+      <div class="kpi-top"><span class="kpi-icon">⚡</span><span class="kpi-label">Active Items</span></div>
+      <div class="kpi-value">21</div>
+      
+      
+    </div><div class="kpi-card">
+      <div class="kpi-top"><span class="kpi-icon">👥</span><span class="kpi-label">Clients</span></div>
+      <div class="kpi-value">4</div>
+      
+      
+    </div><div class="kpi-card">
+      <div class="kpi-top"><span class="kpi-icon">🏗</span><span class="kpi-label">Projects</span></div>
+      <div class="kpi-value">16</div>
+      
+      
+    </div><div class="kpi-card">
+      <div class="kpi-top"><span class="kpi-icon">📅</span><span class="kpi-label">Upcoming</span></div>
+      <div class="kpi-value">2</div>
+      
+      
+    </div></div>
+
+      <div class="grid3">
+        <div class="panel" id="attention">
+          <div class="panel-head"><h3>🚨 Attention</h3><span class="count">6 items</span></div>
+          <div class="mini-grid"><article class="mini-card flag-blocked"><div class="mini-card-top">
+        <span class="pill flag-blocked">Blocked</span><span class="type-badge">CLIENT</span>
+      </div>
+      <h4>robert_davis_growth_strategy</h4>
+      <p class="na">Awaiting Robert&#x27;s b-roll recording time</p>
+      <p class="meta">9d idle</p></article>
+<article class="mini-card flag-aging"><div class="mini-card-top">
+        <span class="pill flag-aging">Aging</span>
+      </div>
+      <h4>website_factory_v2_plan</h4>
+      <p class="na">Phase build per v2 plan (Astro shell)</p>
+      <p class="meta">9d idle</p></article>
+<article class="mini-card flag-blocked"><div class="mini-card-top">
+        <span class="pill flag-blocked">Blocked</span><span class="type-badge">CLIENT</span>
+      </div>
+      <h4>dcf_content_engine_ee_framework</h4>
+      <p class="na">Record b-roll — all 3 entities</p>
+      <p class="meta">3d idle</p></article>
+<article class="mini-card flag-blocked"><div class="mini-card-top">
+        <span class="pill flag-blocked">Blocked</span><span class="type-badge">PROJECT</span>
+      </div>
+      <h4>income_stream_2_tiktok_affiliate</h4>
+      <p class="na">Evans: create TikTok account + pick niche</p>
+      <p class="meta">3d idle</p></article>
+<article class="mini-card flag-blocked"><div class="mini-card-top">
+        <span class="pill flag-blocked">Blocked</span><span class="type-badge">JOB SEARCH</span>
+      </div>
+      <h4>linkedin_shortlist_pending_review</h4>
+      <p class="na">Evans: live Easy Apply session — 28 shortlisted jobs</p>
+      <p class="meta">3d idle</p></article>
+<article class="mini-card flag-blocked"><div class="mini-card-top">
+        <span class="pill flag-blocked">Blocked</span><span class="type-badge">PROJECT</span>
+      </div>
+      <h4>income_stream_3_ai_model_character</h4>
+      <p class="na">Evans: top up Higgsfield credits, train Soul character from refs</p>
+      <p class="meta">1d idle</p></article></div>
         </div>
-      </section>
+        <div class="panel" id="next-actions">
+          <div class="panel-head"><h3>⚡ Next Actions</h3><span class="count">20 · oldest first</span></div>
+          <div class="mini-grid"><article class="mini-card flag-blocked"><div class="mini-card-top">
+        <span class="pill flag-blocked">Blocked</span><span class="type-badge">CLIENT</span>
+      </div>
+      <h4>robert_davis_growth_strategy</h4>
+      <p class="na">Awaiting Robert&#x27;s b-roll recording time</p>
+      <p class="meta">touched 2026-07-12</p></article>
+<article class="mini-card flag-aging"><div class="mini-card-top">
+        <span class="pill flag-aging">Aging</span>
+      </div>
+      <h4>website_factory_v2_plan</h4>
+      <p class="na">Phase build per v2 plan (Astro shell)</p>
+      <p class="meta">touched 2026-07-12</p></article>
+<article class="mini-card flag-ok"><div class="mini-card-top">
+        <span class="pill flag-ok">On track</span>
+      </div>
+      <h4>gerlach_hosting_setup</h4>
+      <p class="na">Rotate SFTP credentials (post-leak, redacted 7/17)</p>
+      <p class="meta">touched 2026-07-17</p></article>
+<article class="mini-card flag-ok"><div class="mini-card-top">
+        <span class="pill flag-ok">On track</span><span class="type-badge">JOB SEARCH</span>
+      </div>
+      <h4>hiring_manager_outreach_layer</h4>
+      <p class="na">First draft batch Tue 2026-07-21</p>
+      <p class="meta">touched 2026-07-17</p></article>
+<article class="mini-card flag-blocked"><div class="mini-card-top">
+        <span class="pill flag-blocked">Blocked</span><span class="type-badge">CLIENT</span>
+      </div>
+      <h4>dcf_content_engine_ee_framework</h4>
+      <p class="na">Record b-roll — all 3 entities</p>
+      <p class="meta">touched 2026-07-18</p></article>
+<article class="mini-card flag-blocked"><div class="mini-card-top">
+        <span class="pill flag-blocked">Blocked</span><span class="type-badge">PROJECT</span>
+      </div>
+      <h4>income_stream_2_tiktok_affiliate</h4>
+      <p class="na">Evans: create TikTok account + pick niche</p>
+      <p class="meta">touched 2026-07-18</p></article>
+<article class="mini-card flag-blocked"><div class="mini-card-top">
+        <span class="pill flag-blocked">Blocked</span><span class="type-badge">JOB SEARCH</span>
+      </div>
+      <h4>linkedin_shortlist_pending_review</h4>
+      <p class="na">Evans: live Easy Apply session — 28 shortlisted jobs</p>
+      <p class="meta">touched 2026-07-18</p></article>
+<article class="mini-card flag-ok"><div class="mini-card-top">
+        <span class="pill flag-ok">On track</span><span class="type-badge">PROJECT</span>
+      </div>
+      <h4>techparsed_explainer_channel_revival</h4>
+      <p class="na">Decide revival go/no-go; build posting pipeline</p>
+      <p class="meta">touched 2026-07-18</p></article>
+<article class="mini-card flag-ok"><div class="mini-card-top">
+        <span class="pill flag-ok">On track</span><span class="type-badge">CLIENT</span>
+      </div>
+      <h4>davis_motion_pipeline</h4>
+      <p class="na">Build motion pipeline v2 — due 2026-07-22</p>
+      <p class="meta">touched 2026-07-19</p></article>
+<article class="mini-card flag-ok"><div class="mini-card-top">
+        <span class="pill flag-ok">On track</span><span class="type-badge">PROJECT</span>
+      </div>
+      <h4>next_actions_awaiting_evans</h4>
+      <p class="na">Review blocked-on-Evans list</p>
+      <p class="meta">touched 2026-07-19</p></article>
+<article class="mini-card flag-ok"><div class="mini-card-top">
+        <span class="pill flag-ok">On track</span><span class="type-badge">PROJECT</span>
+      </div>
+      <h4>claude_design_dcf_system</h4>
+      <p class="na">Decide whether to extend this design system to cover the Command Center dashboard, or use it for the next client/prospect piece</p>
+      <p class="meta">touched 2026-07-20</p></article>
+<article class="mini-card flag-ok"><div class="mini-card-top">
+        <span class="pill flag-ok">On track</span><span class="type-badge">PROJECT</span>
+      </div>
+      <h4>command_center_dashboard_build</h4>
+      <p class="na">Evans: confirm Euro Motorsport pitch status (live prospect or dead concept) before it gets logged into Project Registry</p>
+      <p class="meta">touched 2026-07-20</p></article>
+<article class="mini-card flag-ok"><div class="mini-card-top">
+        <span class="pill flag-ok">On track</span><span class="type-badge">PROJECT</span>
+      </div>
+      <h4>factory_learnings_audit_2026-07-19</h4>
+      <p class="na">Push + deploy merge 4645ce2; Design-feature pilot</p>
+      <p class="meta">touched 2026-07-20</p></article>
+<article class="mini-card flag-blocked"><div class="mini-card-top">
+        <span class="pill flag-blocked">Blocked</span><span class="type-badge">PROJECT</span>
+      </div>
+      <h4>income_stream_3_ai_model_character</h4>
+      <p class="na">Evans: top up Higgsfield credits, train Soul character from refs</p>
+      <p class="meta">touched 2026-07-20</p></article>
+<article class="mini-card flag-ok"><div class="mini-card-top">
+        <span class="pill flag-ok">On track</span><span class="type-badge">JOB SEARCH</span>
+      </div>
+      <h4>plan_of_action_hub</h4>
+      <p class="na">Evans: decide whether to publish (see Publishing decision below) — default is stay local</p>
+      <p class="meta">touched 2026-07-20</p></article>
+<article class="mini-card flag-ok"><div class="mini-card-top">
+        <span class="pill flag-ok">On track</span><span class="type-badge">SYSTEM</span>
+      </div>
+      <h4>weekly_wall_usage_tool</h4>
+      <p class="na">Evans: open the tool, read current % from Claude.ai usage page, enter it to calibrate</p>
+      <p class="meta">touched 2026-07-20</p></article>
+<article class="mini-card flag-ok"><div class="mini-card-top">
+        <span class="pill flag-ok">On track</span><span class="type-badge">PROJECT</span>
+      </div>
+      <h4>dm_video_insight_dashboard</h4>
+      <p class="na">Regenerate after future dm-video-insight-watch runs — see How to update below</p>
+      <p class="meta">touched 2026-07-21</p></article>
+<article class="mini-card flag-ok"><div class="mini-card-top">
+        <span class="pill flag-ok">On track</span><span class="type-badge">JOB SEARCH</span>
+      </div>
+      <h4>fusionauth_sdr_role_intel</h4>
+      <p class="na">Resolve in-person interview conflict; warm intro via Tom Slocum → Ben</p>
+      <p class="meta">touched 2026-07-21</p></article>
+<article class="mini-card flag-ok"><div class="mini-card-top">
+        <span class="pill flag-ok">On track</span><span class="type-badge">PROJECT</span>
+      </div>
+      <h4>linkedin_banner_project</h4>
+      <p class="na">Evans: upload LinkedIn_Banner_2026_v6_dcfsystem.png to LinkedIn profile if approved</p>
+      <p class="meta">touched 2026-07-21</p></article>
+<article class="mini-card flag-ok"><div class="mini-card-top">
+        <span class="pill flag-ok">On track</span><span class="type-badge">PROJECT</span>
+      </div>
+      <h4>project_registry</h4>
+      <p class="na">Weekly review of registry vs reality</p>
+      <p class="meta">touched 2026-07-21</p></article></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h3>📅 Upcoming Deadlines</h3><span class="count">next 30 days</span></div>
+          <div class="deadline-item">
+      <div class="deadline-date"><span class="dd-month">JUL</span><span class="dd-day">23</span></div>
+      <div class="deadline-body"><h4>evereffect_bdm_interview</h4><p class="meta">—</p></div>
+      <span class="type-badge">JOB SEARCH</span>
+    </div><div class="deadline-item">
+      <div class="deadline-date"><span class="dd-month">JUL</span><span class="dd-day">28</span></div>
+      <div class="deadline-body"><h4>fusionauth_sdr_role_intel</h4><p class="meta">Resolve in-person interview conflict; warm intro via Tom Slocum → Ben</p></div>
+      <span class="type-badge">JOB SEARCH</span>
+    </div>
+        </div>
+      </div>
+
+      <div class="grid3">
+        <div class="panel" id="clients">
+          <div class="panel-head"><h3>👥 Clients</h3><span class="count">4 active</span></div>
+          <div class="mini-grid"><article class="mini-card flag-aging"><div class="mini-card-top">
+        <span class="pill flag-aging">Aging</span><span class="type-badge">CLIENT</span>
+      </div>
+      <h4>client_contacts</h4>
+      
+      <p class="meta">touched 2026-07-12</p></article>
+<article class="mini-card flag-ok"><div class="mini-card-top">
+        <span class="pill flag-ok">On track</span><span class="type-badge">CLIENT</span>
+      </div>
+      <h4>davis_motion_pipeline</h4>
+      <p class="na">Build motion pipeline v2 — due 2026-07-22</p>
+      <p class="meta">touched 2026-07-19</p></article>
+<article class="mini-card flag-blocked"><div class="mini-card-top">
+        <span class="pill flag-blocked">Blocked</span><span class="type-badge">CLIENT</span>
+      </div>
+      <h4>dcf_content_engine_ee_framework</h4>
+      <p class="na">Record b-roll — all 3 entities</p>
+      <p class="meta">touched 2026-07-18</p></article>
+<article class="mini-card flag-blocked"><div class="mini-card-top">
+        <span class="pill flag-blocked">Blocked</span><span class="type-badge">CLIENT</span>
+      </div>
+      <h4>robert_davis_growth_strategy</h4>
+      <p class="na">Awaiting Robert&#x27;s b-roll recording time</p>
+      <p class="meta">touched 2026-07-12</p></article></div>
+        </div>
+        <div class="panel" id="projects">
+          <div class="panel-head"><h3>🏗 Projects</h3><span class="count">16 active</span></div>
+          <div class="mini-grid"><article class="mini-card flag-ok"><div class="mini-card-top">
+        <span class="pill flag-ok">On track</span><span class="type-badge">PROJECT</span>
+      </div>
+      <h4>claude_design_dcf_system</h4>
+      <p class="na">Decide whether to extend this design system to cover the Command Center dashboard, or use it for the next client/prospect piece</p>
+      <p class="meta">touched 2026-07-20</p></article>
+<article class="mini-card flag-ok"><div class="mini-card-top">
+        <span class="pill flag-ok">On track</span><span class="type-badge">PROJECT</span>
+      </div>
+      <h4>command_center_dashboard_build</h4>
+      <p class="na">Evans: confirm Euro Motorsport pitch status (live prospect or dead concept) before it gets logged into Project Registry</p>
+      <p class="meta">touched 2026-07-20</p></article>
+<article class="mini-card flag-ok"><div class="mini-card-top">
+        <span class="pill flag-ok">On track</span><span class="type-badge">CLIENT</span>
+      </div>
+      <h4>davis_motion_pipeline</h4>
+      <p class="na">Build motion pipeline v2 — due 2026-07-22</p>
+      <p class="meta">touched 2026-07-19</p></article>
+<article class="mini-card flag-blocked"><div class="mini-card-top">
+        <span class="pill flag-blocked">Blocked</span><span class="type-badge">CLIENT</span>
+      </div>
+      <h4>dcf_content_engine_ee_framework</h4>
+      <p class="na">Record b-roll — all 3 entities</p>
+      <p class="meta">touched 2026-07-18</p></article>
+<article class="mini-card flag-ok"><div class="mini-card-top">
+        <span class="pill flag-ok">On track</span><span class="type-badge">PROJECT</span>
+      </div>
+      <h4>dm_video_insight_dashboard</h4>
+      <p class="na">Regenerate after future dm-video-insight-watch runs — see How to update below</p>
+      <p class="meta">touched 2026-07-21</p></article>
+<article class="mini-card flag-ok"><div class="mini-card-top">
+        <span class="pill flag-ok">On track</span><span class="type-badge">PROJECT</span>
+      </div>
+      <h4>factory_learnings_audit_2026-07-19</h4>
+      <p class="na">Push + deploy merge 4645ce2; Design-feature pilot</p>
+      <p class="meta">touched 2026-07-20</p></article>
+<article class="mini-card flag-ok"><div class="mini-card-top">
+        <span class="pill flag-ok">On track</span><span class="type-badge">JOB SEARCH</span>
+      </div>
+      <h4>fusionauth_sdr_role_intel</h4>
+      <p class="na">Resolve in-person interview conflict; warm intro via Tom Slocum → Ben</p>
+      <p class="meta">touched 2026-07-21</p></article>
+<article class="mini-card flag-ok"><div class="mini-card-top">
+        <span class="pill flag-ok">On track</span><span class="type-badge">JOB SEARCH</span>
+      </div>
+      <h4>hiring_manager_outreach_layer</h4>
+      <p class="na">First draft batch Tue 2026-07-21</p>
+      <p class="meta">touched 2026-07-17</p></article>
+<article class="mini-card flag-blocked"><div class="mini-card-top">
+        <span class="pill flag-blocked">Blocked</span><span class="type-badge">PROJECT</span>
+      </div>
+      <h4>income_stream_2_tiktok_affiliate</h4>
+      <p class="na">Evans: create TikTok account + pick niche</p>
+      <p class="meta">touched 2026-07-18</p></article>
+<article class="mini-card flag-blocked"><div class="mini-card-top">
+        <span class="pill flag-blocked">Blocked</span><span class="type-badge">PROJECT</span>
+      </div>
+      <h4>income_stream_3_ai_model_character</h4>
+      <p class="na">Evans: top up Higgsfield credits, train Soul character from refs</p>
+      <p class="meta">touched 2026-07-20</p></article>
+<article class="mini-card flag-ok"><div class="mini-card-top">
+        <span class="pill flag-ok">On track</span><span class="type-badge">PROJECT</span>
+      </div>
+      <h4>linkedin_banner_project</h4>
+      <p class="na">Evans: upload LinkedIn_Banner_2026_v6_dcfsystem.png to LinkedIn profile if approved</p>
+      <p class="meta">touched 2026-07-21</p></article>
+<article class="mini-card flag-ok"><div class="mini-card-top">
+        <span class="pill flag-ok">On track</span><span class="type-badge">PROJECT</span>
+      </div>
+      <h4>next_actions_awaiting_evans</h4>
+      <p class="na">Review blocked-on-Evans list</p>
+      <p class="meta">touched 2026-07-19</p></article>
+<article class="mini-card flag-ok"><div class="mini-card-top">
+        <span class="pill flag-ok">On track</span><span class="type-badge">JOB SEARCH</span>
+      </div>
+      <h4>plan_of_action_hub</h4>
+      <p class="na">Evans: decide whether to publish (see Publishing decision below) — default is stay local</p>
+      <p class="meta">touched 2026-07-20</p></article>
+<article class="mini-card flag-ok"><div class="mini-card-top">
+        <span class="pill flag-ok">On track</span><span class="type-badge">PROJECT</span>
+      </div>
+      <h4>project_registry</h4>
+      <p class="na">Weekly review of registry vs reality</p>
+      <p class="meta">touched 2026-07-21</p></article>
+<article class="mini-card flag-blocked"><div class="mini-card-top">
+        <span class="pill flag-blocked">Blocked</span><span class="type-badge">CLIENT</span>
+      </div>
+      <h4>robert_davis_growth_strategy</h4>
+      <p class="na">Awaiting Robert&#x27;s b-roll recording time</p>
+      <p class="meta">touched 2026-07-12</p></article>
+<article class="mini-card flag-ok"><div class="mini-card-top">
+        <span class="pill flag-ok">On track</span><span class="type-badge">PROJECT</span>
+      </div>
+      <h4>techparsed_explainer_channel_revival</h4>
+      <p class="na">Decide revival go/no-go; build posting pipeline</p>
+      <p class="meta">touched 2026-07-18</p></article></div>
+        </div>
+        <div class="panel"><div class="panel-head"><h3>⏸ Parked</h3><span class="count">1 items</span></div><div class="mini-grid"><article class="mini-card flag-deferred"><div class="mini-card-top">
+        <span class="pill flag-deferred">Deferred</span><span class="type-badge">PROJECT</span>
+      </div>
+      <h4>industree_recovery_status</h4>
+      <p class="na">2026-08-01 follow-up: triage Payhip access or decommission</p>
+      <p class="meta">touched 2026-07-17</p></article></div></div>
+      </div>
+
+      <div class="grid3">
+        <div class="panel">
+          <div class="panel-head"><h3>🚀 Quick Launch</h3></div>
+          <p class="empty-state">No launchers configured.</p>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h3>📋 Activity Feed</h3><span class="count">live</span></div>
+          <p class="empty-state">No activity logged yet.</p>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h3>🔔 Alerts</h3><span class="count">recent</span></div>
+          <p class="empty-state">No alerts sent yet.</p>
+        </div>
+      </div>
     </main>
-    <footer>The vault is the system of record — this page is a read-only mirror.</footer>
+    <footer>Built in Obsidian. Powered by focus. Designed for execution. · Jul 21, 2026 · 02:46 PM</footer>
   </div>
 </div>
 <script>
@@ -442,49 +521,27 @@ document.querySelectorAll('.flip-card').forEach(function (cardEl) {
   var resolveBtn = cardEl.querySelector('.btn-resolve');
   var cancelBtn = cardEl.querySelector('.btn-cancel');
   var hintBtn = cardEl.querySelector('.resolve-hint');
-
   function flip(on) {
     cardEl.classList.toggle('flipped', on);
-    status.textContent = '';
-    status.className = 'flip-status';
+    status.textContent = ''; status.className = 'flip-status';
     if (on) { textarea.value = ''; setTimeout(function () { textarea.focus(); }, 200); }
   }
-
   hintBtn.addEventListener('click', function () { flip(true); });
   cancelBtn.addEventListener('click', function () { flip(false); });
-
   resolveBtn.addEventListener('click', function () {
     var text = textarea.value.trim();
-    if (!text) {
-      status.textContent = 'Type what resolves this first.';
-      status.className = 'flip-status error';
-      return;
-    }
-    resolveBtn.disabled = true;
-    status.textContent = 'Saving…';
-    status.className = 'flip-status';
-    fetch('/api/resolve', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ note: note, resolution: text }),
-    })
-      .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+    if (!text) { status.textContent = 'Type what resolves this first.'; status.className = 'flip-status error'; return; }
+    resolveBtn.disabled = true; status.textContent = 'Saving…'; status.className = 'flip-status';
+    fetch('/api/resolve', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({note:note, resolution:text}) })
+      .then(function (r) { return r.json().then(function (j) { return {ok:r.ok, j:j}; }); })
       .then(function (res) {
         if (!res.ok || !res.j.ok) { throw new Error((res.j && res.j.error) || 'save failed'); }
-        status.textContent = 'Resolved — updating…';
-        status.className = 'flip-status ok';
-        setTimeout(function () {
-          cardEl.classList.add('resolved');
-          var badge = document.querySelector('#next-actions .count');
-          if (badge) {
-            var n = parseInt(badge.textContent, 10) - 1;
-            badge.textContent = n > 0 ? n : '';
-          }
-        }, 500);
+        status.textContent = 'Resolved — updating…'; status.className = 'flip-status ok';
+        setTimeout(function () { cardEl.classList.add('resolved'); }, 500);
       })
       .catch(function (e) {
         resolveBtn.disabled = false;
-        status.textContent = "Couldn't save — open this page via Open-Command-Center.bat (needs the local server), not the file directly. " + e.message;
+        status.textContent = "Couldn't save — use Open-Command-Center.bat. " + e.message;
         status.className = 'flip-status error';
       });
   });
