@@ -93,6 +93,11 @@
   .empty-state { color: var(--muted); font-size: 0.82rem; font-style: italic; }
   .deadline-item { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--border); }
   .deadline-item:last-child { border-bottom: none; }
+  .deadline-item.flip-card { perspective: 1100px; display: block; padding: 0; border-bottom: none; margin-bottom: 8px; }
+  .deadline-flip-inner { min-height: 64px; }
+  .deadline-flip-front { flex-direction: row !important; align-items: center; gap: 12px; padding: 8px 10px !important; border-left: none !important; border-bottom: 1px solid var(--border); border-radius: 0; }
+  .deadline-flip-front .resolve-hint { margin: 0 0 0 auto; align-self: center; padding: 0; }
+  .deadline-flip-front .deadline-body { flex: 1; min-width: 0; }
   .deadline-date { display: flex; flex-direction: column; align-items: center; background: var(--surface-2); border-radius: 8px; padding: 4px 9px; min-width: 44px; }
   .dd-month { font-size: 0.62rem; font-weight: 700; color: var(--gold-deep); }
   .dd-day { font-size: 1rem; font-weight: 800; }
@@ -153,7 +158,7 @@
     <header class="top" id="top">
       <div>
         <h1>Good morning, Evans.</h1>
-        <p class="sub">Jul 22, 2026 · 12:09 AM · Public mirror — Job Search and interview detail intentionally excluded.</p>
+        <p class="sub">Jul 22, 2026 · 12:18 AM · Public mirror — Job Search and interview detail intentionally excluded.</p>
       </div>
       <p class="tagline">Clarity today. Freedom tomorrow.<br>Focus &gt; Execute &gt; Compound.</p>
       <div class="who"><div class="avatar-fallback">ED</div><span class="name">Evans Díaz</span></div>
@@ -162,13 +167,13 @@
       <div class="kpis"><div class="kpi-card">
       <div class="kpi-top"><span class="kpi-icon">⚠️</span><span class="kpi-label">Needs Attention</span></div>
       <div class="kpi-value">10</div>
-      <div class="kpi-delta">+1 since yesterday</div>
-      <svg width="72" height="24" class="spark" viewBox="0 0 72 24"><polyline points="0.0,22.0 72.0,2.0" fill="none" stroke="#dc4c3f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <div class="kpi-delta muted">no change</div>
+      <svg width="72" height="24" class="spark"><line x1="0" y1="12.0" x2="72" y2="12.0" stroke="#d8dde1" stroke-width="1.5"/></svg>
     </div><div class="kpi-card">
       <div class="kpi-top"><span class="kpi-icon">⚡</span><span class="kpi-label">Active Items</span></div>
       <div class="kpi-value">21</div>
-      <div class="kpi-delta">+1 since yesterday</div>
-      <svg width="72" height="24" class="spark" viewBox="0 0 72 24"><polyline points="0.0,22.0 72.0,2.0" fill="none" stroke="#1B3A4B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <div class="kpi-delta muted">no change</div>
+      <svg width="72" height="24" class="spark"><line x1="0" y1="12.0" x2="72" y2="12.0" stroke="#d8dde1" stroke-width="1.5"/></svg>
     </div><div class="kpi-card">
       <div class="kpi-top"><span class="kpi-icon">👥</span><span class="kpi-label">Clients</span></div>
       <div class="kpi-value">4</div>
@@ -177,8 +182,8 @@
     </div><div class="kpi-card">
       <div class="kpi-top"><span class="kpi-icon">🏗</span><span class="kpi-label">Projects</span></div>
       <div class="kpi-value">17</div>
-      <div class="kpi-delta">+1 since yesterday</div>
-      <svg width="72" height="24" class="spark" viewBox="0 0 72 24"><polyline points="0.0,22.0 72.0,2.0" fill="none" stroke="#1B3A4B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <div class="kpi-delta muted">no change</div>
+      <svg width="72" height="24" class="spark"><line x1="0" y1="12.0" x2="72" y2="12.0" stroke="#d8dde1" stroke-width="1.5"/></svg>
     </div><div class="kpi-card">
       <div class="kpi-top"><span class="kpi-icon">📅</span><span class="kpi-label">Upcoming</span></div>
       <div class="kpi-value">0</div>
@@ -539,7 +544,7 @@
         </div>
       </div>
     </main>
-    <footer>Built in Obsidian. Powered by focus. Designed for execution. · Jul 22, 2026 · 12:09 AM</footer>
+    <footer>Built in Obsidian. Powered by focus. Designed for execution. · Jul 22, 2026 · 12:18 AM</footer>
   </div>
 </div>
 <script>
