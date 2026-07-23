@@ -116,9 +116,18 @@
   .spark { display: block; margin-top: 8px; }
   .grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; margin-bottom: 16px; }
   .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px 18px; scroll-margin-top: 54px; }
-  .panel-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; }
-  .panel-head h3 { margin: 0; font-size: 0.88rem; font-weight: 800; }
+  .panel-head {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 12px; cursor: pointer;
+    list-style: none; user-select: none;
+  }
+  .panel-head::-webkit-details-marker { display: none; }
+  .panel-head::marker { content: ""; }
+  .panel-head h3 { margin: 0; font-size: 0.88rem; font-weight: 800; flex: 1; }
   .panel-head .count { color: var(--muted); font-size: 0.76rem; }
+  .panel-head::after { content: '⌄'; color: var(--muted); font-size: 0.85rem; transition: transform 0.15s ease; }
+  details.panel[open] > .panel-head::after { transform: rotate(180deg); }
+  details.panel:not([open]) .panel-head { margin-bottom: 0; }
+  .panel-head:hover::after { color: var(--gold-deep); }
   .mini-grid { display: flex; flex-direction: column; gap: 8px; max-height: 340px; overflow-y: auto; }
   .mini-card { background: var(--surface-2); border-left: 3px solid var(--muted); border-radius: 8px; padding: 10px 12px; }
   .mini-card.flag-blocked { border-left-color: var(--red); }
@@ -213,7 +222,7 @@
     <header class="top" id="top">
       <div>
         <h1>Good morning, Evans.</h1>
-        <p class="sub">Jul 23, 2026 · 12:05 AM · Public mirror — Job Search and interview detail intentionally excluded.</p>
+        <p class="sub">Jul 23, 2026 · 12:13 AM · Public mirror — Job Search and interview detail intentionally excluded.</p>
       </div>
       <p class="tagline">Clarity today. Freedom tomorrow.<br>Focus &gt; Execute &gt; Compound.</p>
       <div class="who">
@@ -230,8 +239,8 @@
     </div><div class="kpi-card">
       <div class="kpi-top"><span class="kpi-icon">⚡</span><span class="kpi-label">Active Items</span></div>
       <div class="kpi-value">21</div>
-      <div class="kpi-delta">+1 since yesterday</div>
-      <svg width="72" height="24" class="spark" viewBox="0 0 72 24"><polyline points="0.0,22.0 72.0,2.0" fill="none" stroke="#1B3A4B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <div class="kpi-delta muted">no change</div>
+      <svg width="72" height="24" class="spark" viewBox="0 0 72 24"><polyline points="0.0,22.0 36.0,2.0 72.0,2.0" fill="none" stroke="#1B3A4B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </div><div class="kpi-card">
       <div class="kpi-top"><span class="kpi-icon">👥</span><span class="kpi-label">Clients</span></div>
       <div class="kpi-value">4</div>
@@ -250,9 +259,9 @@
     </div></div>
 
       <div class="grid3">
-        <div class="panel" id="attention">
-          <div class="panel-head"><h3>🚨 Attention</h3><span class="count">10 items</span></div>
-          <div class="mini-grid"><article class="mini-card flag-blocked"><div class="mini-card-top">
+        <details class="panel" id="attention" open>
+          <summary class="panel-head"><h3>🚨 Attention</h3><span class="count">10 items</span></summary>
+          <div class="panel-body"><div class="mini-grid"><article class="mini-card flag-blocked"><div class="mini-card-top">
         <span class="pill flag-blocked">Blocked</span><span class="type-badge">CLIENT</span>
       </div>
       <h4>robert_davis_growth_strategy</h4>
@@ -321,11 +330,11 @@
       <h4>weekly_unblock_audit_2026-07-21</h4>
       <p class="na">Evans: work the 9-item checklist in [[project_cross_reference_2026-07-21]] one by one</p>
       <p class="meta">2d idle</p>
-      </article></div>
-        </div>
-        <div class="panel" id="next-actions">
-          <div class="panel-head"><h3>⚡ Next Actions</h3><span class="count">20 · oldest first</span></div>
-          <div class="mini-grid"><article class="mini-card flag-blocked"><div class="mini-card-top">
+      </article></div></div>
+        </details>
+        <details class="panel" id="next-actions" open>
+          <summary class="panel-head"><h3>⚡ Next Actions</h3><span class="count">20 · oldest first</span></summary>
+          <div class="panel-body"><div class="mini-grid"><article class="mini-card flag-blocked"><div class="mini-card-top">
         <span class="pill flag-blocked">Blocked</span><span class="type-badge">CLIENT</span>
       </div>
       <h4>robert_davis_growth_strategy</h4>
@@ -464,18 +473,18 @@
       <h4>weekly_unblock_audit_2026-07-21</h4>
       <p class="na">Evans: work the 9-item checklist in [[project_cross_reference_2026-07-21]] one by one</p>
       <p class="meta">touched 2026-07-21</p>
-      </article></div>
-        </div>
-        <div class="panel">
-          <div class="panel-head"><h3>📅 Upcoming Deadlines</h3><span class="count">next 30 days</span></div>
-          <p class="empty-state">Nothing on the calendar.</p>
-        </div>
+      </article></div></div>
+        </details>
+        <details class="panel" open>
+          <summary class="panel-head"><h3>📅 Upcoming Deadlines</h3><span class="count">next 30 days</span></summary>
+          <div class="panel-body"><p class="empty-state">Nothing on the calendar.</p></div>
+        </details>
       </div>
 
       <div class="grid3">
-        <div class="panel" id="clients">
-          <div class="panel-head"><h3>👥 Clients</h3><span class="count">4 active</span></div>
-          <div class="mini-grid"><article class="mini-card flag-aging"><div class="mini-card-top">
+        <details class="panel" id="clients" open>
+          <summary class="panel-head"><h3>👥 Clients</h3><span class="count">4 active</span></summary>
+          <div class="panel-body"><div class="mini-grid"><article class="mini-card flag-aging"><div class="mini-card-top">
         <span class="pill flag-aging">Aging</span><span class="type-badge">CLIENT</span>
       </div>
       <h4>client_contacts</h4>
@@ -502,11 +511,11 @@
       <h4>robert_davis_growth_strategy</h4>
       <p class="na">Awaiting Robert&#x27;s b-roll recording time</p>
       <p class="meta">touched 2026-07-12</p>
-      </article></div>
-        </div>
-        <div class="panel" id="projects">
-          <div class="panel-head"><h3>🏗 Projects</h3><span class="count">17 active</span></div>
-          <div class="mini-grid"><article class="mini-card flag-ok"><div class="mini-card-top">
+      </article></div></div>
+        </details>
+        <details class="panel" id="projects" open>
+          <summary class="panel-head"><h3>🏗 Projects</h3><span class="count">17 active</span></summary>
+          <div class="panel-body"><div class="mini-grid"><article class="mini-card flag-ok"><div class="mini-card-top">
         <span class="pill flag-ok">On track</span><span class="type-badge">PROJECT</span>
       </div>
       <h4>claude_design_dcf_system</h4>
@@ -624,37 +633,37 @@
       <h4>weekly_unblock_audit_2026-07-21</h4>
       <p class="na">Evans: work the 9-item checklist in [[project_cross_reference_2026-07-21]] one by one</p>
       <p class="meta">touched 2026-07-21</p>
-      </article></div>
-        </div>
+      </article></div></div>
+        </details>
         
-        <div class="panel" id="parked">
-          <div class="panel-head"><h3>⏸ Parked</h3><span class="count">1 items</span></div>
-          <div class="mini-grid"><article class="mini-card flag-deferred"><div class="mini-card-top">
+        <details class="panel" id="parked" open>
+          <summary class="panel-head"><h3>⏸ Parked</h3><span class="count">1 items</span></summary>
+          <div class="panel-body"><div class="mini-grid"><article class="mini-card flag-deferred"><div class="mini-card-top">
         <span class="pill flag-deferred">Deferred</span><span class="type-badge">PROJECT</span>
       </div>
       <h4>industree_recovery_status</h4>
       <p class="na">2026-08-01 follow-up: triage Payhip access or decommission</p>
       <p class="meta">touched 2026-07-17</p>
-      </article></div>
-        </div>
+      </article></div></div>
+        </details>
       </div>
 
       <div class="grid3">
-        <div class="panel">
-          <div class="panel-head"><h3>🚀 Quick Launch</h3></div>
-          <p class="empty-state">No launchers configured.</p>
-        </div>
-        <div class="panel" id="activity">
-          <div class="panel-head"><h3>📋 Activity Feed</h3><span class="count">live</span></div>
-          <p class="empty-state">No activity logged yet.</p>
-        </div>
-        <div class="panel">
-          <div class="panel-head"><h3>🔔 Alerts</h3><span class="count">recent</span></div>
-          <p class="empty-state">No alerts sent yet.</p>
-        </div>
+        <details class="panel" open>
+          <summary class="panel-head"><h3>🚀 Quick Launch</h3></summary>
+          <div class="panel-body"><p class="empty-state">No launchers configured.</p></div>
+        </details>
+        <details class="panel" id="activity" open>
+          <summary class="panel-head"><h3>📋 Activity Feed</h3><span class="count">live</span></summary>
+          <div class="panel-body"><p class="empty-state">No activity logged yet.</p></div>
+        </details>
+        <details class="panel" open>
+          <summary class="panel-head"><h3>🔔 Alerts</h3><span class="count">recent</span></summary>
+          <div class="panel-body"><p class="empty-state">No alerts sent yet.</p></div>
+        </details>
       </div>
     </main>
-    <footer>Built in Obsidian. Powered by focus. Designed for execution. · Jul 23, 2026 · 12:05 AM</footer>
+    <footer>Built in Obsidian. Powered by focus. Designed for execution. · Jul 23, 2026 · 12:13 AM</footer>
   </div>
 </div>
 </div>
