@@ -21,20 +21,20 @@
 </script>
 <style>
   :root {
-    --navy: #1B3A4B; --navy-deep: #0f2634; --gold: #E8A838; --gold-deep: #b9852c;
-    --bg: #f6f7f9; --surface: #ffffff; --surface-2: #f0f2f5;
-    --border: #e2e6ea; --text: #1c2733; --muted: #66788a;
-    --red: #dc4c3f; --green: #2f9268; --amber: #d98a3d;
-  }
-  :root[data-theme="dark"] {
     --navy: #1B3A4B; --navy-deep: #0c1e28; --gold: #E8A838; --gold-deep: #e0a544;
-    --bg: #0a1420; --surface: #111f29; --surface-2: #16283a;
-    --border: #253844; --text: #eef3f5; --muted: #86a0ac;
+    --bg: #0a1420; --surface: #111f29; --surface-2: #16283a; --surface-3: #1c2f42;
+    --border: #253844; --border-strong: #324b5a; --text: #eef3f5; --muted: #86a0ac; --faint: #4d6070;
     --red: #e2574c; --green: #3fae7a; --amber: #e0a04a;
+  }
+  :root[data-theme="light"] {
+    --navy: #1B3A4B; --navy-deep: #0f2634; --gold: #E8A838; --gold-deep: #b9852c;
+    --bg: #f6f7f9; --surface: #ffffff; --surface-2: #f0f2f5; --surface-3: #e7eaee;
+    --border: #e2e6ea; --border-strong: #cdd4da; --text: #1c2733; --muted: #66788a; --faint: #98a4ae;
+    --red: #dc4c3f; --green: #2f9268; --amber: #d98a3d;
   }
   * { box-sizing: border-box; }
   body {
-    margin: 0; background: var(--bg); color: var(--text);
+    margin: 0; background: var(--bg); color: var(--text); font-variant-numeric: tabular-nums;
     font-family: 'Inter', -apple-system, "Segoe UI", Roboto, sans-serif; -webkit-font-smoothing: antialiased;
   }
   a { color: inherit; }
@@ -109,7 +109,8 @@
   .who .name { font-weight: 700; font-size: 0.86rem; }
   main { max-width: 1320px; margin: 0 auto; padding: 22px 28px 60px; }
   .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; margin-bottom: 22px; }
-  .kpi-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px; }
+  .kpi-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px; transition: border-color 0.15s ease, transform 0.15s ease; }
+  .kpi-card:hover { border-color: var(--border-strong); transform: translateY(-2px); }
   .kpi-top { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
   .kpi-icon { font-size: 0.95rem; }
   .kpi-label { color: var(--muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; }
@@ -118,6 +119,23 @@
   .kpi-delta.muted { color: var(--muted); }
   .spark { display: block; margin-top: 8px; }
   .grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; margin-bottom: 16px; }
+  /* Workload-by-category bars */
+  .bar-row { display: flex; align-items: center; gap: 10px; padding: 7px 0; }
+  .bar-label { width: 122px; flex: none; font-size: 0.8rem; }
+  .bar-track { flex: 1; height: 8px; background: var(--surface-2); border-radius: 999px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 999px; transition: width 0.3s ease; }
+  .bar-val { width: 26px; text-align: right; font-family: 'Fraunces', serif; font-weight: 700; font-size: 0.85rem; color: var(--muted); }
+  /* Real month calendar */
+  .cal-title { font-family: 'Fraunces', serif; font-weight: 800; font-size: 0.92rem; margin: 0 0 10px; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+  .cal-dow { font-size: 0.6rem; font-weight: 700; color: var(--faint); text-align: center; padding: 4px 0; letter-spacing: 0.05em; }
+  .cal-day { aspect-ratio: 1; border-radius: 8px; background: var(--surface-2); border: 1px solid var(--border);
+    font-size: 0.72rem; padding: 5px; position: relative; color: var(--muted); }
+  .cal-day.other { background: transparent; border-color: transparent; }
+  .cal-day.today { border-color: var(--gold); color: var(--text); font-weight: 800; }
+  .cal-dot { position: absolute; bottom: 5px; left: 5px; width: 5px; height: 5px; border-radius: 50%; background: var(--gold); }
+  /* Quick Launch tile grid */
+  .launch-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 9px; }
   .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px 18px; scroll-margin-top: 54px; }
   .panel-head {
     display: flex; align-items: center; gap: 8px; margin-bottom: 12px; cursor: pointer;
@@ -167,9 +185,11 @@
   .deadline-body { flex: 1; min-width: 0; }
   .deadline-body h4 { margin: 0; font-size: 0.82rem; font-weight: 700; }
   .deadline-body .meta { margin: 2px 0 0; font-size: 0.72rem; color: var(--muted); }
-  .launch-card { display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 10px; background: var(--surface-2); text-decoration: none; margin-bottom: 8px; }
-  .launch-icon { font-size: 1.1rem; }
-  .launch-name { flex: 1; font-size: 0.82rem; font-weight: 700; }
+  .launch-card { display: flex; align-items: center; gap: 9px; padding: 11px; border-radius: 11px; background: var(--surface-2);
+    border: 1px solid var(--border); text-decoration: none; transition: border-color 0.15s ease, transform 0.12s ease; }
+  .launch-card:hover { border-color: var(--gold-deep); transform: translateY(-1px); }
+  .launch-icon { font-size: 1.05rem; }
+  .launch-name { flex: 1; font-size: 0.78rem; font-weight: 700; }
   .launch-arrow { color: var(--gold-deep); }
   .activity-item, .alert-item { display: flex; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--border); }
   .activity-item:last-child, .alert-item:last-child { border-bottom: none; }
@@ -210,7 +230,7 @@
 <div class="tab-panel active" id="panel-dashboard">
 <div class="shell">
   <nav class="sidebar">
-    <div class="brand"><div class="brand-mark">CC</div><div><div class="name">COMMAND<br>CENTER</div><div class="ver">v2.0</div></div></div>
+    <div class="brand"><div class="brand-mark">CC</div><div><div class="name">COMMAND<br>CENTER</div><div class="ver">v3.0</div></div></div>
     <a class="nav-item" href="#top"><span class="nav-icon">🏠</span><span class="nav-label">Overview</span></a>
 <a class="nav-item" href="#attention"><span class="nav-icon">🚨</span><span class="nav-label">Attention</span><span class="nav-count">9</span></a>
 <a class="nav-item" href="#next-actions"><span class="nav-icon">⚡</span><span class="nav-label">Next Actions</span><span class="nav-count">20</span></a>
@@ -224,12 +244,12 @@
   <div class="content">
     <header class="top" id="top">
       <div>
-        <h1>Good morning, Evans.</h1>
-        <p class="sub">Jul 25, 2026 · 12:24 AM · Public mirror — Job Search and interview detail intentionally excluded.</p>
+        <h1>Good afternoon, Evans.</h1>
+        <p class="sub">Jul 25, 2026 · 04:55 PM · Public mirror — Job Search and interview detail intentionally excluded.</p>
       </div>
       <p class="tagline">Clarity today. Freedom tomorrow.<br>Focus &gt; Execute &gt; Compound.</p>
       <div class="who">
-        <button type="button" id="themeToggle" class="theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">🌙</button>
+        <button type="button" id="themeToggle" class="theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">☀️</button>
         <div class="avatar-fallback">ED</div><span class="name">Evans Díaz</span>
       </div>
     </header>
@@ -260,6 +280,38 @@
       <div class="kpi-delta muted">no change</div>
       <svg width="72" height="24" class="spark" viewBox="0 0 72 24"><polyline points="0.0,2.0 18.0,2.0 36.0,2.0 54.0,22.0 72.0,22.0" fill="none" stroke="#1B3A4B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </div></div>
+
+      <div class="grid3">
+        <details class="panel" id="workload" open>
+          <summary class="panel-head"><h3>📊 Workload by Category</h3><span class="count">live counts</span></summary>
+          <div class="panel-body"><div class="bar-row">
+      <div class="bar-label">🚨 Attention</div>
+      <div class="bar-track"><div class="bar-fill" style="width:45%;background:var(--red)"></div></div>
+      <div class="bar-val">9</div>
+    </div><div class="bar-row">
+      <div class="bar-label">⚡ Next Actions</div>
+      <div class="bar-track"><div class="bar-fill" style="width:100%;background:var(--gold)"></div></div>
+      <div class="bar-val">20</div>
+    </div><div class="bar-row">
+      <div class="bar-label">👥 Clients</div>
+      <div class="bar-track"><div class="bar-fill" style="width:20%;background:var(--gold)"></div></div>
+      <div class="bar-val">4</div>
+    </div><div class="bar-row">
+      <div class="bar-label">🏗 Projects</div>
+      <div class="bar-track"><div class="bar-fill" style="width:85%;background:var(--gold)"></div></div>
+      <div class="bar-val">17</div>
+    </div><div class="bar-row">
+      <div class="bar-label">⏸ Parked</div>
+      <div class="bar-track"><div class="bar-fill" style="width:5%;background:var(--muted)"></div></div>
+      <div class="bar-val">1</div>
+    </div></div>
+        </details>
+        <details class="panel" id="calendar" open>
+          <summary class="panel-head"><h3>🗓 Calendar</h3><span class="count">this month</span></summary>
+          <div class="panel-body"><div class="cal-title">July 2026</div>
+    <div class="cal-grid"><div class="cal-dow">SUN</div><div class="cal-dow">MON</div><div class="cal-dow">TUE</div><div class="cal-dow">WED</div><div class="cal-dow">THU</div><div class="cal-dow">FRI</div><div class="cal-dow">SAT</div><div class="cal-day other"></div><div class="cal-day other"></div><div class="cal-day other"></div><div class="cal-day">1</div><div class="cal-day">2</div><div class="cal-day">3</div><div class="cal-day">4</div><div class="cal-day">5</div><div class="cal-day">6</div><div class="cal-day">7</div><div class="cal-day">8</div><div class="cal-day">9</div><div class="cal-day">10</div><div class="cal-day">11</div><div class="cal-day">12</div><div class="cal-day">13</div><div class="cal-day">14</div><div class="cal-day">15</div><div class="cal-day">16</div><div class="cal-day">17</div><div class="cal-day">18</div><div class="cal-day">19</div><div class="cal-day">20</div><div class="cal-day">21</div><div class="cal-day">22</div><div class="cal-day">23</div><div class="cal-day">24</div><div class="cal-day today">25</div><div class="cal-day">26</div><div class="cal-day">27</div><div class="cal-day">28</div><div class="cal-day">29</div><div class="cal-day">30</div><div class="cal-day">31</div><div class="cal-day other"></div></div></div>
+        </details>
+      </div>
 
       <div class="grid3">
         <details class="panel" id="attention" open>
@@ -659,7 +711,7 @@
         </details>
       </div>
     </main>
-    <footer>Built in Obsidian. Powered by focus. Designed for execution. · Jul 25, 2026 · 12:24 AM</footer>
+    <footer>Built in Obsidian. Powered by focus. Designed for execution. · Jul 25, 2026 · 04:55 PM</footer>
   </div>
 </div>
 </div>
@@ -731,7 +783,7 @@ function ccCloseTab(id) {
 (function () {
   var btn = document.getElementById('themeToggle');
   var root = document.documentElement;
-  function current() { return root.getAttribute('data-theme') || 'light'; }
+  function current() { return root.getAttribute('data-theme') || 'dark'; }
   function apply(theme) {
     root.setAttribute('data-theme', theme);
     btn.textContent = theme === 'dark' ? '☀️' : '🌙';
