@@ -141,6 +141,28 @@
   .cal-day.other { background: transparent; border-color: transparent; }
   .cal-day.today { border-color: var(--gold); color: var(--text); font-weight: 800; }
   .cal-dot { position: absolute; bottom: 5px; left: 5px; width: 5px; height: 5px; border-radius: 50%; background: var(--gold); }
+  /* Orientation block — plain-English framing above the KPI row, so the
+     dashboard states what it is and where its numbers come from before
+     showing any of them. Adopted from the EverEffect build 2026-07-26, where
+     it is the reason that page reads as finished rather than as a pile of
+     widgets. */
+  .bottomline {
+    background: linear-gradient(120deg, rgba(232,168,56,0.13), rgba(232,168,56,0.03));
+    border: 1px solid rgba(232,168,56,0.28);
+    border-radius: 14px;
+    padding: 16px 19px;
+    margin-bottom: 18px;
+    font-size: 13px;
+    line-height: 1.65;
+    color: var(--muted);
+  }
+  .bottomline b { color: var(--text); font-weight: 700; }
+  .bottomline code {
+    font-family: var(--font-mono); font-size: 0.86em;
+    background: var(--surface-2); padding: 1px 5px; border-radius: 4px; color: var(--gold);
+  }
+  .bottomline .sm { display: block; margin-top: 9px; font-size: 11.5px; color: var(--faint); }
+
   /* Pipeline / Deals panel */
   .pipeline-snapshot { display: flex; gap: 18px; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
   .pipeline-snapshot > div { display: flex; flex-direction: column; }
@@ -263,7 +285,7 @@
     <header class="top" id="top">
       <div>
         <h1>Good evening, Evans.</h1>
-        <p class="sub">Jul 26, 2026 · 06:30 PM · Public mirror — Job Search and interview detail intentionally excluded.</p>
+        <p class="sub">Jul 26, 2026 · 07:08 PM · Public mirror — Job Search and interview detail intentionally excluded.</p>
       </div>
       <p class="tagline">Clarity today. Freedom tomorrow.<br>Focus &gt; Execute &gt; Compound.</p>
       <div class="who">
@@ -272,6 +294,23 @@
       </div>
     </header>
     <main>
+      <!-- Orientation block. The EverEffect dashboard opens with a plain-English
+           "here is what you are looking at" paragraph before a single number,
+           and it is the reason that build reads as finished rather than as a
+           pile of widgets. Ours had none: it went straight from a greeting into
+           seven KPI cards with no statement of what any of them mean or where
+           they come from. Added 2026-07-26 after Evans asked for a gap audit
+           against that dashboard. -->
+      <div class="bottomline">
+        Everything here is read live from the vault &mdash; one note per client, project
+        or opportunity. <b>Nothing on this page is typed in by hand</b>, so a stale number
+        means a stale note, not a broken dashboard.
+        <b>Red needs you. Amber is drifting. Green is running.</b>
+        <span class="sm">Counts come from note frontmatter (<code>status</code>, <code>next_action</code>,
+        <code>last_touched</code>). Money comes only from notes carrying explicit deal fields &mdash;
+        an engagement with no agreed figure is left out of the totals rather than estimated into them.</span>
+      </div>
+
       <div class="kpis"><div class="kpi-card">
       <div class="kpi-top"><span class="kpi-icon">⚠️</span><span class="kpi-label">Needs Attention</span></div>
       <div class="kpi-value">9</div>
@@ -791,7 +830,7 @@
         </details>
       </div>
     </main>
-    <footer>Built in Obsidian. Powered by focus. Designed for execution. · Jul 26, 2026 · 06:30 PM</footer>
+    <footer>Built in Obsidian. Powered by focus. Designed for execution. · Jul 26, 2026 · 07:08 PM</footer>
   </div>
 </div>
 </div>
