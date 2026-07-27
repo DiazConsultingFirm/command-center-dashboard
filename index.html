@@ -116,15 +116,49 @@
   .who .name { font-weight: 700; font-size: 0.86rem; }
   main { max-width: 1320px; margin: 0 auto; padding: 22px 28px 60px; }
   .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; margin-bottom: 22px; }
-  .kpi-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px; transition: border-color 0.15s ease, transform 0.15s ease; }
+  .kpi-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px; transition: border-color 0.15s ease, transform 0.15s ease;
+    opacity: 0; animation: kpiIn 0.42s ease forwards; }
   .kpi-card:hover { border-color: var(--border-strong); transform: translateY(-2px); }
-  .kpi-top { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+  .kpi-card:nth-child(1) { animation-delay: 0.02s; } .kpi-card:nth-child(2) { animation-delay: 0.08s; }
+  .kpi-card:nth-child(3) { animation-delay: 0.14s; } .kpi-card:nth-child(4) { animation-delay: 0.20s; }
+  .kpi-card:nth-child(5) { animation-delay: 0.26s; } .kpi-card:nth-child(6) { animation-delay: 0.32s; }
+  .kpi-card:nth-child(7) { animation-delay: 0.38s; }
+  @keyframes kpiIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  .kpi-top { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; position: relative; }
   .kpi-icon { font-size: 0.95rem; }
-  .kpi-label { color: var(--muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; }
+  .kpi-label { color: var(--muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; flex: 1; }
   .kpi-value { font-family: 'Fraunces', serif; font-size: 1.7rem; font-weight: 800; line-height: 1; }
   .kpi-delta { font-size: 0.72rem; color: var(--green); margin-top: 4px; }
   .kpi-delta.muted { color: var(--muted); }
   .spark { display: block; margin-top: 8px; }
+  .spark polyline { stroke-dasharray: 200; stroke-dashoffset: 200; animation: sparkDraw 0.7s ease 0.3s forwards; }
+  @keyframes sparkDraw { to { stroke-dashoffset: 0; } }
+  /* Per-tile provenance — click ⓘ to flip and see the exact source + last-update
+     stamp for that number. Mirrors the allinone dossier's flip-to-source pattern
+     so every KPI, not just narrative claims, traces to something real. */
+  .kpi-info-btn { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 0.82rem;
+    line-height: 1; padding: 2px; border-radius: 4px; transition: color 0.15s ease, background 0.15s ease; }
+  .kpi-info-btn:hover { color: var(--text); background: var(--surface-2); }
+  .kpi-flip { perspective: 1000px; overflow: visible; }
+  .kpi-flip-inner { position: relative; min-height: 100%; transform-style: preserve-3d; transition: transform 0.45s ease; }
+  .kpi-flip.flipped .kpi-flip-inner { transform: rotateY(180deg); }
+  .kpi-flip-face { backface-visibility: hidden; }
+  .kpi-flip-front { position: relative; }
+  .kpi-flip-back { position: absolute; inset: 0; transform: rotateY(180deg); display: flex; flex-direction: column;
+    gap: 4px; }
+  .kpi-source-eyebrow { margin: 0; font-size: 0.65rem; letter-spacing: 0.06em; color: var(--gold); font-weight: 800; }
+  .kpi-source-text { margin: 0; font-size: 0.74rem; color: var(--text); line-height: 1.35; }
+  .kpi-source-text code { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; background: var(--surface-2);
+    padding: 1px 4px; border-radius: 4px; }
+  .kpi-source-stamp { margin: 2px 0 0; font-size: 0.66rem; color: var(--muted); }
+  .kpi-back-btn { margin-top: auto; align-self: flex-start; background: none; border: 1px solid var(--border);
+    color: var(--muted); font-size: 0.68rem; font-weight: 700; padding: 3px 9px; border-radius: 6px; cursor: pointer; }
+  .kpi-back-btn:hover { color: var(--text); border-color: var(--border-strong); }
+  @media (prefers-reduced-motion: reduce) {
+    .kpi-card { animation: none; opacity: 1; }
+    .spark polyline { animation: none; stroke-dashoffset: 0; }
+    .kpi-flip-inner { transition: none; }
+  }
   .grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; margin-bottom: 16px; }
   /* Workload-by-category bars */
   .bar-row { display: flex; align-items: center; gap: 10px; padding: 7px 0; }
@@ -285,7 +319,7 @@
     <header class="top" id="top">
       <div>
         <h1>Good morning, Evans.</h1>
-        <p class="sub">Jul 27, 2026 · 08:24 AM · Public mirror — Job Search and interview detail intentionally excluded.</p>
+        <p class="sub">Jul 27, 2026 · 09:24 AM · Public mirror — Job Search and interview detail intentionally excluded.</p>
       </div>
       <p class="tagline">Clarity today. Freedom tomorrow.<br>Focus &gt; Execute &gt; Compound.</p>
       <div class="who">
@@ -311,31 +345,66 @@
         an engagement with no agreed figure is left out of the totals rather than estimated into them.</span>
       </div>
 
-      <div class="kpis"><div class="kpi-card">
-      <div class="kpi-top"><span class="kpi-icon">⚠️</span><span class="kpi-label">Needs Attention</span></div>
-      <div class="kpi-value">9</div>
+      <div class="kpis"><div class="kpi-card kpi-flip">
+      <div class="kpi-flip-inner">
+        <div class="kpi-flip-face kpi-flip-front"><div class="kpi-top"><span class="kpi-icon">⚠️</span><span class="kpi-label">Needs Attention</span>
+        <button type="button" class="kpi-info-btn" aria-label="Show source for Needs Attention">ⓘ</button></div>
+      <div class="kpi-value" data-count-to="9">9</div>
       <div class="kpi-delta muted">no change</div>
-      <svg width="72" height="24" class="spark" viewBox="0 0 72 24"><polyline points="0.0,2.0 12.0,2.0 24.0,22.0 36.0,22.0 48.0,22.0 60.0,22.0 72.0,22.0" fill="none" stroke="#dc4c3f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </div><div class="kpi-card">
-      <div class="kpi-top"><span class="kpi-icon">⚡</span><span class="kpi-label">Active Items</span></div>
-      <div class="kpi-value">25</div>
+      <svg width="72" height="24" class="spark" viewBox="0 0 72 24"><polyline points="0.0,2.0 12.0,2.0 24.0,22.0 36.0,22.0 48.0,22.0 60.0,22.0 72.0,22.0" fill="none" stroke="#dc4c3f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="kpi-flip-face kpi-flip-back"><p class="kpi-source-eyebrow">SOURCE</p>
+        <p class="kpi-source-text">Vault notes where <code>status: blocked</code>, or <code>status: active</code> with no touch in over 7 days.</p>
+        <p class="kpi-source-stamp">Updated Jul 27, 2026 · 09:24 AM</p>
+        <button type="button" class="kpi-back-btn">← Back</button></div>
+      </div>
+    </div><div class="kpi-card kpi-flip">
+      <div class="kpi-flip-inner">
+        <div class="kpi-flip-face kpi-flip-front"><div class="kpi-top"><span class="kpi-icon">⚡</span><span class="kpi-label">Active Items</span>
+        <button type="button" class="kpi-info-btn" aria-label="Show source for Active Items">ⓘ</button></div>
+      <div class="kpi-value" data-count-to="25">25</div>
       <div class="kpi-delta muted">no change</div>
-      <svg width="72" height="24" class="spark" viewBox="0 0 72 24"><polyline points="0.0,22.0 12.0,18.0 24.0,18.0 36.0,18.0 48.0,18.0 60.0,2.0 72.0,2.0" fill="none" stroke="#1B3A4B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </div><div class="kpi-card">
-      <div class="kpi-top"><span class="kpi-icon">👥</span><span class="kpi-label">Clients</span></div>
-      <div class="kpi-value">5</div>
+      <svg width="72" height="24" class="spark" viewBox="0 0 72 24"><polyline points="0.0,22.0 12.0,18.0 24.0,18.0 36.0,18.0 48.0,18.0 60.0,2.0 72.0,2.0" fill="none" stroke="#1B3A4B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="kpi-flip-face kpi-flip-back"><p class="kpi-source-eyebrow">SOURCE</p>
+        <p class="kpi-source-text">Vault notes with a <code>status</code> set, excluding <code>deferred</code>.</p>
+        <p class="kpi-source-stamp">Updated Jul 27, 2026 · 09:24 AM</p>
+        <button type="button" class="kpi-back-btn">← Back</button></div>
+      </div>
+    </div><div class="kpi-card kpi-flip">
+      <div class="kpi-flip-inner">
+        <div class="kpi-flip-face kpi-flip-front"><div class="kpi-top"><span class="kpi-icon">👥</span><span class="kpi-label">Clients</span>
+        <button type="button" class="kpi-info-btn" aria-label="Show source for Clients">ⓘ</button></div>
+      <div class="kpi-value" data-count-to="5">5</div>
       <div class="kpi-delta muted">no change</div>
-      <svg width="72" height="24" class="spark" viewBox="0 0 72 24"><polyline points="0.0,22.0 12.0,22.0 24.0,22.0 36.0,22.0 48.0,22.0 60.0,2.0 72.0,2.0" fill="none" stroke="#1B3A4B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </div><div class="kpi-card">
-      <div class="kpi-top"><span class="kpi-icon">🏗</span><span class="kpi-label">Projects</span></div>
-      <div class="kpi-value">19</div>
+      <svg width="72" height="24" class="spark" viewBox="0 0 72 24"><polyline points="0.0,22.0 12.0,22.0 24.0,22.0 36.0,22.0 48.0,22.0 60.0,2.0 72.0,2.0" fill="none" stroke="#1B3A4B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="kpi-flip-face kpi-flip-back"><p class="kpi-source-eyebrow">SOURCE</p>
+        <p class="kpi-source-text">Vault notes tagged <code>client</code> in frontmatter.</p>
+        <p class="kpi-source-stamp">Updated Jul 27, 2026 · 09:24 AM</p>
+        <button type="button" class="kpi-back-btn">← Back</button></div>
+      </div>
+    </div><div class="kpi-card kpi-flip">
+      <div class="kpi-flip-inner">
+        <div class="kpi-flip-face kpi-flip-front"><div class="kpi-top"><span class="kpi-icon">🏗</span><span class="kpi-label">Projects</span>
+        <button type="button" class="kpi-info-btn" aria-label="Show source for Projects">ⓘ</button></div>
+      <div class="kpi-value" data-count-to="19">19</div>
       <div class="kpi-delta muted">no change</div>
-      <svg width="72" height="24" class="spark" viewBox="0 0 72 24"><polyline points="0.0,22.0 12.0,22.0 24.0,22.0 36.0,22.0 48.0,22.0 60.0,2.0 72.0,2.0" fill="none" stroke="#1B3A4B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </div><div class="kpi-card">
-      <div class="kpi-top"><span class="kpi-icon">📅</span><span class="kpi-label">Upcoming</span></div>
-      <div class="kpi-value">0</div>
+      <svg width="72" height="24" class="spark" viewBox="0 0 72 24"><polyline points="0.0,22.0 12.0,22.0 24.0,22.0 36.0,22.0 48.0,22.0 60.0,2.0 72.0,2.0" fill="none" stroke="#1B3A4B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="kpi-flip-face kpi-flip-back"><p class="kpi-source-eyebrow">SOURCE</p>
+        <p class="kpi-source-text">Vault notes tagged <code>project</code> with an active (non-deferred) status.</p>
+        <p class="kpi-source-stamp">Updated Jul 27, 2026 · 09:24 AM</p>
+        <button type="button" class="kpi-back-btn">← Back</button></div>
+      </div>
+    </div><div class="kpi-card kpi-flip">
+      <div class="kpi-flip-inner">
+        <div class="kpi-flip-face kpi-flip-front"><div class="kpi-top"><span class="kpi-icon">📅</span><span class="kpi-label">Upcoming</span>
+        <button type="button" class="kpi-info-btn" aria-label="Show source for Upcoming">ⓘ</button></div>
+      <div class="kpi-value" data-count-to="0">0</div>
       <div class="kpi-delta muted">no change</div>
-      <svg width="72" height="24" class="spark" viewBox="0 0 72 24"><polyline points="0.0,2.0 12.0,2.0 24.0,2.0 36.0,22.0 48.0,22.0 60.0,22.0 72.0,22.0" fill="none" stroke="#1B3A4B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <svg width="72" height="24" class="spark" viewBox="0 0 72 24"><polyline points="0.0,2.0 12.0,2.0 24.0,2.0 36.0,22.0 48.0,22.0 60.0,22.0 72.0,22.0" fill="none" stroke="#1B3A4B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="kpi-flip-face kpi-flip-back"><p class="kpi-source-eyebrow">SOURCE</p>
+        <p class="kpi-source-text">Notes with <code>interview_date</code> in the next 30 days.</p>
+        <p class="kpi-source-stamp">Updated Jul 27, 2026 · 09:24 AM</p>
+        <button type="button" class="kpi-back-btn">← Back</button></div>
+      </div>
     </div></div>
 
       <div class="grid3">
@@ -396,13 +465,6 @@
 <article class="mini-card flag-blocked"><div class="mini-card-top">
         <span class="pill flag-blocked">Blocked</span><span class="type-badge">PROJECT</span>
       </div>
-      <h4>income_stream_2_tiktok_affiliate</h4>
-      <p class="na">Evans: create TikTok account + pick niche</p>
-      <p class="meta">4d idle</p>
-      </article>
-<article class="mini-card flag-blocked"><div class="mini-card-top">
-        <span class="pill flag-blocked">Blocked</span><span class="type-badge">PROJECT</span>
-      </div>
       <h4>project_cross_reference_2026-07-21</h4>
       <p class="na">Evans: work the checklist below, in order — items 1-2 unlock the most downstream work</p>
       <p class="meta">4d idle</p>
@@ -448,6 +510,13 @@
       <h4>robert_davis_growth_strategy</h4>
       <p class="na">Awaiting Robert&#x27;s b-roll recording time</p>
       <p class="meta">1d idle</p>
+      </article>
+<article class="mini-card flag-blocked"><div class="mini-card-top">
+        <span class="pill flag-blocked">Blocked</span><span class="type-badge">PROJECT</span>
+      </div>
+      <h4>income_stream_2_tiktok_affiliate</h4>
+      <p class="na">Evans: create TikTok account + pick niche</p>
+      <p class="meta">today</p>
       </article></div></div>
         </details>
         <details class="panel" id="next-actions" open>
@@ -485,13 +554,6 @@
       </div>
       <h4>factory_learnings_audit_2026-07-19</h4>
       <p class="na">Push + deploy merge 4645ce2; Design-feature pilot</p>
-      <p class="meta">touched 2026-07-23</p>
-      </article>
-<article class="mini-card flag-blocked"><div class="mini-card-top">
-        <span class="pill flag-blocked">Blocked</span><span class="type-badge">PROJECT</span>
-      </div>
-      <h4>income_stream_2_tiktok_affiliate</h4>
-      <p class="na">Evans: create TikTok account + pick niche</p>
       <p class="meta">touched 2026-07-23</p>
       </article>
 <article class="mini-card flag-ok"><div class="mini-card-top">
@@ -549,13 +611,6 @@
       <h4>weekly_wall_usage_tool</h4>
       <p class="na">Evans: open the tool, read current % from Claude.ai usage page, enter it to calibrate</p>
       <p class="meta">touched 2026-07-23</p>
-      </article>
-<article class="mini-card flag-ok"><div class="mini-card-top">
-        <span class="pill flag-ok">On track</span><span class="type-badge">PROJECT</span>
-      </div>
-      <h4>command_center_dashboard_build</h4>
-      <p class="na">&#x27;Evans: confirm Euro Motorsport pitch status (live prospect or dead concept)</p>
-      <p class="meta">touched 2026-07-24</p>
       </article>
 <article class="mini-card flag-ok"><div class="mini-card-top">
         <span class="pill flag-ok">On track</span>
@@ -619,6 +674,20 @@
       <h4>techparsed_explainer_channel_revival</h4>
       <p class="na">Execute Phase 1-2 (lock niche, fix script template) then Phase 3 visual upgrade via free Higgsfield generation</p>
       <p class="meta">touched 2026-07-26</p>
+      </article>
+<article class="mini-card flag-ok"><div class="mini-card-top">
+        <span class="pill flag-ok">On track</span><span class="type-badge">PROJECT</span>
+      </div>
+      <h4>command_center_dashboard_build</h4>
+      <p class="na">&#x27;Evans: confirm Euro Motorsport pitch status (live prospect or dead concept)</p>
+      <p class="meta">touched 2026-07-27</p>
+      </article>
+<article class="mini-card flag-blocked"><div class="mini-card-top">
+        <span class="pill flag-blocked">Blocked</span><span class="type-badge">PROJECT</span>
+      </div>
+      <h4>income_stream_2_tiktok_affiliate</h4>
+      <p class="na">Evans: create TikTok account + pick niche</p>
+      <p class="meta">touched 2026-07-27</p>
       </article></div></div>
         </details>
         <details class="panel" id="deadlines" open>
@@ -680,7 +749,7 @@
       </div>
       <h4>command_center_dashboard_build</h4>
       <p class="na">&#x27;Evans: confirm Euro Motorsport pitch status (live prospect or dead concept)</p>
-      <p class="meta">touched 2026-07-24</p>
+      <p class="meta">touched 2026-07-27</p>
       </article>
 <article class="mini-card flag-ok"><div class="mini-card-top">
         <span class="pill flag-ok">On track</span><span class="type-badge">CLIENT</span>
@@ -729,7 +798,7 @@
       </div>
       <h4>income_stream_2_tiktok_affiliate</h4>
       <p class="na">Evans: create TikTok account + pick niche</p>
-      <p class="meta">touched 2026-07-23</p>
+      <p class="meta">touched 2026-07-27</p>
       </article>
 <article class="mini-card flag-ok"><div class="mini-card-top">
         <span class="pill flag-ok">On track</span><span class="type-badge">PROJECT</span>
@@ -830,7 +899,7 @@
         </details>
       </div>
     </main>
-    <footer>Built in Obsidian. Powered by focus. Designed for execution. · Jul 27, 2026 · 08:24 AM</footer>
+    <footer>Built in Obsidian. Powered by focus. Designed for execution. · Jul 27, 2026 · 09:24 AM</footer>
   </div>
 </div>
 </div>
@@ -954,6 +1023,36 @@ document.querySelectorAll('.flip-card').forEach(function (cardEl) {
       });
   });
 });
+
+// KPI provenance flip — click the ⓘ to see source + last-update stamp, click
+// back to return. Pure client-side, no server round trip (read-only info).
+document.querySelectorAll('.kpi-flip').forEach(function (cardEl) {
+  var infoBtn = cardEl.querySelector('.kpi-info-btn');
+  var backBtn = cardEl.querySelector('.kpi-back-btn');
+  if (infoBtn) infoBtn.addEventListener('click', function () { cardEl.classList.add('flipped'); });
+  if (backBtn) backBtn.addEventListener('click', function () { cardEl.classList.remove('flipped'); });
+});
+
+// Count-up motion pass — real value already sits in the markup (data-count-to
+// mirrors the visible text), so a no-JS load still shows the correct number.
+// JS only animates the transition on top of that, per the dashboard standard's
+// "visible by default" rule.
+if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  document.querySelectorAll('.kpi-value[data-count-to]').forEach(function (el) {
+    var target = parseInt(el.getAttribute('data-count-to'), 10);
+    if (isNaN(target)) return;
+    var start = null;
+    var duration = 500;
+    function step(ts) {
+      if (start === null) start = ts;
+      var p = Math.min((ts - start) / duration, 1);
+      el.textContent = Math.round(target * (1 - Math.pow(1 - p, 3)));
+      if (p < 1) requestAnimationFrame(step);
+      else el.textContent = target;
+    }
+    requestAnimationFrame(step);
+  });
+}
 </script>
 </body>
 </html>
