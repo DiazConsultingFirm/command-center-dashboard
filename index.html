@@ -389,15 +389,46 @@
   footer { text-align: center; color: var(--muted); font-size: 0.75rem; padding: 20px; }
   /* flip-card */
   .flip-card { perspective: 1100px; padding: 0; background: transparent; border: none; }
+  /* BOTH faces used to be `position: absolute; inset: 0`, which left
+     .flip-inner with no intrinsic height at all — only a 112px min-height
+     sized for the old compact card. The taller rich card then overflowed its
+     own container and printed straight over the card below it. That was the
+     "jumbled" text: not a wrapping bug, a collapsed flip container.
+     The FRONT face is now in normal flow and defines the height; only the
+     BACK is absolutely positioned over it. syncFlipHeights() in the script
+     below then grows the container if the back (textarea + buttons) needs
+     more room than the front. */
   .flip-inner { position: relative; min-height: 112px; transform-style: preserve-3d; transition: transform 0.4s ease; }
   .flip-card.flipped .flip-inner { transform: rotateY(180deg); }
-  .flip-face { position: absolute; inset: 0; backface-visibility: hidden; padding: 10px 12px; border-radius: 8px; box-sizing: border-box; display: flex; flex-direction: column; }
-  .flip-front { background: var(--surface-2); border-left: 3px solid var(--muted); }
+  .flip-face { backface-visibility: hidden; padding: 10px 12px; border-radius: 8px; box-sizing: border-box; display: flex; flex-direction: column; }
+  .flip-front { position: relative; background: var(--surface-2); border-left: 3px solid var(--muted); }
+  .flip-card.flipped .flip-front { visibility: hidden; }
   .flip-card.flag-blocked .flip-front { border-left-color: var(--red); }
   .flip-card.flag-aging .flip-front { border-left-color: var(--amber); }
   .flip-card.flag-ok .flip-front { border-left-color: var(--green); }
-  .flip-back { background: #fffaf0; border: 1px solid var(--gold); transform: rotateY(180deg); gap: 6px; }
-  .resolve-hint { margin-top: auto; align-self: flex-start; background: none; border: none; color: var(--gold-deep); font-size: 0.7rem; font-weight: 700; padding: 3px 0 0; cursor: pointer; font-family: inherit; }
+  .flip-back { position: absolute; inset: 0; background: #fffaf0; border: 1px solid var(--gold); transform: rotateY(180deg); gap: 6px; overflow: auto; }
+  /* The rich card carries a full border + left rail of its own; when it is
+     also a flip card the front face must not draw a second one on top. */
+  .rich-card.flip-card > .flip-inner > .flip-front { border: 1px solid var(--border); border-left-width: 3px; padding: 14px 16px; }
+  .rich-card.flip-card.flag-blocked > .flip-inner > .flip-front { border-left-color: var(--red); }
+  .rich-card.flip-card.flag-aging > .flip-inner > .flip-front { border-left-color: var(--amber); }
+  .rich-card.flip-card.flag-ok > .flip-inner > .flip-front { border-left-color: var(--green); }
+  .rich-card.flip-card { background: transparent; border: none; padding: 0; }
+  /* The note affordance. Was a bare text link that read as decoration; Evans
+     flagged that leaving updates is the point of these cards ("notes are
+     important"), so it now looks like the button it is. */
+  .resolve-hint {
+    margin-top: 10px; align-self: flex-start;
+    background: rgba(232,168,56,0.10); border: 1px solid rgba(232,168,56,0.35);
+    color: var(--gold); font-size: 0.72rem; font-weight: 700;
+    padding: 5px 11px; border-radius: 7px; cursor: pointer; font-family: inherit;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .resolve-hint:hover { background: rgba(232,168,56,0.2); border-color: var(--gold); }
+  /* On a rich card the footer row already holds Copy / Open account, so the
+     note button joins that row instead of starting a new one. */
+  .rich-card .rc-foot { flex-wrap: wrap; }
+  .rich-card .resolve-hint { margin-top: 10px; }
   .flip-label { margin: 0; font-size: 0.7rem; color: var(--muted); font-weight: 700; }
   .flip-input { flex: 1; resize: none; background: #fff; border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-size: 0.78rem; padding: 6px; font-family: inherit; min-height: 42px; }
   .flip-actions { display: flex; gap: 6px; justify-content: flex-end; }
@@ -436,7 +467,7 @@
     <header class="top" id="top">
       <div>
         <h1>Good afternoon, Evans.</h1>
-        <p class="sub">Aug 02, 2026 · 03:56 PM · Public mirror — Job Search and interview detail intentionally excluded.</p>
+        <p class="sub">Aug 02, 2026 · 04:09 PM · Public mirror — Job Search and interview detail intentionally excluded.</p>
       </div>
       <p class="tagline">Clarity today. Freedom tomorrow.<br>Focus &gt; Execute &gt; Compound.</p>
       <div class="who">
@@ -471,7 +502,7 @@
       <svg width="72" height="24" class="spark" viewBox="0 0 72 24"><polyline points="0.0,22.0 12.0,2.0 24.0,2.0 36.0,2.0 48.0,22.0 60.0,22.0 72.0,22.0" fill="none" stroke="#dc4c3f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
         <div class="kpi-flip-face kpi-flip-back"><p class="kpi-source-eyebrow">SOURCE</p>
         <p class="kpi-source-text">Vault notes where <code>status: blocked</code>, or <code>status: active</code> with no touch in over 7 days.</p>
-        <p class="kpi-source-stamp">Updated Aug 02, 2026 · 03:56 PM</p>
+        <p class="kpi-source-stamp">Updated Aug 02, 2026 · 04:09 PM</p>
         <button type="button" class="kpi-back-btn">← Back</button></div>
       </div>
     </div><div class="kpi-card kpi-flip">
@@ -483,7 +514,7 @@
       <svg width="72" height="24" class="spark" viewBox="0 0 72 24"><polyline points="0.0,22.0 12.0,22.0 24.0,22.0 36.0,10.0 48.0,6.0 60.0,2.0 72.0,2.0" fill="none" stroke="#1B3A4B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
         <div class="kpi-flip-face kpi-flip-back"><p class="kpi-source-eyebrow">SOURCE</p>
         <p class="kpi-source-text">Vault notes with a <code>status</code> set, excluding <code>deferred</code>.</p>
-        <p class="kpi-source-stamp">Updated Aug 02, 2026 · 03:56 PM</p>
+        <p class="kpi-source-stamp">Updated Aug 02, 2026 · 04:09 PM</p>
         <button type="button" class="kpi-back-btn">← Back</button></div>
       </div>
     </div><div class="kpi-card kpi-flip">
@@ -495,7 +526,7 @@
       <svg width="72" height="24" class="spark" viewBox="0 0 72 24"><polyline points="0.0,22.0 12.0,22.0 24.0,22.0 36.0,22.0 48.0,22.0 60.0,22.0 72.0,2.0" fill="none" stroke="#1B3A4B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
         <div class="kpi-flip-face kpi-flip-back"><p class="kpi-source-eyebrow">SOURCE</p>
         <p class="kpi-source-text">Vault notes tagged <code>client</code> in frontmatter.</p>
-        <p class="kpi-source-stamp">Updated Aug 02, 2026 · 03:56 PM</p>
+        <p class="kpi-source-stamp">Updated Aug 02, 2026 · 04:09 PM</p>
         <button type="button" class="kpi-back-btn">← Back</button></div>
       </div>
     </div><div class="kpi-card kpi-flip">
@@ -507,7 +538,7 @@
       <svg width="72" height="24" class="spark" viewBox="0 0 72 24"><polyline points="0.0,22.0 12.0,22.0 24.0,22.0 36.0,7.0 48.0,2.0 60.0,2.0 72.0,2.0" fill="none" stroke="#1B3A4B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
         <div class="kpi-flip-face kpi-flip-back"><p class="kpi-source-eyebrow">SOURCE</p>
         <p class="kpi-source-text">Vault notes tagged <code>project</code> with an active (non-deferred) status.</p>
-        <p class="kpi-source-stamp">Updated Aug 02, 2026 · 03:56 PM</p>
+        <p class="kpi-source-stamp">Updated Aug 02, 2026 · 04:09 PM</p>
         <button type="button" class="kpi-back-btn">← Back</button></div>
       </div>
     </div><div class="kpi-card kpi-flip">
@@ -519,7 +550,7 @@
       <svg width="72" height="24" class="spark" viewBox="0 0 72 24"><polyline points="0.0,2.0 12.0,2.0 24.0,22.0 36.0,22.0 48.0,22.0 60.0,22.0 72.0,22.0" fill="none" stroke="#1B3A4B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
         <div class="kpi-flip-face kpi-flip-back"><p class="kpi-source-eyebrow">SOURCE</p>
         <p class="kpi-source-text">Notes with <code>interview_date</code> in the next 30 days.</p>
-        <p class="kpi-source-stamp">Updated Aug 02, 2026 · 03:56 PM</p>
+        <p class="kpi-source-stamp">Updated Aug 02, 2026 · 04:09 PM</p>
         <button type="button" class="kpi-back-btn">← Back</button></div>
       </div>
     </div></div>
@@ -1339,13 +1370,35 @@
         </details>
       </div>
     </main>
-    <footer>Built in Obsidian. Powered by focus. Designed for execution. · Aug 02, 2026 · 03:56 PM</footer>
+    <footer>Built in Obsidian. Powered by focus. Designed for execution. · Aug 02, 2026 · 04:09 PM</footer>
   </div>
 </div>
 </div>
 <div id="tabFrames"></div>
 <script>
 var ccTabs = {}; // id -> {btn, panel}
+
+/* Keep each flip container tall enough for BOTH faces.
+   The front face is in normal flow so it sizes the container; the back is
+   absolutely positioned over it and would clip if the textarea + buttons need
+   more room than the front content. Runs on load, on resize, and whenever a
+   card is flipped (the back is display:none-free but only measurable once
+   laid out). */
+function syncFlipHeights() {
+  document.querySelectorAll('.flip-inner').forEach(function (inner) {
+    var back = inner.querySelector('.flip-back');
+    if (!back) return;
+    var front = inner.querySelector('.flip-front');
+    var need = Math.max(front ? front.offsetHeight : 0, back.scrollHeight);
+    if (need > 0) inner.style.minHeight = need + 'px';
+  });
+}
+window.addEventListener('load', syncFlipHeights);
+window.addEventListener('resize', syncFlipHeights);
+document.addEventListener('click', function (e) {
+  if (e.target.closest('.resolve-hint, .btn-cancel')) setTimeout(syncFlipHeights, 60);
+});
+
 
 /* Copy button on each rich card — puts "<note> - <next action>" on the
    clipboard for pasting into a message or task list. Delegated, because the
