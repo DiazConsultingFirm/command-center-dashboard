@@ -205,8 +205,14 @@
      carrying a dated source, tag pills, and a highlighted closing callout.
      Every block is conditional in the renderer — a card with no description
      shows no evidence rail rather than an empty one. */
-  .rich-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(430px, 1fr)); gap: 12px; }
-  @media (max-width: 900px) { .rich-grid { grid-template-columns: 1fr; } }
+  /* Multi-column, not grid. These cards vary hugely in height (some have an
+     evidence rail and a callout, some have neither), and CSS grid sizes every
+     row to its tallest cell — which left metres of dead space under the short
+     ones. Columns pack them masonry-style with no gaps. break-inside stops a
+     card being split down the middle across a column boundary. */
+  .rich-grid { columns: 2; column-gap: 12px; }
+  .rich-grid > * { break-inside: avoid; margin-bottom: 12px; display: block; }
+  @media (max-width: 900px) { .rich-grid { columns: 1; } }
 
   .rich-card {
     background: var(--surface-2);
@@ -467,7 +473,7 @@
     <header class="top" id="top">
       <div>
         <h1>Good afternoon, Evans.</h1>
-        <p class="sub">Aug 02, 2026 · 04:09 PM · Public mirror — Job Search and interview detail intentionally excluded.</p>
+        <p class="sub">Aug 02, 2026 · 04:14 PM · Public mirror — Job Search and interview detail intentionally excluded.</p>
       </div>
       <p class="tagline">Clarity today. Freedom tomorrow.<br>Focus &gt; Execute &gt; Compound.</p>
       <div class="who">
@@ -502,7 +508,7 @@
       <svg width="72" height="24" class="spark" viewBox="0 0 72 24"><polyline points="0.0,22.0 12.0,2.0 24.0,2.0 36.0,2.0 48.0,22.0 60.0,22.0 72.0,22.0" fill="none" stroke="#dc4c3f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
         <div class="kpi-flip-face kpi-flip-back"><p class="kpi-source-eyebrow">SOURCE</p>
         <p class="kpi-source-text">Vault notes where <code>status: blocked</code>, or <code>status: active</code> with no touch in over 7 days.</p>
-        <p class="kpi-source-stamp">Updated Aug 02, 2026 · 04:09 PM</p>
+        <p class="kpi-source-stamp">Updated Aug 02, 2026 · 04:14 PM</p>
         <button type="button" class="kpi-back-btn">← Back</button></div>
       </div>
     </div><div class="kpi-card kpi-flip">
@@ -514,7 +520,7 @@
       <svg width="72" height="24" class="spark" viewBox="0 0 72 24"><polyline points="0.0,22.0 12.0,22.0 24.0,22.0 36.0,10.0 48.0,6.0 60.0,2.0 72.0,2.0" fill="none" stroke="#1B3A4B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
         <div class="kpi-flip-face kpi-flip-back"><p class="kpi-source-eyebrow">SOURCE</p>
         <p class="kpi-source-text">Vault notes with a <code>status</code> set, excluding <code>deferred</code>.</p>
-        <p class="kpi-source-stamp">Updated Aug 02, 2026 · 04:09 PM</p>
+        <p class="kpi-source-stamp">Updated Aug 02, 2026 · 04:14 PM</p>
         <button type="button" class="kpi-back-btn">← Back</button></div>
       </div>
     </div><div class="kpi-card kpi-flip">
@@ -526,7 +532,7 @@
       <svg width="72" height="24" class="spark" viewBox="0 0 72 24"><polyline points="0.0,22.0 12.0,22.0 24.0,22.0 36.0,22.0 48.0,22.0 60.0,22.0 72.0,2.0" fill="none" stroke="#1B3A4B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
         <div class="kpi-flip-face kpi-flip-back"><p class="kpi-source-eyebrow">SOURCE</p>
         <p class="kpi-source-text">Vault notes tagged <code>client</code> in frontmatter.</p>
-        <p class="kpi-source-stamp">Updated Aug 02, 2026 · 04:09 PM</p>
+        <p class="kpi-source-stamp">Updated Aug 02, 2026 · 04:14 PM</p>
         <button type="button" class="kpi-back-btn">← Back</button></div>
       </div>
     </div><div class="kpi-card kpi-flip">
@@ -538,7 +544,7 @@
       <svg width="72" height="24" class="spark" viewBox="0 0 72 24"><polyline points="0.0,22.0 12.0,22.0 24.0,22.0 36.0,7.0 48.0,2.0 60.0,2.0 72.0,2.0" fill="none" stroke="#1B3A4B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
         <div class="kpi-flip-face kpi-flip-back"><p class="kpi-source-eyebrow">SOURCE</p>
         <p class="kpi-source-text">Vault notes tagged <code>project</code> with an active (non-deferred) status.</p>
-        <p class="kpi-source-stamp">Updated Aug 02, 2026 · 04:09 PM</p>
+        <p class="kpi-source-stamp">Updated Aug 02, 2026 · 04:14 PM</p>
         <button type="button" class="kpi-back-btn">← Back</button></div>
       </div>
     </div><div class="kpi-card kpi-flip">
@@ -550,7 +556,7 @@
       <svg width="72" height="24" class="spark" viewBox="0 0 72 24"><polyline points="0.0,2.0 12.0,2.0 24.0,22.0 36.0,22.0 48.0,22.0 60.0,22.0 72.0,22.0" fill="none" stroke="#1B3A4B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
         <div class="kpi-flip-face kpi-flip-back"><p class="kpi-source-eyebrow">SOURCE</p>
         <p class="kpi-source-text">Notes with <code>interview_date</code> in the next 30 days.</p>
-        <p class="kpi-source-stamp">Updated Aug 02, 2026 · 04:09 PM</p>
+        <p class="kpi-source-stamp">Updated Aug 02, 2026 · 04:14 PM</p>
         <button type="button" class="kpi-back-btn">← Back</button></div>
       </div>
     </div></div>
@@ -1370,7 +1376,7 @@
         </details>
       </div>
     </main>
-    <footer>Built in Obsidian. Powered by focus. Designed for execution. · Aug 02, 2026 · 04:09 PM</footer>
+    <footer>Built in Obsidian. Powered by focus. Designed for execution. · Aug 02, 2026 · 04:14 PM</footer>
   </div>
 </div>
 </div>
@@ -1389,8 +1395,12 @@ function syncFlipHeights() {
     var back = inner.querySelector('.flip-back');
     if (!back) return;
     var front = inner.querySelector('.flip-front');
-    var need = Math.max(front ? front.offsetHeight : 0, back.scrollHeight);
-    if (need > 0) inner.style.minHeight = need + 'px';
+    var frontH = front ? front.offsetHeight : 0;
+    // Only intervene when the BACK needs more room than the front. Setting
+    // min-height unconditionally re-inflated every card to its own height,
+    // which defeats the point of letting the front size the container.
+    inner.style.minHeight = '';
+    if (back.scrollHeight > frontH) inner.style.minHeight = back.scrollHeight + 'px';
   });
 }
 window.addEventListener('load', syncFlipHeights);
