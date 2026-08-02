@@ -175,6 +175,95 @@
   .cal-day.other { background: transparent; border-color: transparent; }
   .cal-day.today { border-color: var(--gold); color: var(--text); font-weight: 800; }
   .cal-dot { position: absolute; bottom: 5px; left: 5px; width: 5px; height: 5px; border-radius: 50%; background: var(--gold); }
+  /* ── Rich item cards (Attention / Next Actions) ──────────────────────
+     Modelled on the EverEffect dashboard's account card at Evans's request
+     2026-07-26: rank badge, title + meta, chip row, a bordered evidence rail
+     carrying a dated source, tag pills, and a highlighted closing callout.
+     Every block is conditional in the renderer — a card with no description
+     shows no evidence rail rather than an empty one. */
+  .rich-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(430px, 1fr)); gap: 12px; }
+  @media (max-width: 900px) { .rich-grid { grid-template-columns: 1fr; } }
+
+  .rich-card {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--muted);
+    border-radius: 12px;
+    padding: 14px 16px;
+  }
+  .rich-card.flag-blocked { border-left-color: var(--red); }
+  .rich-card.flag-aging { border-left-color: var(--amber); }
+  .rich-card.flag-ok { border-left-color: var(--green); }
+  .rich-card.flag-deferred { border-left-color: var(--muted); opacity: 0.75; }
+
+  .rc-head { display: flex; align-items: flex-start; gap: 11px; }
+  .rc-rank {
+    flex: 0 0 auto; width: 26px; height: 26px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-mono); font-size: 12px; font-weight: 700;
+    background: rgba(136,153,170,0.18); color: var(--muted);
+  }
+  .rc-rank.flag-blocked { background: rgba(248,113,113,0.18); color: var(--red); }
+  .rc-rank.flag-aging { background: rgba(232,168,56,0.18); color: var(--amber); }
+  .rc-rank.flag-ok { background: rgba(52,211,153,0.18); color: var(--green); }
+  .rc-id { flex: 1; min-width: 0; }
+  .rc-id h4 { margin: 0; font-size: 14px; font-weight: 700; line-height: 1.25; }
+  .rc-meta { margin: 2px 0 0; font-size: 11px; color: var(--muted); }
+
+  .rc-chips { display: flex; gap: 5px; flex-wrap: wrap; justify-content: flex-end; flex: 0 0 auto; max-width: 45%; }
+  .rc-chip {
+    font-family: var(--font-mono); font-size: 8.5px; font-weight: 700;
+    letter-spacing: 0.07em; text-transform: uppercase;
+    padding: 3px 7px; border-radius: 5px; white-space: nowrap;
+    border: 1px solid transparent; background: rgba(136,153,170,0.14); color: var(--muted);
+  }
+  .rc-chip.flag-blocked { background: rgba(248,113,113,0.14); color: var(--red); border-color: rgba(248,113,113,0.34); }
+  .rc-chip.flag-aging { background: rgba(232,168,56,0.14); color: var(--amber); border-color: rgba(232,168,56,0.34); }
+  .rc-chip.flag-ok { background: rgba(52,211,153,0.13); color: var(--green); border-color: rgba(52,211,153,0.3); }
+  .rc-chip-type { background: rgba(58,122,170,0.16); color: #6BA8D8; border-color: rgba(58,122,170,0.32); }
+  .rc-chip-deal { background: rgba(232,168,56,0.14); color: var(--amber); border-color: rgba(232,168,56,0.3); }
+
+  /* Evidence rail — dated fact plus where it came from. The source line is
+     the point: it says which file to open to check the claim. */
+  .rc-ev {
+    margin-top: 11px; padding: 10px 12px;
+    border-left: 2px solid var(--border-strong);
+    background: var(--surface-3, rgba(255,255,255,0.03));
+    border-radius: 0 8px 8px 0;
+  }
+  .rc-ev-date { font-family: var(--font-mono); font-size: 10px; color: var(--green); letter-spacing: 0.04em; }
+  .rc-ev-date .rc-age { color: var(--muted); }
+  .rc-ev-body { margin-top: 5px; font-size: 12.5px; line-height: 1.55; color: var(--text); }
+  .rc-ev-src { margin-top: 6px; font-family: var(--font-mono); font-size: 9.5px; color: var(--faint); }
+
+  .rc-pills { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+  .rc-pill {
+    font-size: 10px; font-weight: 600; padding: 3px 9px; border-radius: 6px;
+    border: 1px solid rgba(232,168,56,0.32); background: rgba(232,168,56,0.07); color: var(--amber);
+  }
+
+  /* The closing callout. Same emphasis the reference card gives "The angle:" */
+  .rc-angle {
+    margin-top: 11px; padding: 11px 13px;
+    border-left: 2px solid var(--green);
+    background: rgba(52,211,153,0.07);
+    border-radius: 0 8px 8px 0;
+    font-size: 12.5px; line-height: 1.6; color: var(--text);
+  }
+  .rc-angle b { color: var(--green); }
+  .rc-angle.rc-angle-warn { border-left-color: var(--red); background: rgba(248,113,113,0.07); }
+  .rc-angle.rc-angle-warn b { color: var(--red); }
+
+  .rc-foot { display: flex; align-items: center; gap: 10px; margin-top: 11px; }
+  .rc-copy {
+    margin-left: auto; font: inherit; font-size: 10px; font-weight: 700;
+    padding: 5px 11px; border-radius: 7px; cursor: pointer;
+    border: 1px solid var(--border-strong); background: transparent; color: var(--muted);
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .rc-copy:hover { border-color: var(--gold); color: var(--gold); }
+  .rc-copy.done { border-color: var(--green); color: var(--green); }
+
   /* Orientation block — plain-English framing above the KPI row, so the
      dashboard states what it is and where its numbers come from before
      showing any of them. Adopted from the EverEffect build 2026-07-26, where
@@ -319,7 +408,7 @@
     <header class="top" id="top">
       <div>
         <h1>Good afternoon, Evans.</h1>
-        <p class="sub">Aug 02, 2026 · 02:25 PM · Public mirror — Job Search and interview detail intentionally excluded.</p>
+        <p class="sub">Aug 02, 2026 · 03:12 PM · Public mirror — Job Search and interview detail intentionally excluded.</p>
       </div>
       <p class="tagline">Clarity today. Freedom tomorrow.<br>Focus &gt; Execute &gt; Compound.</p>
       <div class="who">
@@ -354,7 +443,7 @@
       <svg width="72" height="24" class="spark" viewBox="0 0 72 24"><polyline points="0.0,22.0 12.0,2.0 24.0,2.0 36.0,2.0 48.0,22.0 60.0,22.0 72.0,22.0" fill="none" stroke="#dc4c3f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
         <div class="kpi-flip-face kpi-flip-back"><p class="kpi-source-eyebrow">SOURCE</p>
         <p class="kpi-source-text">Vault notes where <code>status: blocked</code>, or <code>status: active</code> with no touch in over 7 days.</p>
-        <p class="kpi-source-stamp">Updated Aug 02, 2026 · 02:25 PM</p>
+        <p class="kpi-source-stamp">Updated Aug 02, 2026 · 03:12 PM</p>
         <button type="button" class="kpi-back-btn">← Back</button></div>
       </div>
     </div><div class="kpi-card kpi-flip">
@@ -366,7 +455,7 @@
       <svg width="72" height="24" class="spark" viewBox="0 0 72 24"><polyline points="0.0,22.0 12.0,22.0 24.0,22.0 36.0,10.0 48.0,6.0 60.0,2.0 72.0,2.0" fill="none" stroke="#1B3A4B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
         <div class="kpi-flip-face kpi-flip-back"><p class="kpi-source-eyebrow">SOURCE</p>
         <p class="kpi-source-text">Vault notes with a <code>status</code> set, excluding <code>deferred</code>.</p>
-        <p class="kpi-source-stamp">Updated Aug 02, 2026 · 02:25 PM</p>
+        <p class="kpi-source-stamp">Updated Aug 02, 2026 · 03:12 PM</p>
         <button type="button" class="kpi-back-btn">← Back</button></div>
       </div>
     </div><div class="kpi-card kpi-flip">
@@ -378,7 +467,7 @@
       <svg width="72" height="24" class="spark"><line x1="0" y1="12.0" x2="72" y2="12.0" stroke="#d8dde1" stroke-width="1.5"/></svg></div>
         <div class="kpi-flip-face kpi-flip-back"><p class="kpi-source-eyebrow">SOURCE</p>
         <p class="kpi-source-text">Vault notes tagged <code>client</code> in frontmatter.</p>
-        <p class="kpi-source-stamp">Updated Aug 02, 2026 · 02:25 PM</p>
+        <p class="kpi-source-stamp">Updated Aug 02, 2026 · 03:12 PM</p>
         <button type="button" class="kpi-back-btn">← Back</button></div>
       </div>
     </div><div class="kpi-card kpi-flip">
@@ -390,7 +479,7 @@
       <svg width="72" height="24" class="spark" viewBox="0 0 72 24"><polyline points="0.0,22.0 12.0,22.0 24.0,22.0 36.0,7.0 48.0,2.0 60.0,2.0 72.0,2.0" fill="none" stroke="#1B3A4B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
         <div class="kpi-flip-face kpi-flip-back"><p class="kpi-source-eyebrow">SOURCE</p>
         <p class="kpi-source-text">Vault notes tagged <code>project</code> with an active (non-deferred) status.</p>
-        <p class="kpi-source-stamp">Updated Aug 02, 2026 · 02:25 PM</p>
+        <p class="kpi-source-stamp">Updated Aug 02, 2026 · 03:12 PM</p>
         <button type="button" class="kpi-back-btn">← Back</button></div>
       </div>
     </div><div class="kpi-card kpi-flip">
@@ -402,7 +491,7 @@
       <svg width="72" height="24" class="spark" viewBox="0 0 72 24"><polyline points="0.0,2.0 12.0,2.0 24.0,22.0 36.0,22.0 48.0,22.0 60.0,22.0 72.0,22.0" fill="none" stroke="#1B3A4B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
         <div class="kpi-flip-face kpi-flip-back"><p class="kpi-source-eyebrow">SOURCE</p>
         <p class="kpi-source-text">Notes with <code>interview_date</code> in the next 30 days.</p>
-        <p class="kpi-source-stamp">Updated Aug 02, 2026 · 02:25 PM</p>
+        <p class="kpi-source-stamp">Updated Aug 02, 2026 · 03:12 PM</p>
         <button type="button" class="kpi-back-btn">← Back</button></div>
       </div>
     </div></div>
@@ -452,265 +541,452 @@
         </details>
       </div>
 
+      <!-- Attention and Next Actions were a third of a grid3 each, which is too
+           narrow for the rich card format (rank badge + chip row + evidence
+           rail all on one line). They now get a full-width row each, with the
+           cards themselves in a responsive 2-up grid that collapses to one
+           column under 900px. Deadlines moved into its own row below. -->
+      <details class="panel" id="attention" open>
+        <summary class="panel-head"><h3>🚨 Attention</h3><span class="count">9 items · most blocked first</span></summary>
+        <div class="panel-body"><div class="rich-grid"><article class="rich-card flag-blocked"><div class="rc-head">
+        <span class="rc-rank flag-blocked">1</span>
+        <div class="rc-id">
+          <h4>echelon_legal</h4>
+          <p class="rc-meta">blocked · PROJECT · 7d idle</p>
+        </div>
+        <div class="rc-chips"><span class="rc-chip flag-blocked">Blocked</span><span class="rc-chip rc-chip-type">PROJECT</span><span class="rc-chip rc-chip-deal">PROSPECT</span></div>
+      </div>
+      <div class="rc-ev"><div class="rc-ev-date">2026-07-26 · <span class="rc-age">7 days ago</span></div><div class="rc-ev-body">Echelon Legal PLLC (Weston FL) — real prospect, pitch package built</div><div class="rc-ev-src">Source: echelon_legal.md</div></div>
+      
+      <div class="rc-angle"><b>The next move:</b> &quot;Reschedule postponed meeting (follow up by 2026-08-01 per client-blocked</div>
+      <div class="rc-foot"><button type="button" class="rc-copy" data-copy="echelon_legal — &amp;quot;Reschedule postponed meeting (follow up by 2026-08-01 per client-blocked">Copy</button></div></article>
+<article class="rich-card flag-blocked"><div class="rc-head">
+        <span class="rc-rank flag-blocked">2</span>
+        <div class="rc-id">
+          <h4>project_registry</h4>
+          <p class="rc-meta">blocked · PROJECT · 7d idle</p>
+        </div>
+        <div class="rc-chips"><span class="rc-chip flag-blocked">Blocked</span><span class="rc-chip rc-chip-type">PROJECT</span></div>
+      </div>
+      <div class="rc-ev"><div class="rc-ev-date">2026-07-26 · <span class="rc-age">7 days ago</span></div><div class="rc-ev-body">Active projects at Diaz Consulting Firm as of May 2026</div><div class="rc-ev-src">Source: project_registry.md</div></div>
+      
+      <div class="rc-angle"><b>The next move:</b> Evans: reschedule Echelon meeting (follow up by 2026-08-01); push factory main (6 unpushed commits); confirm roster (Hermes/Ted permanence) and legacy-project status — see [[weekly_unblock_audit_2026-07-21]]</div>
+      <div class="rc-foot"><button type="button" class="rc-copy" data-copy="project_registry — Evans: reschedule Echelon meeting (follow up by 2026-08-01); push factory main (6 unpushed commits); confirm roster (Hermes/Ted permanence) and legacy-project status — see [[weekly_unblock_audit_2026-07-21]]">Copy</button></div></article>
+<article class="rich-card flag-blocked"><div class="rc-head">
+        <span class="rc-rank flag-blocked">3</span>
+        <div class="rc-id">
+          <h4>income_stream_2_tiktok_affiliate</h4>
+          <p class="rc-meta">blocked · PROJECT · 3d idle</p>
+        </div>
+        <div class="rc-chips"><span class="rc-chip flag-blocked">Blocked</span><span class="rc-chip rc-chip-type">PROJECT</span></div>
+      </div>
+      <div class="rc-ev"><div class="rc-ev-date">2026-07-30 · <span class="rc-age">3 days ago</span></div><div class="rc-ev-body">DCF's second income stream — near-hands-off TikTok Shop affiliate operation</div><div class="rc-ev-src">Source: income_stream_2_tiktok_affiliate.md</div></div>
+      
+      <div class="rc-angle"><b>The next move:</b> Evans: create TikTok account + pick niche</div>
+      <div class="rc-foot"><button type="button" class="rc-copy" data-copy="income_stream_2_tiktok_affiliate — Evans: create TikTok account + pick niche">Copy</button></div></article>
+<article class="rich-card flag-blocked"><div class="rc-head">
+        <span class="rc-rank flag-blocked">4</span>
+        <div class="rc-id">
+          <h4>dcf_content_engine_ee_framework</h4>
+          <p class="rc-meta">blocked · CLIENT · 2d idle</p>
+        </div>
+        <div class="rc-chips"><span class="rc-chip flag-blocked">Blocked</span><span class="rc-chip rc-chip-type">CLIENT</span></div>
+      </div>
+      <div class="rc-ev"><div class="rc-ev-date">2026-07-31 · <span class="rc-age">2 days ago</span></div><div class="rc-ev-body">DCF Master Content Operating System — insight pipeline (DM video audit)</div><div class="rc-ev-src">Source: dcf_content_engine_ee_framework.md</div></div>
+      <div class="rc-pills"><span class="rc-pill">project</span><span class="rc-pill">workflow</span></div>
+      <div class="rc-angle"><b>The next move:</b> Record b-roll — all 3 entities</div>
+      <div class="rc-foot"><button type="button" class="rc-copy" data-copy="dcf_content_engine_ee_framework — Record b-roll — all 3 entities">Copy</button></div></article>
+<article class="rich-card flag-blocked"><div class="rc-head">
+        <span class="rc-rank flag-blocked">5</span>
+        <div class="rc-id">
+          <h4>project_cross_reference_2026-07-21</h4>
+          <p class="rc-meta">blocked · PROJECT · 2d idle</p>
+        </div>
+        <div class="rc-chips"><span class="rc-chip flag-blocked">Blocked</span><span class="rc-chip rc-chip-type">PROJECT</span></div>
+      </div>
+      <div class="rc-ev"><div class="rc-ev-date">2026-07-31 · <span class="rc-age">2 days ago</span></div><div class="rc-ev-body">How this week's 9 Evans-only blockers connect to each other — shared infrastructure, shared clients, and shared tools that create hidden dependencies between projects that look unrelated</div><div class="rc-ev-src">Source: project_cross_reference_2026-07-21.md</div></div>
+      <div class="rc-pills"><span class="rc-pill">workflow</span></div>
+      <div class="rc-angle"><b>The next move:</b> Evans: work the checklist below, in order — items 1-2 unlock the most downstream work</div>
+      <div class="rc-foot"><button type="button" class="rc-copy" data-copy="project_cross_reference_2026-07-21 — Evans: work the checklist below, in order — items 1-2 unlock the most downstream work">Copy</button></div></article>
+<article class="rich-card flag-blocked"><div class="rc-head">
+        <span class="rc-rank flag-blocked">6</span>
+        <div class="rc-id">
+          <h4>robert_davis_growth_strategy</h4>
+          <p class="rc-meta">blocked · CLIENT · 2d idle</p>
+        </div>
+        <div class="rc-chips"><span class="rc-chip flag-blocked">Blocked</span><span class="rc-chip rc-chip-type">CLIENT</span><span class="rc-chip rc-chip-deal">ACTIVE</span></div>
+      </div>
+      <div class="rc-ev"><div class="rc-ev-date">2026-07-31 · <span class="rc-age">2 days ago</span></div><div class="rc-ev-body">$1,500 paid, $500 owed — Phase 1 complete</div><div class="rc-ev-src">Source: robert_davis_growth_strategy.md</div></div>
+      <div class="rc-pills"><span class="rc-pill">project</span></div>
+      <div class="rc-angle"><b>The next move:</b> Awaiting Robert&#x27;s b-roll recording time</div>
+      <div class="rc-foot"><button type="button" class="rc-copy" data-copy="robert_davis_growth_strategy — Awaiting Robert&amp;#x27;s b-roll recording time">Copy</button></div></article>
+<article class="rich-card flag-blocked"><div class="rc-head">
+        <span class="rc-rank flag-blocked">7</span>
+        <div class="rc-id">
+          <h4>slack_team_wiring</h4>
+          <p class="rc-meta">blocked · PROJECT · 2d idle</p>
+        </div>
+        <div class="rc-chips"><span class="rc-chip flag-blocked">Blocked</span><span class="rc-chip rc-chip-type">PROJECT</span></div>
+      </div>
+      <div class="rc-ev"><div class="rc-ev-date">2026-07-31 · <span class="rc-age">2 days ago</span></div><div class="rc-ev-body">Slack #trade-ideas team channel — Hermes + Ted apps created/installed</div><div class="rc-ev-src">Source: slack_team_wiring.md</div></div>
+      <div class="rc-pills"><span class="rc-pill">stack</span></div>
+      <div class="rc-angle"><b>The next move:</b> Evans: paste the 4 Slack tokens, then run wire-slack.ps1</div>
+      <div class="rc-foot"><button type="button" class="rc-copy" data-copy="slack_team_wiring — Evans: paste the 4 Slack tokens, then run wire-slack.ps1">Copy</button></div></article>
+<article class="rich-card flag-blocked"><div class="rc-head">
+        <span class="rc-rank flag-blocked">8</span>
+        <div class="rc-id">
+          <h4>weekly_unblock_audit_2026-07-21</h4>
+          <p class="rc-meta">blocked · PROJECT · 2d idle</p>
+        </div>
+        <div class="rc-chips"><span class="rc-chip flag-blocked">Blocked</span><span class="rc-chip rc-chip-type">PROJECT</span></div>
+      </div>
+      <div class="rc-ev"><div class="rc-ev-date">2026-07-31 · <span class="rc-age">2 days ago</span></div><div class="rc-ev-body">Full week sweep (Jul 18-21) across CCD sessions + claude.ai chats — every active project's blocker and whether Evans or an AI agent is the one who can actually clear it</div><div class="rc-ev-src">Source: weekly_unblock_audit_2026-07-21.md</div></div>
+      <div class="rc-pills"><span class="rc-pill">workflow</span></div>
+      <div class="rc-angle"><b>The next move:</b> Evans: work the 9-item checklist in [[project_cross_reference_2026-07-21]] one by one</div>
+      <div class="rc-foot"><button type="button" class="rc-copy" data-copy="weekly_unblock_audit_2026-07-21 — Evans: work the 9-item checklist in [[project_cross_reference_2026-07-21]] one by one">Copy</button></div></article>
+<article class="rich-card flag-blocked"><div class="rc-head">
+        <span class="rc-rank flag-blocked">9</span>
+        <div class="rc-id">
+          <h4>trading_bot_signal_engine</h4>
+          <p class="rc-meta">blocked · PROJECT · 1d idle</p>
+        </div>
+        <div class="rc-chips"><span class="rc-chip flag-blocked">Blocked</span><span class="rc-chip rc-chip-type">PROJECT</span></div>
+      </div>
+      <div class="rc-ev"><div class="rc-ev-date">2026-08-01 · <span class="rc-age">yesterday</span></div><div class="rc-ev-body">New personal project (2026-07-21) — stock/ETF trend-signal + alert engine</div><div class="rc-ev-src">Source: trading_bot_signal_engine.md</div></div>
+      
+      <div class="rc-angle"><b>The next move:</b> Evans: name the broker for Phase 2 (order-prefill) integration</div>
+      <div class="rc-foot"><button type="button" class="rc-copy" data-copy="trading_bot_signal_engine — Evans: name the broker for Phase 2 (order-prefill) integration">Copy</button></div></article></div></div>
+      </details>
+
+      <details class="panel" id="next-actions" open>
+        <summary class="panel-head"><h3>⚡ Next Actions</h3><span class="count">27 · oldest first</span></summary>
+        <div class="panel-body"><div class="rich-grid"><article class="rich-card flag-ok"><div class="rc-head">
+        <span class="rc-rank flag-ok">1</span>
+        <div class="rc-id">
+          <h4>dcf_hub_shell_canon</h4>
+          <p class="rc-meta">active · SYSTEM · 7d idle</p>
+        </div>
+        <div class="rc-chips"><span class="rc-chip flag-ok">On track</span><span class="rc-chip rc-chip-type">SYSTEM</span></div>
+      </div>
+      <div class="rc-ev"><div class="rc-ev-date">2026-07-26 · <span class="rc-age">7 days ago</span></div><div class="rc-ev-body">STANDING — every dashboard attached to the Command Center uses the two-level</div><div class="rc-ev-src">Source: dcf_hub_shell_canon.md</div></div>
+      <div class="rc-pills"><span class="rc-pill">workflow</span><span class="rc-pill">stack</span></div>
+      <div class="rc-angle"><b>The next move:</b> Apply hub-shell.css to any NEW surface at build time, not as a retrofit</div>
+      <div class="rc-foot"><button type="button" class="rc-copy" data-copy="dcf_hub_shell_canon — Apply hub-shell.css to any NEW surface at build time, not as a retrofit">Copy</button></div></article>
+<article class="rich-card flag-blocked"><div class="rc-head">
+        <span class="rc-rank flag-blocked">2</span>
+        <div class="rc-id">
+          <h4>echelon_legal</h4>
+          <p class="rc-meta">blocked · PROJECT · 7d idle</p>
+        </div>
+        <div class="rc-chips"><span class="rc-chip flag-blocked">Blocked</span><span class="rc-chip rc-chip-type">PROJECT</span><span class="rc-chip rc-chip-deal">PROSPECT</span></div>
+      </div>
+      <div class="rc-ev"><div class="rc-ev-date">2026-07-26 · <span class="rc-age">7 days ago</span></div><div class="rc-ev-body">Echelon Legal PLLC (Weston FL) — real prospect, pitch package built</div><div class="rc-ev-src">Source: echelon_legal.md</div></div>
+      
+      <div class="rc-angle"><b>The next move:</b> &quot;Reschedule postponed meeting (follow up by 2026-08-01 per client-blocked</div>
+      <div class="rc-foot"><button type="button" class="rc-copy" data-copy="echelon_legal — &amp;quot;Reschedule postponed meeting (follow up by 2026-08-01 per client-blocked">Copy</button></div></article>
+<article class="rich-card flag-blocked"><div class="rc-head">
+        <span class="rc-rank flag-blocked">3</span>
+        <div class="rc-id">
+          <h4>project_registry</h4>
+          <p class="rc-meta">blocked · PROJECT · 7d idle</p>
+        </div>
+        <div class="rc-chips"><span class="rc-chip flag-blocked">Blocked</span><span class="rc-chip rc-chip-type">PROJECT</span></div>
+      </div>
+      <div class="rc-ev"><div class="rc-ev-date">2026-07-26 · <span class="rc-age">7 days ago</span></div><div class="rc-ev-body">Active projects at Diaz Consulting Firm as of May 2026</div><div class="rc-ev-src">Source: project_registry.md</div></div>
+      
+      <div class="rc-angle"><b>The next move:</b> Evans: reschedule Echelon meeting (follow up by 2026-08-01); push factory main (6 unpushed commits); confirm roster (Hermes/Ted permanence) and legacy-project status — see [[weekly_unblock_audit_2026-07-21]]</div>
+      <div class="rc-foot"><button type="button" class="rc-copy" data-copy="project_registry — Evans: reschedule Echelon meeting (follow up by 2026-08-01); push factory main (6 unpushed commits); confirm roster (Hermes/Ted permanence) and legacy-project status — see [[weekly_unblock_audit_2026-07-21]]">Copy</button></div></article>
+<article class="rich-card flag-blocked"><div class="rc-head">
+        <span class="rc-rank flag-blocked">4</span>
+        <div class="rc-id">
+          <h4>income_stream_2_tiktok_affiliate</h4>
+          <p class="rc-meta">blocked · PROJECT · 3d idle</p>
+        </div>
+        <div class="rc-chips"><span class="rc-chip flag-blocked">Blocked</span><span class="rc-chip rc-chip-type">PROJECT</span></div>
+      </div>
+      <div class="rc-ev"><div class="rc-ev-date">2026-07-30 · <span class="rc-age">3 days ago</span></div><div class="rc-ev-body">DCF's second income stream — near-hands-off TikTok Shop affiliate operation</div><div class="rc-ev-src">Source: income_stream_2_tiktok_affiliate.md</div></div>
+      
+      <div class="rc-angle"><b>The next move:</b> Evans: create TikTok account + pick niche</div>
+      <div class="rc-foot"><button type="button" class="rc-copy" data-copy="income_stream_2_tiktok_affiliate — Evans: create TikTok account + pick niche">Copy</button></div></article>
+<article class="rich-card flag-ok"><div class="rc-head">
+        <span class="rc-rank flag-ok">5</span>
+        <div class="rc-id">
+          <h4>leilas_world_kids_channel</h4>
+          <p class="rc-meta">in_progress · PROJECT · 3d idle</p>
+        </div>
+        <div class="rc-chips"><span class="rc-chip flag-ok">On track</span><span class="rc-chip rc-chip-type">PROJECT</span></div>
+      </div>
+      <div class="rc-ev"><div class="rc-ev-date">2026-07-30 · <span class="rc-age">3 days ago</span></div><div class="rc-ev-body">YouTube Kids bilingual sing-along channel featuring an animated character based on Evans's daughter Leilani — separate project from Income Stream 3's UGC models, shares only the Higgsfield toolchain</div><div class="rc-ev-src">Source: leilas_world_kids_channel.md</div></div>
+      
+      <div class="rc-angle"><b>The next move:</b> Evans to decide: channel name (front-runner &#x27;Leila&#x27;s Corner&#x27;), voice direction (Evans&#x27;s own voice vs. Cozy Voice AI clone), LLC formation timing. Then review the drafted Episode 1 script before any Soul Cast/Seedance generation begins.</div>
+      <div class="rc-foot"><button type="button" class="rc-copy" data-copy="leilas_world_kids_channel — Evans to decide: channel name (front-runner &amp;#x27;Leila&amp;#x27;s Corner&amp;#x27;), voice direction (Evans&amp;#x27;s own voice vs. Cozy Voice AI clone), LLC formation timing. Then review the drafted Episode 1 script before any Soul Cast/Seedance generation begins.">Copy</button></div></article>
+<article class="rich-card flag-ok"><div class="rc-head">
+        <span class="rc-rank flag-ok">6</span>
+        <div class="rc-id">
+          <h4>claude_design_dcf_system</h4>
+          <p class="rc-meta">active · PROJECT · 2d idle</p>
+        </div>
+        <div class="rc-chips"><span class="rc-chip flag-ok">On track</span><span class="rc-chip rc-chip-type">PROJECT</span></div>
+      </div>
+      <div class="rc-ev"><div class="rc-ev-date">2026-07-31 · <span class="rc-age">2 days ago</span></div><div class="rc-ev-body">An existing "Diaz Consulting Design System" project already exists in</div><div class="rc-ev-src">Source: claude_design_dcf_system.md</div></div>
+      <div class="rc-pills"><span class="rc-pill">workflow</span></div>
+      <div class="rc-angle"><b>The next move:</b> Decide whether to extend this design system to cover the Command Center</div>
+      <div class="rc-foot"><button type="button" class="rc-copy" data-copy="claude_design_dcf_system — Decide whether to extend this design system to cover the Command Center">Copy</button></div></article>
+<article class="rich-card flag-ok"><div class="rc-head">
+        <span class="rc-rank flag-ok">7</span>
+        <div class="rc-id">
+          <h4>claude_md_restructure_2026-07-25</h4>
+          <p class="rc-meta">active · 2d idle</p>
+        </div>
+        <div class="rc-chips"><span class="rc-chip flag-ok">On track</span></div>
+      </div>
+      <div class="rc-ev"><div class="rc-ev-date">2026-07-31 · <span class="rc-age">2 days ago</span></div><div class="rc-ev-body">2026-07-25 audit + restructure of the always-loaded CLAUDE.md/rules stack — dedupe, ECC trim, stale-fact fixes</div><div class="rc-ev-src">Source: claude_md_restructure_2026-07-25.md</div></div>
+      <div class="rc-pills"><span class="rc-pill">stack</span></div>
+      <div class="rc-angle"><b>The next move:</b> Evans: push dcf-website-factory main (6 unpushed commits + WIP); reschedule Echelon by 2026-08-01</div>
+      <div class="rc-foot"><button type="button" class="rc-copy" data-copy="claude_md_restructure_2026-07-25 — Evans: push dcf-website-factory main (6 unpushed commits + WIP); reschedule Echelon by 2026-08-01">Copy</button></div></article>
+<article class="rich-card flag-ok"><div class="rc-head">
+        <span class="rc-rank flag-ok">8</span>
+        <div class="rc-id">
+          <h4>command_center_dashboard_build</h4>
+          <p class="rc-meta">active · PROJECT · 2d idle</p>
+        </div>
+        <div class="rc-chips"><span class="rc-chip flag-ok">On track</span><span class="rc-chip rc-chip-type">PROJECT</span></div>
+      </div>
+      <div class="rc-ev"><div class="rc-ev-date">2026-07-31 · <span class="rc-age">2 days ago</span></div><div class="rc-ev-body">Session history of the Command Center / unified-dashboard build — pre-build</div><div class="rc-ev-src">Source: command_center_dashboard_build.md</div></div>
+      <div class="rc-pills"><span class="rc-pill">workflow</span></div>
+      <div class="rc-angle"><b>The next move:</b> &#x27;Evans: confirm Euro Motorsport pitch status (live prospect or dead concept)</div>
+      <div class="rc-foot"><button type="button" class="rc-copy" data-copy="command_center_dashboard_build — &amp;#x27;Evans: confirm Euro Motorsport pitch status (live prospect or dead concept)">Copy</button></div></article>
+<article class="rich-card flag-ok"><div class="rc-head">
+        <span class="rc-rank flag-ok">9</span>
+        <div class="rc-id">
+          <h4>davis_motion_pipeline</h4>
+          <p class="rc-meta">active · CLIENT · 2d idle</p>
+        </div>
+        <div class="rc-chips"><span class="rc-chip flag-ok">On track</span><span class="rc-chip rc-chip-type">CLIENT</span></div>
+      </div>
+      <div class="rc-ev"><div class="rc-ev-date">2026-07-31 · <span class="rc-age">2 days ago</span></div><div class="rc-ev-body">'Robert Davis motion pipeline v2 — DECIDED 2026-07-17: cloud workflow,</div><div class="rc-ev-src">Source: davis_motion_pipeline.md</div></div>
+      <div class="rc-pills"><span class="rc-pill">project</span></div>
+      <div class="rc-angle"><b>The next move:</b> Build motion pipeline v2 (due 2026-07-22); Evans: also confirm whether filing #252050912 draft still needs resending or is already handled</div>
+      <div class="rc-foot"><button type="button" class="rc-copy" data-copy="davis_motion_pipeline — Build motion pipeline v2 (due 2026-07-22); Evans: also confirm whether filing #252050912 draft still needs resending or is already handled">Copy</button></div></article>
+<article class="rich-card flag-blocked"><div class="rc-head">
+        <span class="rc-rank flag-blocked">10</span>
+        <div class="rc-id">
+          <h4>dcf_content_engine_ee_framework</h4>
+          <p class="rc-meta">blocked · CLIENT · 2d idle</p>
+        </div>
+        <div class="rc-chips"><span class="rc-chip flag-blocked">Blocked</span><span class="rc-chip rc-chip-type">CLIENT</span></div>
+      </div>
+      <div class="rc-ev"><div class="rc-ev-date">2026-07-31 · <span class="rc-age">2 days ago</span></div><div class="rc-ev-body">DCF Master Content Operating System — insight pipeline (DM video audit)</div><div class="rc-ev-src">Source: dcf_content_engine_ee_framework.md</div></div>
+      <div class="rc-pills"><span class="rc-pill">project</span><span class="rc-pill">workflow</span></div>
+      <div class="rc-angle"><b>The next move:</b> Record b-roll — all 3 entities</div>
+      <div class="rc-foot"><button type="button" class="rc-copy" data-copy="dcf_content_engine_ee_framework — Record b-roll — all 3 entities">Copy</button></div></article>
+<article class="rich-card flag-ok"><div class="rc-head">
+        <span class="rc-rank flag-ok">11</span>
+        <div class="rc-id">
+          <h4>dm_insight_execution_loop</h4>
+          <p class="rc-meta">active · PROJECT · 2d idle</p>
+        </div>
+        <div class="rc-chips"><span class="rc-chip flag-ok">On track</span><span class="rc-chip rc-chip-type">PROJECT</span></div>
+      </div>
+      <div class="rc-ev"><div class="rc-ev-date">2026-07-31 · <span class="rc-age">2 days ago</span></div><div class="rc-ev-body">Two-agent automation (dm-insight-triager + dm-insight-executor) plus a JSON backlog and two scheduled loops that turn DM Video Insight Watch findings into actually-executed work, fixing the Round-1 problem where 19 of 20 findings never got acted on</div><div class="rc-ev-src">Source: dm_insight_execution_loop.md</div></div>
+      <div class="rc-pills"><span class="rc-pill">workflow</span></div>
+      <div class="rc-angle"><b>The next move:</b> Monitor first real (non-backfill) daily sweep run; review first weekly compost pass 2026-08-03. 2026-07-31 resume-loop run: cleared the remaining 6 same-day-execute rows (2 executed, 4 correctly normalized to Blocked — see log below). Tally now 37 Done / 27 Not Started / 12 Blocked of 76.</div>
+      <div class="rc-foot"><button type="button" class="rc-copy" data-copy="dm_insight_execution_loop — Monitor first real (non-backfill) daily sweep run; review first weekly compost pass 2026-08-03. 2026-07-31 resume-loop run: cleared the remaining 6 same-day-execute rows (2 executed, 4 correctly normalized to Blocked — see log below). Tally now 37 Done / 27 Not Started / 12 Blocked of 76.">Copy</button></div></article>
+<article class="rich-card flag-ok"><div class="rc-head">
+        <span class="rc-rank flag-ok">12</span>
+        <div class="rc-id">
+          <h4>dm_video_insight_dashboard</h4>
+          <p class="rc-meta">active · PROJECT · 2d idle</p>
+        </div>
+        <div class="rc-chips"><span class="rc-chip flag-ok">On track</span><span class="rc-chip rc-chip-type">PROJECT</span></div>
+      </div>
+      <div class="rc-ev"><div class="rc-ev-date">2026-07-31 · <span class="rc-age">2 days ago</span></div><div class="rc-ev-body">Local HTML dashboard for the DM Video Insight Watch findings — one card</div><div class="rc-ev-src">Source: dm_video_insight_dashboard.md</div></div>
+      <div class="rc-pills"><span class="rc-pill">workflow</span></div>
+      <div class="rc-angle"><b>The next move:</b> Regenerate after future dm-video-insight-watch runs — see How to update</div>
+      <div class="rc-foot"><button type="button" class="rc-copy" data-copy="dm_video_insight_dashboard — Regenerate after future dm-video-insight-watch runs — see How to update">Copy</button></div></article>
+<article class="rich-card flag-ok"><div class="rc-head">
+        <span class="rc-rank flag-ok">13</span>
+        <div class="rc-id">
+          <h4>factory_learnings_audit_2026-07-19</h4>
+          <p class="rc-meta">active · PROJECT · 2d idle</p>
+        </div>
+        <div class="rc-chips"><span class="rc-chip flag-ok">On track</span><span class="rc-chip rc-chip-type">PROJECT</span></div>
+      </div>
+      <div class="rc-ev"><div class="rc-ev-date">2026-07-31 · <span class="rc-age">2 days ago</span></div><div class="rc-ev-body">Master audit reconciling the immersive-upgrade build (7/12) with the</div><div class="rc-ev-src">Source: factory_learnings_audit_2026-07-19.md</div></div>
+      
+      <div class="rc-angle"><b>The next move:</b> Push + deploy merge 4645ce2; Design-feature pilot</div>
+      <div class="rc-foot"><button type="button" class="rc-copy" data-copy="factory_learnings_audit_2026-07-19 — Push + deploy merge 4645ce2; Design-feature pilot">Copy</button></div></article>
+<article class="rich-card flag-ok"><div class="rc-head">
+        <span class="rc-rank flag-ok">14</span>
+        <div class="rc-id">
+          <h4>gerlach_hosting_setup</h4>
+          <p class="rc-meta">live · CLIENT · 2d idle</p>
+        </div>
+        <div class="rc-chips"><span class="rc-chip flag-ok">On track</span><span class="rc-chip rc-chip-type">CLIENT</span><span class="rc-chip rc-chip-deal">ACTIVE</span></div>
+      </div>
+      <div class="rc-ev"><div class="rc-ev-date">2026-07-31 · <span class="rc-age">2 days ago</span></div><div class="rc-ev-body">$1,000 deposit received</div><div class="rc-ev-src">Source: gerlach_hosting_setup.md</div></div>
+      <div class="rc-pills"><span class="rc-pill">project</span></div>
+      <div class="rc-angle"><b>The next move:</b> Rotate SFTP credentials (post-leak, redacted 7/17)</div>
+      <div class="rc-foot"><button type="button" class="rc-copy" data-copy="gerlach_hosting_setup — Rotate SFTP credentials (post-leak, redacted 7/17)">Copy</button></div></article>
+<article class="rich-card flag-ok"><div class="rc-head">
+        <span class="rc-rank flag-ok">15</span>
+        <div class="rc-id">
+          <h4>income_stream_3_ai_model_character</h4>
+          <p class="rc-meta">in_progress · PROJECT · 2d idle</p>
+        </div>
+        <div class="rc-chips"><span class="rc-chip flag-ok">On track</span><span class="rc-chip rc-chip-type">PROJECT</span></div>
+      </div>
+      <div class="rc-ev"><div class="rc-ev-date">2026-07-31 · <span class="rc-age">2 days ago</span></div><div class="rc-ev-body">Third income stream — synthetic AI "model" content page built via Higgsfield</div><div class="rc-ev-src">Source: income_stream_3_ai_model_character.md</div></div>
+      
+      <div class="rc-angle"><b>The next move:</b> Complete Soul character training for Model 1 + Model 2 (curated Gemini reference sets); Leila&#x27;s World content specs still needed from Evans before generating anything for that separate project</div>
+      <div class="rc-foot"><button type="button" class="rc-copy" data-copy="income_stream_3_ai_model_character — Complete Soul character training for Model 1 + Model 2 (curated Gemini reference sets); Leila&amp;#x27;s World content specs still needed from Evans before generating anything for that separate project">Copy</button></div></article>
+<article class="rich-card flag-ok"><div class="rc-head">
+        <span class="rc-rank flag-ok">16</span>
+        <div class="rc-id">
+          <h4>linkedin_banner_project</h4>
+          <p class="rc-meta">active · PROJECT · 2d idle</p>
+        </div>
+        <div class="rc-chips"><span class="rc-chip flag-ok">On track</span><span class="rc-chip rc-chip-type">PROJECT</span></div>
+      </div>
+      <div class="rc-ev"><div class="rc-ev-date">2026-07-31 · <span class="rc-age">2 days ago</span></div><div class="rc-ev-body">Evans's LinkedIn profile banner — v6 (DCF Design System aligned) is current;</div><div class="rc-ev-src">Source: linkedin_banner_project.md</div></div>
+      <div class="rc-pills"><span class="rc-pill">workflow</span></div>
+      <div class="rc-angle"><b>The next move:</b> &#x27;Evans: upload LinkedIn_Banner_2026_v6_dcfsystem.png to LinkedIn profile</div>
+      <div class="rc-foot"><button type="button" class="rc-copy" data-copy="linkedin_banner_project — &amp;#x27;Evans: upload LinkedIn_Banner_2026_v6_dcfsystem.png to LinkedIn profile">Copy</button></div></article>
+<article class="rich-card flag-ok"><div class="rc-head">
+        <span class="rc-rank flag-ok">17</span>
+        <div class="rc-id">
+          <h4>one_three_one_escalation_protocol</h4>
+          <p class="rc-meta">active · SYSTEM · 2d idle</p>
+        </div>
+        <div class="rc-chips"><span class="rc-chip flag-ok">On track</span><span class="rc-chip rc-chip-type">SYSTEM</span></div>
+      </div>
+      <div class="rc-ev"><div class="rc-ev-date">2026-07-31 · <span class="rc-age">2 days ago</span></div><div class="rc-ev-body">1-3-1 blocker/decision escalation format (Dan Martell) — researched and wired into all 3 agents 2026-07-26</div><div class="rc-ev-src">Source: one_three_one_escalation_protocol.md</div></div>
+      <div class="rc-pills"><span class="rc-pill">workflow</span></div>
+      <div class="rc-angle"><b>The next move:</b> Watch the next few real escalations for format compliance; tune if the 3-option requirement produces padding</div>
+      <div class="rc-foot"><button type="button" class="rc-copy" data-copy="one_three_one_escalation_protocol — Watch the next few real escalations for format compliance; tune if the 3-option requirement produces padding">Copy</button></div></article>
+<article class="rich-card flag-blocked"><div class="rc-head">
+        <span class="rc-rank flag-blocked">18</span>
+        <div class="rc-id">
+          <h4>project_cross_reference_2026-07-21</h4>
+          <p class="rc-meta">blocked · PROJECT · 2d idle</p>
+        </div>
+        <div class="rc-chips"><span class="rc-chip flag-blocked">Blocked</span><span class="rc-chip rc-chip-type">PROJECT</span></div>
+      </div>
+      <div class="rc-ev"><div class="rc-ev-date">2026-07-31 · <span class="rc-age">2 days ago</span></div><div class="rc-ev-body">How this week's 9 Evans-only blockers connect to each other — shared infrastructure, shared clients, and shared tools that create hidden dependencies between projects that look unrelated</div><div class="rc-ev-src">Source: project_cross_reference_2026-07-21.md</div></div>
+      <div class="rc-pills"><span class="rc-pill">workflow</span></div>
+      <div class="rc-angle"><b>The next move:</b> Evans: work the checklist below, in order — items 1-2 unlock the most downstream work</div>
+      <div class="rc-foot"><button type="button" class="rc-copy" data-copy="project_cross_reference_2026-07-21 — Evans: work the checklist below, in order — items 1-2 unlock the most downstream work">Copy</button></div></article>
+<article class="rich-card flag-blocked"><div class="rc-head">
+        <span class="rc-rank flag-blocked">19</span>
+        <div class="rc-id">
+          <h4>robert_davis_growth_strategy</h4>
+          <p class="rc-meta">blocked · CLIENT · 2d idle</p>
+        </div>
+        <div class="rc-chips"><span class="rc-chip flag-blocked">Blocked</span><span class="rc-chip rc-chip-type">CLIENT</span><span class="rc-chip rc-chip-deal">ACTIVE</span></div>
+      </div>
+      <div class="rc-ev"><div class="rc-ev-date">2026-07-31 · <span class="rc-age">2 days ago</span></div><div class="rc-ev-body">$1,500 paid, $500 owed — Phase 1 complete</div><div class="rc-ev-src">Source: robert_davis_growth_strategy.md</div></div>
+      <div class="rc-pills"><span class="rc-pill">project</span></div>
+      <div class="rc-angle"><b>The next move:</b> Awaiting Robert&#x27;s b-roll recording time</div>
+      <div class="rc-foot"><button type="button" class="rc-copy" data-copy="robert_davis_growth_strategy — Awaiting Robert&amp;#x27;s b-roll recording time">Copy</button></div></article>
+<article class="rich-card flag-blocked"><div class="rc-head">
+        <span class="rc-rank flag-blocked">20</span>
+        <div class="rc-id">
+          <h4>slack_team_wiring</h4>
+          <p class="rc-meta">blocked · PROJECT · 2d idle</p>
+        </div>
+        <div class="rc-chips"><span class="rc-chip flag-blocked">Blocked</span><span class="rc-chip rc-chip-type">PROJECT</span></div>
+      </div>
+      <div class="rc-ev"><div class="rc-ev-date">2026-07-31 · <span class="rc-age">2 days ago</span></div><div class="rc-ev-body">Slack #trade-ideas team channel — Hermes + Ted apps created/installed</div><div class="rc-ev-src">Source: slack_team_wiring.md</div></div>
+      <div class="rc-pills"><span class="rc-pill">stack</span></div>
+      <div class="rc-angle"><b>The next move:</b> Evans: paste the 4 Slack tokens, then run wire-slack.ps1</div>
+      <div class="rc-foot"><button type="button" class="rc-copy" data-copy="slack_team_wiring — Evans: paste the 4 Slack tokens, then run wire-slack.ps1">Copy</button></div></article>
+<article class="rich-card flag-ok"><div class="rc-head">
+        <span class="rc-rank flag-ok">21</span>
+        <div class="rc-id">
+          <h4>website_factory_v2_plan</h4>
+          <p class="rc-meta">active · 2d idle</p>
+        </div>
+        <div class="rc-chips"><span class="rc-chip flag-ok">On track</span></div>
+      </div>
+      <div class="rc-ev"><div class="rc-ev-date">2026-07-31 · <span class="rc-age">2 days ago</span></div><div class="rc-ev-body">Factory v2 auto-generation plan — Astro shell + R3F islands, config-driven,</div><div class="rc-ev-src">Source: website_factory_v2_plan.md</div></div>
+      
+      <div class="rc-angle"><b>The next move:</b> Phase build per v2 plan (Astro shell)</div>
+      <div class="rc-foot"><button type="button" class="rc-copy" data-copy="website_factory_v2_plan — Phase build per v2 plan (Astro shell)">Copy</button></div></article>
+<article class="rich-card flag-blocked"><div class="rc-head">
+        <span class="rc-rank flag-blocked">22</span>
+        <div class="rc-id">
+          <h4>weekly_unblock_audit_2026-07-21</h4>
+          <p class="rc-meta">blocked · PROJECT · 2d idle</p>
+        </div>
+        <div class="rc-chips"><span class="rc-chip flag-blocked">Blocked</span><span class="rc-chip rc-chip-type">PROJECT</span></div>
+      </div>
+      <div class="rc-ev"><div class="rc-ev-date">2026-07-31 · <span class="rc-age">2 days ago</span></div><div class="rc-ev-body">Full week sweep (Jul 18-21) across CCD sessions + claude.ai chats — every active project's blocker and whether Evans or an AI agent is the one who can actually clear it</div><div class="rc-ev-src">Source: weekly_unblock_audit_2026-07-21.md</div></div>
+      <div class="rc-pills"><span class="rc-pill">workflow</span></div>
+      <div class="rc-angle"><b>The next move:</b> Evans: work the 9-item checklist in [[project_cross_reference_2026-07-21]] one by one</div>
+      <div class="rc-foot"><button type="button" class="rc-copy" data-copy="weekly_unblock_audit_2026-07-21 — Evans: work the 9-item checklist in [[project_cross_reference_2026-07-21]] one by one">Copy</button></div></article>
+<article class="rich-card flag-ok"><div class="rc-head">
+        <span class="rc-rank flag-ok">23</span>
+        <div class="rc-id">
+          <h4>weekly_wall_usage_tool</h4>
+          <p class="rc-meta">active · SYSTEM · 2d idle</p>
+        </div>
+        <div class="rc-chips"><span class="rc-chip flag-ok">On track</span><span class="rc-chip rc-chip-type">SYSTEM</span></div>
+      </div>
+      <div class="rc-ev"><div class="rc-ev-date">2026-07-31 · <span class="rc-age">2 days ago</span></div><div class="rc-ev-body">Claude weekly-usage-cap projection tool — private artifact, calibrated against real local transcript burn rate, wired into the local Command Center hub</div><div class="rc-ev-src">Source: weekly_wall_usage_tool.md</div></div>
+      <div class="rc-pills"><span class="rc-pill">workflow</span><span class="rc-pill">stack</span></div>
+      <div class="rc-angle"><b>The next move:</b> Evans: open the tool, read current % from Claude.ai usage page, enter it to calibrate</div>
+      <div class="rc-foot"><button type="button" class="rc-copy" data-copy="weekly_wall_usage_tool — Evans: open the tool, read current % from Claude.ai usage page, enter it to calibrate">Copy</button></div></article>
+<article class="rich-card flag-ok"><div class="rc-head">
+        <span class="rc-rank flag-ok">24</span>
+        <div class="rc-id">
+          <h4>dm_insight_run_log</h4>
+          <p class="rc-meta">active · SYSTEM · 1d idle</p>
+        </div>
+        <div class="rc-chips"><span class="rc-chip flag-ok">On track</span><span class="rc-chip rc-chip-type">SYSTEM</span></div>
+      </div>
+      <div class="rc-ev"><div class="rc-ev-date">2026-08-01 · <span class="rc-age">yesterday</span></div><div class="rc-ev-body">Append-only before/after log of every dm-insight-execution-sweep and dm-insight-compost run — backlog totals before and after, what got triaged, what got executed with literal before/after text, what's still stuck. Read this instead of re-deriving state from the backlog JSON when you want to know what a specific run actually did.</div><div class="rc-ev-src">Source: dm_insight_run_log.md</div></div>
+      <div class="rc-pills"><span class="rc-pill">workflow</span></div>
+      <div class="rc-angle"><b>The next move:</b> Append the next dm-insight-execution-sweep/compost run entry here; no open blocker</div>
+      <div class="rc-foot"><button type="button" class="rc-copy" data-copy="dm_insight_run_log — Append the next dm-insight-execution-sweep/compost run entry here; no open blocker">Copy</button></div></article>
+<article class="rich-card flag-ok"><div class="rc-head">
+        <span class="rc-rank flag-ok">25</span>
+        <div class="rc-id">
+          <h4>next_actions_awaiting_evans</h4>
+          <p class="rc-meta">active · PROJECT · 1d idle</p>
+        </div>
+        <div class="rc-chips"><span class="rc-chip flag-ok">On track</span><span class="rc-chip rc-chip-type">PROJECT</span></div>
+      </div>
+      <div class="rc-ev"><div class="rc-ev-date">2026-08-01 · <span class="rc-age">yesterday</span></div><div class="rc-ev-body">Single dated list of items blocked on Evans — reconciled 2026-07-19 after</div><div class="rc-ev-src">Source: next_actions_awaiting_evans.md</div></div>
+      
+      <div class="rc-angle"><b>The next move:</b> Review blocked-on-Evans list</div>
+      <div class="rc-foot"><button type="button" class="rc-copy" data-copy="next_actions_awaiting_evans — Review blocked-on-Evans list">Copy</button></div></article>
+<article class="rich-card flag-ok"><div class="rc-head">
+        <span class="rc-rank flag-ok">26</span>
+        <div class="rc-id">
+          <h4>techparsed_explainer_channel_revival</h4>
+          <p class="rc-meta">awaiting_evans_feedback · PROJECT · 1d idle</p>
+        </div>
+        <div class="rc-chips"><span class="rc-chip flag-ok">On track</span><span class="rc-chip rc-chip-type">PROJECT</span></div>
+      </div>
+      <div class="rc-ev"><div class="rc-ev-date">2026-08-01 · <span class="rc-age">yesterday</span></div><div class="rc-ev-body">Status + revival plan for the dormant "Tech Parsed" (@techparsed) faceless</div><div class="rc-ev-src">Source: techparsed_explainer_channel_revival.md</div></div>
+      <div class="rc-pills"><span class="rc-pill">workflow</span></div>
+      <div class="rc-angle"><b>The next move:</b> v2 render (gradient brain, starfield, molecule ring+core icon) sent to Evans 2026-07-31; awaiting his feedback before generating v3. Do not generate v3 speculatively — iterate one variable at a time per his explicit ask each pass.</div>
+      <div class="rc-foot"><button type="button" class="rc-copy" data-copy="techparsed_explainer_channel_revival — v2 render (gradient brain, starfield, molecule ring+core icon) sent to Evans 2026-07-31; awaiting his feedback before generating v3. Do not generate v3 speculatively — iterate one variable at a time per his explicit ask each pass.">Copy</button></div></article>
+<article class="rich-card flag-blocked"><div class="rc-head">
+        <span class="rc-rank flag-blocked">27</span>
+        <div class="rc-id">
+          <h4>trading_bot_signal_engine</h4>
+          <p class="rc-meta">blocked · PROJECT · 1d idle</p>
+        </div>
+        <div class="rc-chips"><span class="rc-chip flag-blocked">Blocked</span><span class="rc-chip rc-chip-type">PROJECT</span></div>
+      </div>
+      <div class="rc-ev"><div class="rc-ev-date">2026-08-01 · <span class="rc-age">yesterday</span></div><div class="rc-ev-body">New personal project (2026-07-21) — stock/ETF trend-signal + alert engine</div><div class="rc-ev-src">Source: trading_bot_signal_engine.md</div></div>
+      
+      <div class="rc-angle"><b>The next move:</b> Evans: name the broker for Phase 2 (order-prefill) integration</div>
+      <div class="rc-foot"><button type="button" class="rc-copy" data-copy="trading_bot_signal_engine — Evans: name the broker for Phase 2 (order-prefill) integration">Copy</button></div></article></div></div>
+      </details>
+
       <div class="grid3">
-        <details class="panel" id="attention" open>
-          <summary class="panel-head"><h3>🚨 Attention</h3><span class="count">9 items</span></summary>
-          <div class="panel-body"><div class="mini-grid"><article class="mini-card flag-blocked"><div class="mini-card-top">
-        <span class="pill flag-blocked">Blocked</span><span class="type-badge">PROJECT</span>
-      </div>
-      <h4>echelon_legal</h4>
-      <p class="na">&quot;Reschedule postponed meeting (follow up by 2026-08-01 per client-blocked</p>
-      <p class="meta">7d idle</p>
-      </article>
-<article class="mini-card flag-blocked"><div class="mini-card-top">
-        <span class="pill flag-blocked">Blocked</span><span class="type-badge">PROJECT</span>
-      </div>
-      <h4>project_registry</h4>
-      <p class="na">Evans: reschedule Echelon meeting (follow up by 2026-08-01); push factory main (6 unpushed commits); confirm roster (Hermes/Ted permanence) and legacy-project status — see [[weekly_unblock_audit_2026-07-21]]</p>
-      <p class="meta">7d idle</p>
-      </article>
-<article class="mini-card flag-blocked"><div class="mini-card-top">
-        <span class="pill flag-blocked">Blocked</span><span class="type-badge">PROJECT</span>
-      </div>
-      <h4>income_stream_2_tiktok_affiliate</h4>
-      <p class="na">Evans: create TikTok account + pick niche</p>
-      <p class="meta">3d idle</p>
-      </article>
-<article class="mini-card flag-blocked"><div class="mini-card-top">
-        <span class="pill flag-blocked">Blocked</span><span class="type-badge">CLIENT</span>
-      </div>
-      <h4>dcf_content_engine_ee_framework</h4>
-      <p class="na">Record b-roll — all 3 entities</p>
-      <p class="meta">2d idle</p>
-      </article>
-<article class="mini-card flag-blocked"><div class="mini-card-top">
-        <span class="pill flag-blocked">Blocked</span><span class="type-badge">PROJECT</span>
-      </div>
-      <h4>project_cross_reference_2026-07-21</h4>
-      <p class="na">Evans: work the checklist below, in order — items 1-2 unlock the most downstream work</p>
-      <p class="meta">2d idle</p>
-      </article>
-<article class="mini-card flag-blocked"><div class="mini-card-top">
-        <span class="pill flag-blocked">Blocked</span><span class="type-badge">CLIENT</span>
-      </div>
-      <h4>robert_davis_growth_strategy</h4>
-      <p class="na">Awaiting Robert&#x27;s b-roll recording time</p>
-      <p class="meta">2d idle</p>
-      </article>
-<article class="mini-card flag-blocked"><div class="mini-card-top">
-        <span class="pill flag-blocked">Blocked</span><span class="type-badge">PROJECT</span>
-      </div>
-      <h4>slack_team_wiring</h4>
-      <p class="na">Evans: paste the 4 Slack tokens, then run wire-slack.ps1</p>
-      <p class="meta">2d idle</p>
-      </article>
-<article class="mini-card flag-blocked"><div class="mini-card-top">
-        <span class="pill flag-blocked">Blocked</span><span class="type-badge">PROJECT</span>
-      </div>
-      <h4>weekly_unblock_audit_2026-07-21</h4>
-      <p class="na">Evans: work the 9-item checklist in [[project_cross_reference_2026-07-21]] one by one</p>
-      <p class="meta">2d idle</p>
-      </article>
-<article class="mini-card flag-blocked"><div class="mini-card-top">
-        <span class="pill flag-blocked">Blocked</span><span class="type-badge">PROJECT</span>
-      </div>
-      <h4>trading_bot_signal_engine</h4>
-      <p class="na">Evans: name the broker for Phase 2 (order-prefill) integration</p>
-      <p class="meta">1d idle</p>
-      </article></div></div>
-        </details>
-        <details class="panel" id="next-actions" open>
-          <summary class="panel-head"><h3>⚡ Next Actions</h3><span class="count">27 · oldest first</span></summary>
-          <div class="panel-body"><div class="mini-grid"><article class="mini-card flag-ok"><div class="mini-card-top">
-        <span class="pill flag-ok">On track</span><span class="type-badge">SYSTEM</span>
-      </div>
-      <h4>dcf_hub_shell_canon</h4>
-      <p class="na">Apply hub-shell.css to any NEW surface at build time, not as a retrofit</p>
-      <p class="meta">touched 2026-07-26</p>
-      </article>
-<article class="mini-card flag-blocked"><div class="mini-card-top">
-        <span class="pill flag-blocked">Blocked</span><span class="type-badge">PROJECT</span>
-      </div>
-      <h4>echelon_legal</h4>
-      <p class="na">&quot;Reschedule postponed meeting (follow up by 2026-08-01 per client-blocked</p>
-      <p class="meta">touched 2026-07-26</p>
-      </article>
-<article class="mini-card flag-blocked"><div class="mini-card-top">
-        <span class="pill flag-blocked">Blocked</span><span class="type-badge">PROJECT</span>
-      </div>
-      <h4>project_registry</h4>
-      <p class="na">Evans: reschedule Echelon meeting (follow up by 2026-08-01); push factory main (6 unpushed commits); confirm roster (Hermes/Ted permanence) and legacy-project status — see [[weekly_unblock_audit_2026-07-21]]</p>
-      <p class="meta">touched 2026-07-26</p>
-      </article>
-<article class="mini-card flag-blocked"><div class="mini-card-top">
-        <span class="pill flag-blocked">Blocked</span><span class="type-badge">PROJECT</span>
-      </div>
-      <h4>income_stream_2_tiktok_affiliate</h4>
-      <p class="na">Evans: create TikTok account + pick niche</p>
-      <p class="meta">touched 2026-07-30</p>
-      </article>
-<article class="mini-card flag-ok"><div class="mini-card-top">
-        <span class="pill flag-ok">On track</span><span class="type-badge">PROJECT</span>
-      </div>
-      <h4>leilas_world_kids_channel</h4>
-      <p class="na">Evans to decide: channel name (front-runner &#x27;Leila&#x27;s Corner&#x27;), voice direction (Evans&#x27;s own voice vs. Cozy Voice AI clone), LLC formation timing. Then review the drafted Episode 1 script before any Soul Cast/Seedance generation begins.</p>
-      <p class="meta">touched 2026-07-30</p>
-      </article>
-<article class="mini-card flag-ok"><div class="mini-card-top">
-        <span class="pill flag-ok">On track</span><span class="type-badge">PROJECT</span>
-      </div>
-      <h4>claude_design_dcf_system</h4>
-      <p class="na">Decide whether to extend this design system to cover the Command Center</p>
-      <p class="meta">touched 2026-07-31</p>
-      </article>
-<article class="mini-card flag-ok"><div class="mini-card-top">
-        <span class="pill flag-ok">On track</span>
-      </div>
-      <h4>claude_md_restructure_2026-07-25</h4>
-      <p class="na">Evans: push dcf-website-factory main (6 unpushed commits + WIP); reschedule Echelon by 2026-08-01</p>
-      <p class="meta">touched 2026-07-31</p>
-      </article>
-<article class="mini-card flag-ok"><div class="mini-card-top">
-        <span class="pill flag-ok">On track</span><span class="type-badge">PROJECT</span>
-      </div>
-      <h4>command_center_dashboard_build</h4>
-      <p class="na">&#x27;Evans: confirm Euro Motorsport pitch status (live prospect or dead concept)</p>
-      <p class="meta">touched 2026-07-31</p>
-      </article>
-<article class="mini-card flag-ok"><div class="mini-card-top">
-        <span class="pill flag-ok">On track</span><span class="type-badge">CLIENT</span>
-      </div>
-      <h4>davis_motion_pipeline</h4>
-      <p class="na">Build motion pipeline v2 (due 2026-07-22); Evans: also confirm whether filing #252050912 draft still needs resending or is already handled</p>
-      <p class="meta">touched 2026-07-31</p>
-      </article>
-<article class="mini-card flag-blocked"><div class="mini-card-top">
-        <span class="pill flag-blocked">Blocked</span><span class="type-badge">CLIENT</span>
-      </div>
-      <h4>dcf_content_engine_ee_framework</h4>
-      <p class="na">Record b-roll — all 3 entities</p>
-      <p class="meta">touched 2026-07-31</p>
-      </article>
-<article class="mini-card flag-ok"><div class="mini-card-top">
-        <span class="pill flag-ok">On track</span><span class="type-badge">PROJECT</span>
-      </div>
-      <h4>dm_insight_execution_loop</h4>
-      <p class="na">Monitor first real (non-backfill) daily sweep run; review first weekly compost pass 2026-08-03. 2026-07-31 resume-loop run: cleared the remaining 6 same-day-execute rows (2 executed, 4 correctly normalized to Blocked — see log below). Tally now 37 Done / 27 Not Started / 12 Blocked of 76.</p>
-      <p class="meta">touched 2026-07-31</p>
-      </article>
-<article class="mini-card flag-ok"><div class="mini-card-top">
-        <span class="pill flag-ok">On track</span><span class="type-badge">PROJECT</span>
-      </div>
-      <h4>dm_video_insight_dashboard</h4>
-      <p class="na">Regenerate after future dm-video-insight-watch runs — see How to update</p>
-      <p class="meta">touched 2026-07-31</p>
-      </article>
-<article class="mini-card flag-ok"><div class="mini-card-top">
-        <span class="pill flag-ok">On track</span><span class="type-badge">PROJECT</span>
-      </div>
-      <h4>factory_learnings_audit_2026-07-19</h4>
-      <p class="na">Push + deploy merge 4645ce2; Design-feature pilot</p>
-      <p class="meta">touched 2026-07-31</p>
-      </article>
-<article class="mini-card flag-ok"><div class="mini-card-top">
-        <span class="pill flag-ok">On track</span><span class="type-badge">CLIENT</span>
-      </div>
-      <h4>gerlach_hosting_setup</h4>
-      <p class="na">Rotate SFTP credentials (post-leak, redacted 7/17)</p>
-      <p class="meta">touched 2026-07-31</p>
-      </article>
-<article class="mini-card flag-ok"><div class="mini-card-top">
-        <span class="pill flag-ok">On track</span><span class="type-badge">PROJECT</span>
-      </div>
-      <h4>income_stream_3_ai_model_character</h4>
-      <p class="na">Complete Soul character training for Model 1 + Model 2 (curated Gemini reference sets); Leila&#x27;s World content specs still needed from Evans before generating anything for that separate project</p>
-      <p class="meta">touched 2026-07-31</p>
-      </article>
-<article class="mini-card flag-ok"><div class="mini-card-top">
-        <span class="pill flag-ok">On track</span><span class="type-badge">PROJECT</span>
-      </div>
-      <h4>linkedin_banner_project</h4>
-      <p class="na">&#x27;Evans: upload LinkedIn_Banner_2026_v6_dcfsystem.png to LinkedIn profile</p>
-      <p class="meta">touched 2026-07-31</p>
-      </article>
-<article class="mini-card flag-ok"><div class="mini-card-top">
-        <span class="pill flag-ok">On track</span><span class="type-badge">SYSTEM</span>
-      </div>
-      <h4>one_three_one_escalation_protocol</h4>
-      <p class="na">Watch the next few real escalations for format compliance; tune if the 3-option requirement produces padding</p>
-      <p class="meta">touched 2026-07-31</p>
-      </article>
-<article class="mini-card flag-blocked"><div class="mini-card-top">
-        <span class="pill flag-blocked">Blocked</span><span class="type-badge">PROJECT</span>
-      </div>
-      <h4>project_cross_reference_2026-07-21</h4>
-      <p class="na">Evans: work the checklist below, in order — items 1-2 unlock the most downstream work</p>
-      <p class="meta">touched 2026-07-31</p>
-      </article>
-<article class="mini-card flag-blocked"><div class="mini-card-top">
-        <span class="pill flag-blocked">Blocked</span><span class="type-badge">CLIENT</span>
-      </div>
-      <h4>robert_davis_growth_strategy</h4>
-      <p class="na">Awaiting Robert&#x27;s b-roll recording time</p>
-      <p class="meta">touched 2026-07-31</p>
-      </article>
-<article class="mini-card flag-blocked"><div class="mini-card-top">
-        <span class="pill flag-blocked">Blocked</span><span class="type-badge">PROJECT</span>
-      </div>
-      <h4>slack_team_wiring</h4>
-      <p class="na">Evans: paste the 4 Slack tokens, then run wire-slack.ps1</p>
-      <p class="meta">touched 2026-07-31</p>
-      </article>
-<article class="mini-card flag-ok"><div class="mini-card-top">
-        <span class="pill flag-ok">On track</span>
-      </div>
-      <h4>website_factory_v2_plan</h4>
-      <p class="na">Phase build per v2 plan (Astro shell)</p>
-      <p class="meta">touched 2026-07-31</p>
-      </article>
-<article class="mini-card flag-blocked"><div class="mini-card-top">
-        <span class="pill flag-blocked">Blocked</span><span class="type-badge">PROJECT</span>
-      </div>
-      <h4>weekly_unblock_audit_2026-07-21</h4>
-      <p class="na">Evans: work the 9-item checklist in [[project_cross_reference_2026-07-21]] one by one</p>
-      <p class="meta">touched 2026-07-31</p>
-      </article>
-<article class="mini-card flag-ok"><div class="mini-card-top">
-        <span class="pill flag-ok">On track</span><span class="type-badge">SYSTEM</span>
-      </div>
-      <h4>weekly_wall_usage_tool</h4>
-      <p class="na">Evans: open the tool, read current % from Claude.ai usage page, enter it to calibrate</p>
-      <p class="meta">touched 2026-07-31</p>
-      </article>
-<article class="mini-card flag-ok"><div class="mini-card-top">
-        <span class="pill flag-ok">On track</span><span class="type-badge">SYSTEM</span>
-      </div>
-      <h4>dm_insight_run_log</h4>
-      <p class="na">Append the next dm-insight-execution-sweep/compost run entry here; no open blocker</p>
-      <p class="meta">touched 2026-08-01</p>
-      </article>
-<article class="mini-card flag-ok"><div class="mini-card-top">
-        <span class="pill flag-ok">On track</span><span class="type-badge">PROJECT</span>
-      </div>
-      <h4>next_actions_awaiting_evans</h4>
-      <p class="na">Review blocked-on-Evans list</p>
-      <p class="meta">touched 2026-08-01</p>
-      </article>
-<article class="mini-card flag-ok"><div class="mini-card-top">
-        <span class="pill flag-ok">On track</span><span class="type-badge">PROJECT</span>
-      </div>
-      <h4>techparsed_explainer_channel_revival</h4>
-      <p class="na">v2 render (gradient brain, starfield, molecule ring+core icon) sent to Evans 2026-07-31; awaiting his feedback before generating v3. Do not generate v3 speculatively — iterate one variable at a time per his explicit ask each pass.</p>
-      <p class="meta">touched 2026-08-01</p>
-      </article>
-<article class="mini-card flag-blocked"><div class="mini-card-top">
-        <span class="pill flag-blocked">Blocked</span><span class="type-badge">PROJECT</span>
-      </div>
-      <h4>trading_bot_signal_engine</h4>
-      <p class="na">Evans: name the broker for Phase 2 (order-prefill) integration</p>
-      <p class="meta">touched 2026-08-01</p>
-      </article></div></div>
-        </details>
         <details class="panel" id="deadlines" open>
           <summary class="panel-head"><h3>📅 Upcoming Deadlines</h3><span class="count">next 30 days</span></summary>
           <div class="panel-body"><p class="empty-state">Nothing on the calendar.</p></div>
@@ -934,13 +1210,41 @@
         </details>
       </div>
     </main>
-    <footer>Built in Obsidian. Powered by focus. Designed for execution. · Aug 02, 2026 · 02:25 PM</footer>
+    <footer>Built in Obsidian. Powered by focus. Designed for execution. · Aug 02, 2026 · 03:12 PM</footer>
   </div>
 </div>
 </div>
 <div id="tabFrames"></div>
 <script>
 var ccTabs = {}; // id -> {btn, panel}
+
+/* Copy button on each rich card — puts "<note> - <next action>" on the
+   clipboard for pasting into a message or task list. Delegated, because the
+   cards are re-rendered whenever the build regenerates. stopPropagation keeps
+   the click from also flipping the card into resolve mode. */
+document.addEventListener('click', function (e) {
+  var btn = e.target.closest('.rc-copy');
+  if (!btn) return;
+  e.stopPropagation();
+  var text = btn.dataset.copy || '';
+  var done = function () {
+    var old = btn.textContent;
+    btn.textContent = 'Copied';
+    btn.classList.add('done');
+    setTimeout(function () { btn.textContent = old; btn.classList.remove('done'); }, 1400);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(done, function () { btn.textContent = 'Copy failed'; });
+  } else {
+    // file:// and some older contexts have no async clipboard API
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { btn.textContent = 'Copy failed'; }
+    document.body.removeChild(ta);
+  }
+});
+
 var ccTabSeq = 0;
 
 function ccSlugify(title) {
