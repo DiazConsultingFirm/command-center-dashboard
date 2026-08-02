@@ -209,6 +209,10 @@
   .rc-id { flex: 1; min-width: 0; }
   .rc-id h4 { margin: 0; font-size: 14px; font-weight: 700; line-height: 1.25; }
   .rc-meta { margin: 2px 0 0; font-size: 11px; color: var(--muted); }
+  /* The underlying filename, kept visible so a card is always traceable
+     back to the note you'd edit — the same job the reference card's
+     "Source: Insurance Journal" line does. */
+  .rc-file { margin: 3px 0 0; font-family: var(--font-mono); font-size: 9px; color: var(--faint); }
 
   .rc-chips { display: flex; gap: 5px; flex-wrap: wrap; justify-content: flex-end; flex: 0 0 auto; max-width: 45%; }
   .rc-chip {
@@ -408,7 +412,7 @@
     <header class="top" id="top">
       <div>
         <h1>Good afternoon, Evans.</h1>
-        <p class="sub">Aug 02, 2026 · 03:12 PM · Public mirror — Job Search and interview detail intentionally excluded.</p>
+        <p class="sub">Aug 02, 2026 · 03:20 PM · Public mirror — Job Search and interview detail intentionally excluded.</p>
       </div>
       <p class="tagline">Clarity today. Freedom tomorrow.<br>Focus &gt; Execute &gt; Compound.</p>
       <div class="who">
@@ -443,7 +447,7 @@
       <svg width="72" height="24" class="spark" viewBox="0 0 72 24"><polyline points="0.0,22.0 12.0,2.0 24.0,2.0 36.0,2.0 48.0,22.0 60.0,22.0 72.0,22.0" fill="none" stroke="#dc4c3f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
         <div class="kpi-flip-face kpi-flip-back"><p class="kpi-source-eyebrow">SOURCE</p>
         <p class="kpi-source-text">Vault notes where <code>status: blocked</code>, or <code>status: active</code> with no touch in over 7 days.</p>
-        <p class="kpi-source-stamp">Updated Aug 02, 2026 · 03:12 PM</p>
+        <p class="kpi-source-stamp">Updated Aug 02, 2026 · 03:20 PM</p>
         <button type="button" class="kpi-back-btn">← Back</button></div>
       </div>
     </div><div class="kpi-card kpi-flip">
@@ -455,7 +459,7 @@
       <svg width="72" height="24" class="spark" viewBox="0 0 72 24"><polyline points="0.0,22.0 12.0,22.0 24.0,22.0 36.0,10.0 48.0,6.0 60.0,2.0 72.0,2.0" fill="none" stroke="#1B3A4B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
         <div class="kpi-flip-face kpi-flip-back"><p class="kpi-source-eyebrow">SOURCE</p>
         <p class="kpi-source-text">Vault notes with a <code>status</code> set, excluding <code>deferred</code>.</p>
-        <p class="kpi-source-stamp">Updated Aug 02, 2026 · 03:12 PM</p>
+        <p class="kpi-source-stamp">Updated Aug 02, 2026 · 03:20 PM</p>
         <button type="button" class="kpi-back-btn">← Back</button></div>
       </div>
     </div><div class="kpi-card kpi-flip">
@@ -467,7 +471,7 @@
       <svg width="72" height="24" class="spark"><line x1="0" y1="12.0" x2="72" y2="12.0" stroke="#d8dde1" stroke-width="1.5"/></svg></div>
         <div class="kpi-flip-face kpi-flip-back"><p class="kpi-source-eyebrow">SOURCE</p>
         <p class="kpi-source-text">Vault notes tagged <code>client</code> in frontmatter.</p>
-        <p class="kpi-source-stamp">Updated Aug 02, 2026 · 03:12 PM</p>
+        <p class="kpi-source-stamp">Updated Aug 02, 2026 · 03:20 PM</p>
         <button type="button" class="kpi-back-btn">← Back</button></div>
       </div>
     </div><div class="kpi-card kpi-flip">
@@ -479,7 +483,7 @@
       <svg width="72" height="24" class="spark" viewBox="0 0 72 24"><polyline points="0.0,22.0 12.0,22.0 24.0,22.0 36.0,7.0 48.0,2.0 60.0,2.0 72.0,2.0" fill="none" stroke="#1B3A4B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
         <div class="kpi-flip-face kpi-flip-back"><p class="kpi-source-eyebrow">SOURCE</p>
         <p class="kpi-source-text">Vault notes tagged <code>project</code> with an active (non-deferred) status.</p>
-        <p class="kpi-source-stamp">Updated Aug 02, 2026 · 03:12 PM</p>
+        <p class="kpi-source-stamp">Updated Aug 02, 2026 · 03:20 PM</p>
         <button type="button" class="kpi-back-btn">← Back</button></div>
       </div>
     </div><div class="kpi-card kpi-flip">
@@ -491,7 +495,7 @@
       <svg width="72" height="24" class="spark" viewBox="0 0 72 24"><polyline points="0.0,2.0 12.0,2.0 24.0,22.0 36.0,22.0 48.0,22.0 60.0,22.0 72.0,22.0" fill="none" stroke="#1B3A4B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
         <div class="kpi-flip-face kpi-flip-back"><p class="kpi-source-eyebrow">SOURCE</p>
         <p class="kpi-source-text">Notes with <code>interview_date</code> in the next 30 days.</p>
-        <p class="kpi-source-stamp">Updated Aug 02, 2026 · 03:12 PM</p>
+        <p class="kpi-source-stamp">Updated Aug 02, 2026 · 03:20 PM</p>
         <button type="button" class="kpi-back-btn">← Back</button></div>
       </div>
     </div></div>
@@ -551,8 +555,9 @@
         <div class="panel-body"><div class="rich-grid"><article class="rich-card flag-blocked"><div class="rc-head">
         <span class="rc-rank flag-blocked">1</span>
         <div class="rc-id">
-          <h4>echelon_legal</h4>
+          <h4>Echelon Legal</h4>
           <p class="rc-meta">blocked · PROJECT · 7d idle</p>
+          <p class="rc-file">echelon_legal.md</p>
         </div>
         <div class="rc-chips"><span class="rc-chip flag-blocked">Blocked</span><span class="rc-chip rc-chip-type">PROJECT</span><span class="rc-chip rc-chip-deal">PROSPECT</span></div>
       </div>
@@ -563,8 +568,9 @@
 <article class="rich-card flag-blocked"><div class="rc-head">
         <span class="rc-rank flag-blocked">2</span>
         <div class="rc-id">
-          <h4>project_registry</h4>
+          <h4>Project Registry</h4>
           <p class="rc-meta">blocked · PROJECT · 7d idle</p>
+          <p class="rc-file">project_registry.md</p>
         </div>
         <div class="rc-chips"><span class="rc-chip flag-blocked">Blocked</span><span class="rc-chip rc-chip-type">PROJECT</span></div>
       </div>
@@ -575,8 +581,9 @@
 <article class="rich-card flag-blocked"><div class="rc-head">
         <span class="rc-rank flag-blocked">3</span>
         <div class="rc-id">
-          <h4>income_stream_2_tiktok_affiliate</h4>
+          <h4>Income Stream 2 Tiktok Affiliate</h4>
           <p class="rc-meta">blocked · PROJECT · 3d idle</p>
+          <p class="rc-file">income_stream_2_tiktok_affiliate.md</p>
         </div>
         <div class="rc-chips"><span class="rc-chip flag-blocked">Blocked</span><span class="rc-chip rc-chip-type">PROJECT</span></div>
       </div>
@@ -587,8 +594,9 @@
 <article class="rich-card flag-blocked"><div class="rc-head">
         <span class="rc-rank flag-blocked">4</span>
         <div class="rc-id">
-          <h4>dcf_content_engine_ee_framework</h4>
+          <h4>Dcf Content Engine Ee Framework</h4>
           <p class="rc-meta">blocked · CLIENT · 2d idle</p>
+          <p class="rc-file">dcf_content_engine_ee_framework.md</p>
         </div>
         <div class="rc-chips"><span class="rc-chip flag-blocked">Blocked</span><span class="rc-chip rc-chip-type">CLIENT</span></div>
       </div>
@@ -599,8 +607,9 @@
 <article class="rich-card flag-blocked"><div class="rc-head">
         <span class="rc-rank flag-blocked">5</span>
         <div class="rc-id">
-          <h4>project_cross_reference_2026-07-21</h4>
+          <h4>Project Cross Reference 2026 07 21</h4>
           <p class="rc-meta">blocked · PROJECT · 2d idle</p>
+          <p class="rc-file">project_cross_reference_2026-07-21.md</p>
         </div>
         <div class="rc-chips"><span class="rc-chip flag-blocked">Blocked</span><span class="rc-chip rc-chip-type">PROJECT</span></div>
       </div>
@@ -611,8 +620,9 @@
 <article class="rich-card flag-blocked"><div class="rc-head">
         <span class="rc-rank flag-blocked">6</span>
         <div class="rc-id">
-          <h4>robert_davis_growth_strategy</h4>
+          <h4>Robert Davis Growth Strategy</h4>
           <p class="rc-meta">blocked · CLIENT · 2d idle</p>
+          <p class="rc-file">robert_davis_growth_strategy.md</p>
         </div>
         <div class="rc-chips"><span class="rc-chip flag-blocked">Blocked</span><span class="rc-chip rc-chip-type">CLIENT</span><span class="rc-chip rc-chip-deal">ACTIVE</span></div>
       </div>
@@ -623,8 +633,9 @@
 <article class="rich-card flag-blocked"><div class="rc-head">
         <span class="rc-rank flag-blocked">7</span>
         <div class="rc-id">
-          <h4>slack_team_wiring</h4>
+          <h4>Slack Team Wiring</h4>
           <p class="rc-meta">blocked · PROJECT · 2d idle</p>
+          <p class="rc-file">slack_team_wiring.md</p>
         </div>
         <div class="rc-chips"><span class="rc-chip flag-blocked">Blocked</span><span class="rc-chip rc-chip-type">PROJECT</span></div>
       </div>
@@ -635,8 +646,9 @@
 <article class="rich-card flag-blocked"><div class="rc-head">
         <span class="rc-rank flag-blocked">8</span>
         <div class="rc-id">
-          <h4>weekly_unblock_audit_2026-07-21</h4>
+          <h4>Weekly Unblock Audit 2026 07 21</h4>
           <p class="rc-meta">blocked · PROJECT · 2d idle</p>
+          <p class="rc-file">weekly_unblock_audit_2026-07-21.md</p>
         </div>
         <div class="rc-chips"><span class="rc-chip flag-blocked">Blocked</span><span class="rc-chip rc-chip-type">PROJECT</span></div>
       </div>
@@ -647,8 +659,9 @@
 <article class="rich-card flag-blocked"><div class="rc-head">
         <span class="rc-rank flag-blocked">9</span>
         <div class="rc-id">
-          <h4>trading_bot_signal_engine</h4>
+          <h4>Trading Bot Signal Engine</h4>
           <p class="rc-meta">blocked · PROJECT · 1d idle</p>
+          <p class="rc-file">trading_bot_signal_engine.md</p>
         </div>
         <div class="rc-chips"><span class="rc-chip flag-blocked">Blocked</span><span class="rc-chip rc-chip-type">PROJECT</span></div>
       </div>
@@ -663,8 +676,9 @@
         <div class="panel-body"><div class="rich-grid"><article class="rich-card flag-ok"><div class="rc-head">
         <span class="rc-rank flag-ok">1</span>
         <div class="rc-id">
-          <h4>dcf_hub_shell_canon</h4>
+          <h4>Dcf Hub Shell Canon</h4>
           <p class="rc-meta">active · SYSTEM · 7d idle</p>
+          <p class="rc-file">dcf_hub_shell_canon.md</p>
         </div>
         <div class="rc-chips"><span class="rc-chip flag-ok">On track</span><span class="rc-chip rc-chip-type">SYSTEM</span></div>
       </div>
@@ -675,8 +689,9 @@
 <article class="rich-card flag-blocked"><div class="rc-head">
         <span class="rc-rank flag-blocked">2</span>
         <div class="rc-id">
-          <h4>echelon_legal</h4>
+          <h4>Echelon Legal</h4>
           <p class="rc-meta">blocked · PROJECT · 7d idle</p>
+          <p class="rc-file">echelon_legal.md</p>
         </div>
         <div class="rc-chips"><span class="rc-chip flag-blocked">Blocked</span><span class="rc-chip rc-chip-type">PROJECT</span><span class="rc-chip rc-chip-deal">PROSPECT</span></div>
       </div>
@@ -687,8 +702,9 @@
 <article class="rich-card flag-blocked"><div class="rc-head">
         <span class="rc-rank flag-blocked">3</span>
         <div class="rc-id">
-          <h4>project_registry</h4>
+          <h4>Project Registry</h4>
           <p class="rc-meta">blocked · PROJECT · 7d idle</p>
+          <p class="rc-file">project_registry.md</p>
         </div>
         <div class="rc-chips"><span class="rc-chip flag-blocked">Blocked</span><span class="rc-chip rc-chip-type">PROJECT</span></div>
       </div>
@@ -699,8 +715,9 @@
 <article class="rich-card flag-blocked"><div class="rc-head">
         <span class="rc-rank flag-blocked">4</span>
         <div class="rc-id">
-          <h4>income_stream_2_tiktok_affiliate</h4>
+          <h4>Income Stream 2 Tiktok Affiliate</h4>
           <p class="rc-meta">blocked · PROJECT · 3d idle</p>
+          <p class="rc-file">income_stream_2_tiktok_affiliate.md</p>
         </div>
         <div class="rc-chips"><span class="rc-chip flag-blocked">Blocked</span><span class="rc-chip rc-chip-type">PROJECT</span></div>
       </div>
@@ -711,8 +728,9 @@
 <article class="rich-card flag-ok"><div class="rc-head">
         <span class="rc-rank flag-ok">5</span>
         <div class="rc-id">
-          <h4>leilas_world_kids_channel</h4>
+          <h4>Leilas World Kids Channel</h4>
           <p class="rc-meta">in_progress · PROJECT · 3d idle</p>
+          <p class="rc-file">leilas_world_kids_channel.md</p>
         </div>
         <div class="rc-chips"><span class="rc-chip flag-ok">On track</span><span class="rc-chip rc-chip-type">PROJECT</span></div>
       </div>
@@ -723,8 +741,9 @@
 <article class="rich-card flag-ok"><div class="rc-head">
         <span class="rc-rank flag-ok">6</span>
         <div class="rc-id">
-          <h4>claude_design_dcf_system</h4>
+          <h4>Claude Design Dcf System</h4>
           <p class="rc-meta">active · PROJECT · 2d idle</p>
+          <p class="rc-file">claude_design_dcf_system.md</p>
         </div>
         <div class="rc-chips"><span class="rc-chip flag-ok">On track</span><span class="rc-chip rc-chip-type">PROJECT</span></div>
       </div>
@@ -735,8 +754,9 @@
 <article class="rich-card flag-ok"><div class="rc-head">
         <span class="rc-rank flag-ok">7</span>
         <div class="rc-id">
-          <h4>claude_md_restructure_2026-07-25</h4>
+          <h4>Claude Md Restructure 2026 07 25</h4>
           <p class="rc-meta">active · 2d idle</p>
+          <p class="rc-file">claude_md_restructure_2026-07-25.md</p>
         </div>
         <div class="rc-chips"><span class="rc-chip flag-ok">On track</span></div>
       </div>
@@ -747,8 +767,9 @@
 <article class="rich-card flag-ok"><div class="rc-head">
         <span class="rc-rank flag-ok">8</span>
         <div class="rc-id">
-          <h4>command_center_dashboard_build</h4>
+          <h4>Command Center Dashboard Build</h4>
           <p class="rc-meta">active · PROJECT · 2d idle</p>
+          <p class="rc-file">command_center_dashboard_build.md</p>
         </div>
         <div class="rc-chips"><span class="rc-chip flag-ok">On track</span><span class="rc-chip rc-chip-type">PROJECT</span></div>
       </div>
@@ -759,20 +780,22 @@
 <article class="rich-card flag-ok"><div class="rc-head">
         <span class="rc-rank flag-ok">9</span>
         <div class="rc-id">
-          <h4>davis_motion_pipeline</h4>
+          <h4>Davis Motion Pipeline</h4>
           <p class="rc-meta">active · CLIENT · 2d idle</p>
+          <p class="rc-file">davis_motion_pipeline.md</p>
         </div>
         <div class="rc-chips"><span class="rc-chip flag-ok">On track</span><span class="rc-chip rc-chip-type">CLIENT</span></div>
       </div>
-      <div class="rc-ev"><div class="rc-ev-date">2026-07-31 · <span class="rc-age">2 days ago</span></div><div class="rc-ev-body">'Robert Davis motion pipeline v2 — DECIDED 2026-07-17: cloud workflow,</div><div class="rc-ev-src">Source: davis_motion_pipeline.md</div></div>
+      <div class="rc-ev"><div class="rc-ev-date">2026-07-31 · <span class="rc-age">2 days ago</span></div><div class="rc-ev-body">Robert Davis motion pipeline v2 — DECIDED 2026-07-17: cloud workflow,</div><div class="rc-ev-src">Source: davis_motion_pipeline.md</div></div>
       <div class="rc-pills"><span class="rc-pill">project</span></div>
       <div class="rc-angle"><b>The next move:</b> Build motion pipeline v2 (due 2026-07-22); Evans: also confirm whether filing #252050912 draft still needs resending or is already handled</div>
       <div class="rc-foot"><button type="button" class="rc-copy" data-copy="davis_motion_pipeline — Build motion pipeline v2 (due 2026-07-22); Evans: also confirm whether filing #252050912 draft still needs resending or is already handled">Copy</button></div></article>
 <article class="rich-card flag-blocked"><div class="rc-head">
         <span class="rc-rank flag-blocked">10</span>
         <div class="rc-id">
-          <h4>dcf_content_engine_ee_framework</h4>
+          <h4>Dcf Content Engine Ee Framework</h4>
           <p class="rc-meta">blocked · CLIENT · 2d idle</p>
+          <p class="rc-file">dcf_content_engine_ee_framework.md</p>
         </div>
         <div class="rc-chips"><span class="rc-chip flag-blocked">Blocked</span><span class="rc-chip rc-chip-type">CLIENT</span></div>
       </div>
@@ -783,8 +806,9 @@
 <article class="rich-card flag-ok"><div class="rc-head">
         <span class="rc-rank flag-ok">11</span>
         <div class="rc-id">
-          <h4>dm_insight_execution_loop</h4>
+          <h4>Dm Insight Execution Loop</h4>
           <p class="rc-meta">active · PROJECT · 2d idle</p>
+          <p class="rc-file">dm_insight_execution_loop.md</p>
         </div>
         <div class="rc-chips"><span class="rc-chip flag-ok">On track</span><span class="rc-chip rc-chip-type">PROJECT</span></div>
       </div>
@@ -795,8 +819,9 @@
 <article class="rich-card flag-ok"><div class="rc-head">
         <span class="rc-rank flag-ok">12</span>
         <div class="rc-id">
-          <h4>dm_video_insight_dashboard</h4>
+          <h4>Dm Video Insight Dashboard</h4>
           <p class="rc-meta">active · PROJECT · 2d idle</p>
+          <p class="rc-file">dm_video_insight_dashboard.md</p>
         </div>
         <div class="rc-chips"><span class="rc-chip flag-ok">On track</span><span class="rc-chip rc-chip-type">PROJECT</span></div>
       </div>
@@ -807,8 +832,9 @@
 <article class="rich-card flag-ok"><div class="rc-head">
         <span class="rc-rank flag-ok">13</span>
         <div class="rc-id">
-          <h4>factory_learnings_audit_2026-07-19</h4>
+          <h4>Factory Learnings Audit 2026 07 19</h4>
           <p class="rc-meta">active · PROJECT · 2d idle</p>
+          <p class="rc-file">factory_learnings_audit_2026-07-19.md</p>
         </div>
         <div class="rc-chips"><span class="rc-chip flag-ok">On track</span><span class="rc-chip rc-chip-type">PROJECT</span></div>
       </div>
@@ -819,8 +845,9 @@
 <article class="rich-card flag-ok"><div class="rc-head">
         <span class="rc-rank flag-ok">14</span>
         <div class="rc-id">
-          <h4>gerlach_hosting_setup</h4>
+          <h4>Gerlach Hosting Setup</h4>
           <p class="rc-meta">live · CLIENT · 2d idle</p>
+          <p class="rc-file">gerlach_hosting_setup.md</p>
         </div>
         <div class="rc-chips"><span class="rc-chip flag-ok">On track</span><span class="rc-chip rc-chip-type">CLIENT</span><span class="rc-chip rc-chip-deal">ACTIVE</span></div>
       </div>
@@ -831,8 +858,9 @@
 <article class="rich-card flag-ok"><div class="rc-head">
         <span class="rc-rank flag-ok">15</span>
         <div class="rc-id">
-          <h4>income_stream_3_ai_model_character</h4>
+          <h4>Income Stream 3 Ai Model Character</h4>
           <p class="rc-meta">in_progress · PROJECT · 2d idle</p>
+          <p class="rc-file">income_stream_3_ai_model_character.md</p>
         </div>
         <div class="rc-chips"><span class="rc-chip flag-ok">On track</span><span class="rc-chip rc-chip-type">PROJECT</span></div>
       </div>
@@ -843,8 +871,9 @@
 <article class="rich-card flag-ok"><div class="rc-head">
         <span class="rc-rank flag-ok">16</span>
         <div class="rc-id">
-          <h4>linkedin_banner_project</h4>
+          <h4>Linkedin Banner Project</h4>
           <p class="rc-meta">active · PROJECT · 2d idle</p>
+          <p class="rc-file">linkedin_banner_project.md</p>
         </div>
         <div class="rc-chips"><span class="rc-chip flag-ok">On track</span><span class="rc-chip rc-chip-type">PROJECT</span></div>
       </div>
@@ -855,8 +884,9 @@
 <article class="rich-card flag-ok"><div class="rc-head">
         <span class="rc-rank flag-ok">17</span>
         <div class="rc-id">
-          <h4>one_three_one_escalation_protocol</h4>
+          <h4>One Three One Escalation Protocol</h4>
           <p class="rc-meta">active · SYSTEM · 2d idle</p>
+          <p class="rc-file">one_three_one_escalation_protocol.md</p>
         </div>
         <div class="rc-chips"><span class="rc-chip flag-ok">On track</span><span class="rc-chip rc-chip-type">SYSTEM</span></div>
       </div>
@@ -867,8 +897,9 @@
 <article class="rich-card flag-blocked"><div class="rc-head">
         <span class="rc-rank flag-blocked">18</span>
         <div class="rc-id">
-          <h4>project_cross_reference_2026-07-21</h4>
+          <h4>Project Cross Reference 2026 07 21</h4>
           <p class="rc-meta">blocked · PROJECT · 2d idle</p>
+          <p class="rc-file">project_cross_reference_2026-07-21.md</p>
         </div>
         <div class="rc-chips"><span class="rc-chip flag-blocked">Blocked</span><span class="rc-chip rc-chip-type">PROJECT</span></div>
       </div>
@@ -879,8 +910,9 @@
 <article class="rich-card flag-blocked"><div class="rc-head">
         <span class="rc-rank flag-blocked">19</span>
         <div class="rc-id">
-          <h4>robert_davis_growth_strategy</h4>
+          <h4>Robert Davis Growth Strategy</h4>
           <p class="rc-meta">blocked · CLIENT · 2d idle</p>
+          <p class="rc-file">robert_davis_growth_strategy.md</p>
         </div>
         <div class="rc-chips"><span class="rc-chip flag-blocked">Blocked</span><span class="rc-chip rc-chip-type">CLIENT</span><span class="rc-chip rc-chip-deal">ACTIVE</span></div>
       </div>
@@ -891,8 +923,9 @@
 <article class="rich-card flag-blocked"><div class="rc-head">
         <span class="rc-rank flag-blocked">20</span>
         <div class="rc-id">
-          <h4>slack_team_wiring</h4>
+          <h4>Slack Team Wiring</h4>
           <p class="rc-meta">blocked · PROJECT · 2d idle</p>
+          <p class="rc-file">slack_team_wiring.md</p>
         </div>
         <div class="rc-chips"><span class="rc-chip flag-blocked">Blocked</span><span class="rc-chip rc-chip-type">PROJECT</span></div>
       </div>
@@ -903,8 +936,9 @@
 <article class="rich-card flag-ok"><div class="rc-head">
         <span class="rc-rank flag-ok">21</span>
         <div class="rc-id">
-          <h4>website_factory_v2_plan</h4>
+          <h4>Website Factory V2 Plan</h4>
           <p class="rc-meta">active · 2d idle</p>
+          <p class="rc-file">website_factory_v2_plan.md</p>
         </div>
         <div class="rc-chips"><span class="rc-chip flag-ok">On track</span></div>
       </div>
@@ -915,8 +949,9 @@
 <article class="rich-card flag-blocked"><div class="rc-head">
         <span class="rc-rank flag-blocked">22</span>
         <div class="rc-id">
-          <h4>weekly_unblock_audit_2026-07-21</h4>
+          <h4>Weekly Unblock Audit 2026 07 21</h4>
           <p class="rc-meta">blocked · PROJECT · 2d idle</p>
+          <p class="rc-file">weekly_unblock_audit_2026-07-21.md</p>
         </div>
         <div class="rc-chips"><span class="rc-chip flag-blocked">Blocked</span><span class="rc-chip rc-chip-type">PROJECT</span></div>
       </div>
@@ -927,8 +962,9 @@
 <article class="rich-card flag-ok"><div class="rc-head">
         <span class="rc-rank flag-ok">23</span>
         <div class="rc-id">
-          <h4>weekly_wall_usage_tool</h4>
+          <h4>Weekly Wall Usage Tool</h4>
           <p class="rc-meta">active · SYSTEM · 2d idle</p>
+          <p class="rc-file">weekly_wall_usage_tool.md</p>
         </div>
         <div class="rc-chips"><span class="rc-chip flag-ok">On track</span><span class="rc-chip rc-chip-type">SYSTEM</span></div>
       </div>
@@ -939,8 +975,9 @@
 <article class="rich-card flag-ok"><div class="rc-head">
         <span class="rc-rank flag-ok">24</span>
         <div class="rc-id">
-          <h4>dm_insight_run_log</h4>
+          <h4>Dm Insight Run Log</h4>
           <p class="rc-meta">active · SYSTEM · 1d idle</p>
+          <p class="rc-file">dm_insight_run_log.md</p>
         </div>
         <div class="rc-chips"><span class="rc-chip flag-ok">On track</span><span class="rc-chip rc-chip-type">SYSTEM</span></div>
       </div>
@@ -951,8 +988,9 @@
 <article class="rich-card flag-ok"><div class="rc-head">
         <span class="rc-rank flag-ok">25</span>
         <div class="rc-id">
-          <h4>next_actions_awaiting_evans</h4>
+          <h4>Next Actions Awaiting Evans</h4>
           <p class="rc-meta">active · PROJECT · 1d idle</p>
+          <p class="rc-file">next_actions_awaiting_evans.md</p>
         </div>
         <div class="rc-chips"><span class="rc-chip flag-ok">On track</span><span class="rc-chip rc-chip-type">PROJECT</span></div>
       </div>
@@ -963,8 +1001,9 @@
 <article class="rich-card flag-ok"><div class="rc-head">
         <span class="rc-rank flag-ok">26</span>
         <div class="rc-id">
-          <h4>techparsed_explainer_channel_revival</h4>
+          <h4>Techparsed Explainer Channel Revival</h4>
           <p class="rc-meta">awaiting_evans_feedback · PROJECT · 1d idle</p>
+          <p class="rc-file">techparsed_explainer_channel_revival.md</p>
         </div>
         <div class="rc-chips"><span class="rc-chip flag-ok">On track</span><span class="rc-chip rc-chip-type">PROJECT</span></div>
       </div>
@@ -975,8 +1014,9 @@
 <article class="rich-card flag-blocked"><div class="rc-head">
         <span class="rc-rank flag-blocked">27</span>
         <div class="rc-id">
-          <h4>trading_bot_signal_engine</h4>
+          <h4>Trading Bot Signal Engine</h4>
           <p class="rc-meta">blocked · PROJECT · 1d idle</p>
+          <p class="rc-file">trading_bot_signal_engine.md</p>
         </div>
         <div class="rc-chips"><span class="rc-chip flag-blocked">Blocked</span><span class="rc-chip rc-chip-type">PROJECT</span></div>
       </div>
@@ -1210,7 +1250,7 @@
         </details>
       </div>
     </main>
-    <footer>Built in Obsidian. Powered by focus. Designed for execution. · Aug 02, 2026 · 03:12 PM</footer>
+    <footer>Built in Obsidian. Powered by focus. Designed for execution. · Aug 02, 2026 · 03:20 PM</footer>
   </div>
 </div>
 </div>
