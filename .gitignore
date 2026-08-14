@@ -1,0 +1,5 @@
+# The live data file the Scout writes. Untracked by default because this repo
+# is a PUBLIC mirror — committing it publishes real revenue and client figures.
+# Track it deliberately (git add -f data/jarvis-data.json) only if you have
+# decided the numbers in it are safe to publish.
+data/jarvis-data.json

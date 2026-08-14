@@ -1,0 +1,94 @@
+# J.A.R.V.I.S. — one screen, three agents
+
+A personal AI assistant that tracks the numbers, handles the email, and tells
+you what to focus on. `jarvis.html` is the screen you talk to; the three agents
+in `agents/` do the work behind it and report back to that one place.
+
+```
+  Scout ──┐
+          ├──▶  data/jarvis-data.json  ──▶  jarvis.html  (mission control)
+Operator ─┤
+  Advisor ┘
+```
+
+## What is here
+
+| File | What it is |
+|---|---|
+| `jarvis.html` | The mission control screen. Open it in a browser — no build step, no dependencies, no server required. |
+| `data/jarvis-data.sample.json` | The contract the agents write. Copy to `data/jarvis-data.json` to go live. |
+| `agents/scout.md` | Gathers the numbers every morning. Read-only. |
+| `agents/operator.md` | Handles email and publishing. Drafts only until promoted. |
+| `agents/advisor.md` | Turns the other two into three ranked actions a day. |
+| `agents/faq.md` | The Operator's brain, and the boundary of what it may answer alone. |
+
+`index.html` is a different thing and is not part of this: it is the DCF
+Command Center, regenerated from the vault by the auto-update job. Do not
+hand-edit it — changes there are overwritten on the next run.
+
+## Build order — each one earns the next
+
+1. **The screen**, even on fake data. A system you can see is a system you keep
+   using; this is the step people skip and the reason most setups die in a week.
+2. **The Scout**, because it is read-only and cannot break anything. The safest
+   place to learn how routines behave.
+3. **The Operator**, and watch every single thing it drafts for the first week
+   before you let it send anything on its own.
+4. **The Advisor**, once the Scout has enough history to give it something real
+   to reason about.
+5. **Real data**, replacing the mock object one field at a time.
+
+## Using the screen
+
+Open `jarvis.html` in Chrome or Edge (Safari and Firefox render everything, but
+speech *input* is Chromium-only; the text box works everywhere).
+
+- **Click the orb** or **hold space** to talk. Release to send.
+- **Type** in the box and hit enter if you would rather not talk.
+- **MORNING BRIEF** delivers the spoken briefing, then the Advisor's top three.
+- **VOICE: ON/OFF** mutes spoken output. **Esc** stops it mid-sentence.
+
+It picks a British voice when the system has one installed (`Daniel`,
+`Google UK English Male`, and so on), falling back through `en-GB` to any
+English voice. For the proper Jarvis voice, wire ElevenLabs in front of the
+speech synthesis call in `speak()`.
+
+The assistant has no model behind it — it answers **only** from the data
+object. Ask it something not wired and it says so instead of inventing an
+answer. That is a feature of a screen you are meant to trust at a glance.
+
+## Going live, field by field
+
+The header carries a **DATA** pill: `MOCK`, `n/8 LIVE`, or `LIVE`. It is the
+one thing on the screen you should look at before believing any other number.
+
+1. Copy `data/jarvis-data.sample.json` to `data/jarvis-data.json`.
+2. Delete every section you have not actually wired to a real source. Sections
+   you omit keep their mock values and stay flagged as mock — which is correct,
+   and much better than a live badge over a stale guess.
+3. Point the Scout at that file and let it rewrite the sections it can read.
+4. Serve the folder over http (`python3 -m http.server`) — `fetch` cannot read
+   a local file over `file://`, so opening the page directly falls back to mock
+   data and says so.
+
+Each metric is `{ v, source, asOf }`. `v: null` renders as **UNAVAILABLE** in
+amber and the assistant refuses to reason about it out loud.
+
+> `data/jarvis-data.json` is **gitignored on purpose**. This repo is a public
+> mirror, and that file is the one place real revenue, invoice, and client
+> figures live. Commit it only if you have decided those numbers are safe to
+> publish (`git add -f data/jarvis-data.json`).
+
+## The rules that keep it safe
+
+- **Nothing sends, spends, or publishes without you until it has earned it.**
+  Drafts first, always. Promote an agent to autonomous only on the specific
+  task types you have watched it get right repeatedly — never wholesale.
+- **Every number carries its source and its date.** Anything unverifiable is
+  labelled, never estimated. One invented figure poisons a briefing, because
+  you will never know afterwards which one it was.
+- **`faq.md` is the boundary.** If the answer is not in it, the Operator
+  escalates instead of improvising, and you add the line afterwards so it never
+  escalates that one again.
+- **Read the Advisor's recommendations even on the days you do nothing with
+  them.** The moment you stop reading, you own a very expensive screensaver.
