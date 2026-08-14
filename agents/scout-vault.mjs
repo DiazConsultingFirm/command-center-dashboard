@@ -265,10 +265,17 @@ const out = {
 
   proximity: { asOf, contacts },
 
-  /* Deliberately empty: gathering and advising are different jobs, and this
-     script only gathers. The screen will say the Advisor has not run rather
-     than reading invented recommendations aloud. */
-  advisor: { asOf, recommendations: [], unactioned: [] }
+  /* Never authored here — gathering and advising are different jobs, and this
+     script only gathers. But it must not DESTROY the Advisor's work either:
+     the Scout reruns whenever the mirror updates, which would otherwise wipe
+     the morning's recommendations hours after they were written. Preserve
+     what is there; write an empty section only when the Advisor has never
+     run, so the screen says so rather than reading invented advice aloud. */
+  advisor: previous.advisor ?? { asOf, recommendations: [], unactioned: [] },
+
+  /* Same reasoning: the Operator owns this section and reports into it after
+     each run. The Scout passes it through untouched. */
+  ...(previous.operator ? { operator: previous.operator } : {})
 };
 
 console.log(`Scout — read ${MIRROR.replace(ROOT + '/', '')}, mirror dated ${asOf}\n`);
@@ -282,5 +289,8 @@ if (DRY) {
 } else {
   mkdirSync(dirname(OUT), { recursive: true });
   writeFileSync(OUT, JSON.stringify(out, null, 2) + '\n');
-  console.log(`\nWrote ${OUT.replace(ROOT + '/', '')} — 7 of 8 sections live (operator still mock).`);
+  const sections = Object.keys(out).filter((k) => !k.startsWith('_'));
+  const carried = ['advisor', 'operator', 'meta'].filter((k) => previous[k] && out[k]);
+  console.log(`\nWrote ${OUT.replace(ROOT + '/', '')} — ${sections.length} of 8 sections live: ${sections.join(', ')}.`);
+  if (carried.length) console.log(`Carried through untouched (not the Scout's to write): ${carried.join(', ')}.`);
 }

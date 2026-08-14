@@ -97,10 +97,37 @@ directly always falls back to mock data — and says so in the DATA pill.
 Each metric is `{ v, source, asOf }`. `v: null` renders as **UNAVAILABLE** in
 amber and the assistant refuses to reason about it out loud.
 
-> `data/jarvis-data.json` is **gitignored on purpose**. This repo is a public
-> mirror, and that file is the one place real revenue, invoice, and client
-> figures live. Commit it only if you have decided those numbers are safe to
-> publish (`git add -f data/jarvis-data.json`).
+### Keeping it fresh
+
+`.github/workflows/refresh-jarvis-data.yml` reruns the Scout whenever the
+auto-update job pushes a new `index.html`, plus once daily as a safety net,
+and commits the result. The published screen is therefore never staler than
+the mirror it reads. The workflow only ever writes `data/jarvis-data.json`,
+and its push trigger ignores that path, so it cannot retrigger itself.
+
+> **The rule that makes committing that file safe:** it may only ever hold
+> figures already public in `index.html`. The Scout reads nothing else. If you
+> later wire a private source — inbox contents, an unpublished deal, anything
+> from the deliberately excluded job-search notes — that section does not
+> belong in this repo, because this repo is a public mirror.
+
+Two sections the Scout passes through untouched rather than rewriting: the
+Advisor's recommendations and the Operator's run counts. Those agents own
+them, and a Scout rerun three hours later must not wipe the morning's advice.
+
+### The voice
+
+Out of the box it uses the browser's own speech synthesis, preferring a
+British voice if the system has one. For the real thing, deploy
+`voice/elevenlabs-proxy.js` (a Cloudflare Worker) and point
+`VOICE_CONFIG.endpoint` in `jarvis.html` at it.
+
+The key lives in the Worker as a secret, never in the page — this site is
+public, and a key in a public page is a key you have given away. The proxy
+still faces the world, so it checks the calling origin, caps text length so a
+single call cannot run up your credits, and takes an optional shared secret.
+If it is unreachable or errors, the page logs why in DIAGNOSTICS and finishes
+the sentence in the browser voice rather than going silent.
 
 ## The rules that keep it safe
 

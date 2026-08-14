@@ -1404,10 +1404,25 @@ function morningBrief() {
    12. Voice — browser speech recognition in, speech synthesis out
    ========================================================================== */
 
+/* ElevenLabs, when you want the proper British Jarvis rather than whatever
+   voice the operating system ships. Leave `endpoint` null and the browser's
+   own speech synthesis is used instead — the page works either way.
+
+   The key never lives here: this page is public. `endpoint` points at the
+   small proxy in voice/elevenlabs-proxy.js, which holds the key as a secret.
+   If the proxy is unreachable or errors, speech falls back to the browser
+   rather than going silent. */
+const VOICE_CONFIG = {
+  endpoint: null,                            /* e.g. 'https://jarvis-voice.<you>.workers.dev' */
+  voiceId: 'JBFqnCBsd6RMkjVDRZzb',           /* George — British male */
+  model: 'eleven_turbo_v2_5'
+};
+
 let voiceEnabled = true;
 let recognition = null;
 let listening = false;
 let spaceHeld = false;
+let currentAudio = null;
 
 function pickVoice() {
   const voices = window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
@@ -1422,17 +1437,91 @@ function pickVoice() {
          voices.find(function (v) { return /^en/i.test(v.lang); }) || null;
 }
 
+/* Stop whatever is currently talking, by either route. */
+function stopSpeaking() {
+  if (window.speechSynthesis) window.speechSynthesis.cancel();
+  if (currentAudio) {
+    currentAudio.pause();
+    if (currentAudio.src.startsWith('blob:')) URL.revokeObjectURL(currentAudio.src);
+    currentAudio = null;
+  }
+}
+
 function speak(text) {
-  if (!voiceEnabled || !window.speechSynthesis) { setVoiceState('idle'); return; }
+  if (!voiceEnabled) { setVoiceState('idle'); return; }
+  stopSpeaking();
+  if (VOICE_CONFIG.endpoint) speakViaProxy(text);
+  else speakViaBrowser(text);
+}
+
+function speakViaProxy(text) {
+  /* Stay in PROCESSING until audio actually starts — the fetch takes real
+     time, and pulsing the orb as though it is already talking is a small lie
+     the rest of this screen does not tell. */
+  setVoiceState('thinking');
+  fetch(VOICE_CONFIG.endpoint, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text: text, voiceId: VOICE_CONFIG.voiceId, model: VOICE_CONFIG.model })
+  })
+    .then(function (res) {
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return res.blob();
+    })
+    .then(function (blob) {
+      const url = URL.createObjectURL(blob);
+      const audio = new Audio(url);
+      currentAudio = audio;
+      const done = function () {
+        URL.revokeObjectURL(url);
+        if (currentAudio === audio) currentAudio = null;
+        setVoiceState('idle');
+      };
+      audio.onplay = function () { setVoiceState('speaking'); };
+      audio.onended = done;
+      audio.onerror = done;
+      return audio.play();
+    })
+    .catch(function (err) {
+      /* A voice that goes silent on an error is worse than a plainer voice.
+         Say so in diagnostics and finish the sentence in the browser. */
+      pushLine('diagnostics', 'VOICE PROXY FAILED (' + String(err.message || err).toUpperCase() + ') — USING BROWSER VOICE', 'warn');
+      speakViaBrowser(text);
+    });
+}
+
+function speakViaBrowser(text) {
+  if (!window.speechSynthesis) { setVoiceState('idle'); return; }
   window.speechSynthesis.cancel();
   const utter = new SpeechSynthesisUtterance(text);
   const v = pickVoice();
   if (v) { utter.voice = v; utter.lang = v.lang; }
   utter.rate = 1.02;
   utter.pitch = 0.92;
-  utter.onstart = function () { setVoiceState('speaking'); };
-  utter.onend = function () { setVoiceState('idle'); };
-  utter.onerror = function () { setVoiceState('idle'); };
+
+  /* Watchdogs. A machine with no speech engine installed fires neither
+     onstart nor onend, and without these the orb would pulse as though it
+     were mid-sentence forever. First timer catches "never started"; second
+     catches "started but never finished", with a generous per-character
+     budget so a long morning brief is never cut off early. */
+  let started = false, finished = false;
+  const done = function () {
+    if (finished) return;
+    finished = true;
+    clearTimeout(startTimer);
+    clearTimeout(endTimer);
+    setVoiceState('idle');
+  };
+  const startTimer = setTimeout(function () {
+    if (started || finished) return;
+    pushLine('diagnostics', 'NO SPEECH ENGINE AVAILABLE — TEXT ONLY', 'warn');
+    done();
+  }, 1800);
+  const endTimer = setTimeout(done, 5000 + text.length * 100);
+
+  utter.onstart = function () { started = true; clearTimeout(startTimer); setVoiceState('speaking'); };
+  utter.onend = done;
+  utter.onerror = done;
   window.speechSynthesis.speak(utter);
 }
 
@@ -1484,7 +1573,7 @@ function initRecognition() {
 
 function startListening() {
   if (!recognition || listening) return;
-  if (window.speechSynthesis) window.speechSynthesis.cancel();
+  stopSpeaking();
   try { recognition.start(); } catch (err) { /* already started — ignore */ }
 }
 
@@ -1514,7 +1603,7 @@ function bindControls() {
   $('muteBtn').addEventListener('click', function () {
     voiceEnabled = !voiceEnabled;
     $('muteBtn').textContent = 'VOICE: ' + (voiceEnabled ? 'ON' : 'OFF');
-    if (!voiceEnabled && window.speechSynthesis) { window.speechSynthesis.cancel(); setVoiceState('idle'); }
+    if (!voiceEnabled) { stopSpeaking(); setVoiceState('idle'); }
     pushLine('diagnostics', 'SPEECH OUTPUT ' + (voiceEnabled ? 'ENABLED' : 'MUTED'));
   });
 
@@ -1533,7 +1622,7 @@ function bindControls() {
   });
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') {
-      if (window.speechSynthesis) window.speechSynthesis.cancel();
+      stopSpeaking();
       stopListening();
       setVoiceState('idle');
     }
