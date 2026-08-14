@@ -1,0 +1,11 @@
+node_modules/
+.DS_Store
+
+# data/jarvis-data.json is deliberately TRACKED, not ignored: the Refresh
+# JARVIS data workflow commits it so the published screen has real numbers.
+#
+# The rule that makes that safe: it may only ever contain figures already
+# public in index.html. The Scout reads nothing else. If you later wire a
+# private source — inbox contents, an unpublished deal, anything from the
+# excluded job-search notes — that section belongs somewhere private, not in
+# this file, because this repo is a public mirror.

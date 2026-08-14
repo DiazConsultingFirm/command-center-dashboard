@@ -1,0 +1,97 @@
+{
+  "_readme": [
+    "This is the contract between the agents and jarvis.html.",
+    "",
+    "Copy this file to data/jarvis-data.json and the dashboard will load it on",
+    "boot, replacing the mock values section by section. Sections you leave OUT",
+    "stay on mock data and stay flagged MOCK in the header pill. That is the",
+    "point: you go live field by field, and the screen always tells you which",
+    "half of it is real.",
+    "",
+    "Every metric is an object: { v, source, asOf }.",
+    "  v      - the number or string. null means UNAVAILABLE.",
+    "  source - where the figure came from, in plain language.",
+    "  asOf   - ISO date (YYYY-MM-DD) the figure was true.",
+    "",
+    "Rules the Scout must not break when writing this file:",
+    "  - Never write a v you did not read from a source. Write null instead.",
+    "  - Never carry forward yesterday's number under today's asOf.",
+    "  - A projection is labelled in its own source string, never mixed in.",
+    "",
+    "Keys the loader will read: meta, objective, revenue, book, pipeline,",
+    "operator, advisor, proximity. Anything else in this file is ignored."
+  ],
+
+  "meta": {
+    "operator": "EVANS",
+    "org": "DIAZ CONSULTING FIRM",
+    "objective": "CONVERT THE ECHELON PROPOSAL AND CLEAR EVERY BLOCKED CLIENT ITEM"
+  },
+
+  "objective": {
+    "label": "REVENUE COLLECTED — AUGUST",
+    "currentLabel": "COLLECTED",
+    "unit": "USD",
+    "target":  { "v": 10000, "source": "PLACEHOLDER: set your real monthly target", "asOf": "2026-08-14" },
+    "current": { "v": 2500,  "source": "vault pipeline notes — deal fields only",   "asOf": "2026-08-14" },
+    "status":  { "v": "ON TRACK", "source": "derived from progress vs. days remaining", "asOf": "2026-08-14" },
+    "eta":     { "v": "SEP 01",   "source": "end of billing month", "asOf": "2026-08-14" }
+  },
+
+  "revenue": {
+    "collectedMTD": { "v": 2500, "source": "vault pipeline notes — deal fields only", "asOf": "2026-08-14" },
+    "outstanding":  { "v": 500,  "source": "Robert Davis P.A. — invoice open",        "asOf": "2026-08-14" },
+    "yesterday":    { "v": null, "source": "NOT WIRED — needs a payment processor connector", "asOf": null },
+    "lastMonth":    { "v": null, "source": "NOT WIRED — needs a payment processor connector", "asOf": null }
+  },
+
+  "book": {
+    "attention":   { "v": 22, "source": "vault: status blocked, or active and untouched 7d+", "asOf": "2026-08-14" },
+    "nextActions": { "v": 29, "source": "vault: notes carrying a next_action field",           "asOf": "2026-08-14" },
+    "clients":     { "v": 7,  "source": "vault: notes tagged client",                          "asOf": "2026-08-14" },
+    "projects":    { "v": 24, "source": "vault: notes tagged project, non-deferred",           "asOf": "2026-08-14" },
+    "parked":      { "v": 0,  "source": "vault: notes with status deferred",                   "asOf": "2026-08-14" }
+  },
+
+  "pipeline": {
+    "asOf": "2026-08-14",
+    "source": "vault pipeline notes",
+    "items": [
+      { "name": "ECHELON LEGAL, PLLC", "stage": "PROPOSAL", "value": 3000, "note": "3 tiers out — 1.5K / 3K / 5K + 500/MO" },
+      { "name": "ROBERT DAVIS P.A.",   "stage": "ACTIVE",   "value": 1500, "note": "1.5K IN · 500 OUTSTANDING" },
+      { "name": "GERLACH LAW, PLLC",   "stage": "ACTIVE",   "value": 1000, "note": "1K IN · PAID IN FULL" }
+    ]
+  },
+
+  "operator": {
+    "asOf": "2026-08-14",
+    "resolved":  { "v": null, "source": "NOT WIRED — Operator writes this after each run", "asOf": null },
+    "drafted":   { "v": null, "source": "NOT WIRED — Operator writes this after each run", "asOf": null },
+    "escalated": { "v": null, "source": "NOT WIRED — Operator writes this after each run", "asOf": null },
+    "published": { "v": null, "source": "NOT WIRED — Operator writes this after each run", "asOf": null }
+  },
+
+  "advisor": {
+    "asOf": "2026-08-14",
+    "recommendations": [
+      {
+        "action": "One sentence, something you can start today.",
+        "evidence": "The specific figure or note from today's Scout run that led to it.",
+        "cost": "What it costs you if this sits untouched for a week."
+      }
+    ],
+    "unactioned": [
+      "Anything recommended in the last 7 days that has not been acted on."
+    ]
+  },
+
+  "proximity": {
+    "asOf": "2026-08-14",
+    "contacts": [
+      { "label": "ECHELON DECISION", "distance": 0.22, "level": "warn" },
+      { "label": "DAVIS BALANCE",    "distance": 0.38, "level": "warn" },
+      { "label": "BLOCKED x22",      "distance": 0.55, "level": "bad"  },
+      { "label": "CONTENT QUEUE",    "distance": 0.78, "level": "ok"   }
+    ]
+  }
+}

@@ -1,0 +1,1713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>J.A.R.V.I.S. — Mission Control</title>
+<style>
+/* ============================================================================
+   J.A.R.V.I.S. MISSION CONTROL
+   One screen, no scrolling on a laptop, everything self-contained.
+
+   Design note: the rest of this repo (index.html) is the navy/gold DCF
+   Command Center, machine-generated from the vault. This screen is the
+   opposite end of the same system — hand-written, HUD-styled, and driven by
+   ONE data object (MISSION_DATA, near the top of the script below). Cyan is
+   the instrument colour; gold/amber is kept for anything that needs a human.
+   ========================================================================= */
+:root {
+  --bg: #030a12;
+  --bg-2: #06121c;
+  --cyan: #7fdfff;
+  --cyan-hot: #d6f6ff;
+  --cyan-dim: #3d8fae;
+  --cyan-faint: #1d4c60;
+  --line: rgba(127, 223, 255, 0.28);
+  --line-soft: rgba(127, 223, 255, 0.12);
+  --amber: #e8a838;
+  --red: #ff6b6b;
+  --green: #4ade80;
+  --glow: 0 0 8px rgba(127, 223, 255, 0.45);
+  --mono: ui-monospace, "SF Mono", SFMono-Regular, "Roboto Mono", Menlo, Consolas, "Liberation Mono", monospace;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--cyan);
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  overflow: hidden;
+  cursor: default;
+}
+/* Background: grid lines + a slow scanline shimmer, both pointer-transparent
+   so they never eat a click meant for a panel. */
+.bg-grid, .bg-scan, .bg-vignette {
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+}
+.bg-grid {
+  background-image:
+    linear-gradient(rgba(127, 223, 255, 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(127, 223, 255, 0.055) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+.bg-scan {
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(127, 223, 255, 0.035) 0px,
+    rgba(127, 223, 255, 0.035) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  animation: scanDrift 8s linear infinite;
+  opacity: 0.7;
+}
+@keyframes scanDrift { from { background-position-y: 0; } to { background-position-y: 3px; } }
+.bg-vignette {
+  background: radial-gradient(ellipse at 50% 45%, transparent 40%, rgba(0, 0, 0, 0.75) 100%);
+}
+
+/* ---------- shell -------------------------------------------------------- */
+.hud {
+  position: relative; z-index: 1;
+  height: 100vh; height: 100dvh;
+  padding: 10px 12px 12px;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 9px;
+}
+.mid {
+  display: grid;
+  grid-template-columns: minmax(210px, 250px) minmax(0, 1fr) minmax(210px, 250px);
+  gap: 10px;
+  min-height: 0;
+}
+/* minmax(0,1fr) on the column, min-width:0 on the panel: without both, the
+   nowrap log lines inside make each panel's min-content as wide as its
+   longest line, and the whole column overflows its own track. */
+.col { display: grid; grid-template-columns: minmax(0, 1fr); gap: 9px; min-height: 0; }
+.col-left  { grid-template-rows: auto minmax(0, 1fr); }
+.col-right { grid-template-rows: auto auto minmax(0, 1fr); }
+
+/* ---------- panels ------------------------------------------------------- */
+.panel {
+  position: relative;
+  border: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(9, 26, 38, 0.72), rgba(4, 14, 22, 0.72));
+  padding: 8px 10px 9px;
+  min-height: 0; min-width: 0;
+  display: flex; flex-direction: column;
+  box-shadow: inset 0 0 22px rgba(127, 223, 255, 0.05);
+}
+/* Corner ticks — the detail that makes a box read as an instrument. */
+.panel::before, .panel::after {
+  content: ""; position: absolute; width: 9px; height: 9px; pointer-events: none;
+  border-color: var(--cyan); opacity: 0.75;
+}
+.panel::before { top: -1px; left: -1px; border-top: 2px solid; border-left: 2px solid; }
+.panel::after { bottom: -1px; right: -1px; border-bottom: 2px solid; border-right: 2px solid; }
+.panel-title {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  font-size: 10px; color: var(--cyan); text-shadow: var(--glow);
+  padding-bottom: 6px; margin-bottom: 7px;
+  border-bottom: 1px solid var(--line-soft);
+  flex: 0 0 auto;
+}
+.panel-title > span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.panel-title .tag { color: var(--cyan-dim); font-size: 9px; letter-spacing: 0.1em; flex: 0 0 auto; }
+.panel-body { flex: 1 1 auto; min-height: 0; }
+
+/* boot flicker: panels arrive one by one */
+.boot { opacity: 0; }
+.boot.on { animation: flickerOn 0.5s steps(1, end) forwards; }
+@keyframes flickerOn {
+  0%   { opacity: 0; }
+  12%  { opacity: 0.85; }
+  20%  { opacity: 0.1; }
+  36%  { opacity: 0.95; }
+  46%  { opacity: 0.25; }
+  62%  { opacity: 1; }
+  70%  { opacity: 0.6; }
+  100% { opacity: 1; }
+}
+
+/* ---------- header ------------------------------------------------------- */
+.hdr {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start; gap: 14px;
+  border: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(9, 26, 38, 0.75), rgba(4, 14, 22, 0.6));
+  padding: 9px 12px;
+  position: relative;
+}
+.hdr::before, .hdr::after {
+  content: ""; position: absolute; width: 9px; height: 9px;
+  border-color: var(--cyan); opacity: 0.75;
+}
+.hdr::before { top: -1px; left: -1px; border-top: 2px solid; border-left: 2px solid; }
+.hdr::after { top: -1px; right: -1px; border-top: 2px solid; border-right: 2px solid; }
+.wordmark {
+  font-size: clamp(17px, 2vw, 24px); font-weight: 700; letter-spacing: 0.24em;
+  color: var(--cyan-hot); text-shadow: 0 0 14px rgba(127, 223, 255, 0.55);
+  line-height: 1;
+}
+.expansion { font-size: 8.5px; color: var(--cyan-dim); letter-spacing: 0.17em; margin-top: 5px; }
+.objective-line { font-size: 10px; color: var(--cyan); margin-top: 7px; letter-spacing: 0.09em; }
+.objective-line b { color: var(--cyan-hot); font-weight: 700; }
+.pills { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.pill {
+  display: inline-flex; align-items: center; gap: 5px;
+  border: 1px solid var(--line); padding: 2px 7px; font-size: 8.5px;
+  color: var(--cyan-dim); letter-spacing: 0.12em; background: rgba(127, 223, 255, 0.04);
+}
+.dot { width: 5px; height: 5px; border-radius: 50%; background: var(--cyan); box-shadow: var(--glow); }
+.dot.pulse { animation: dotPulse 2s ease-in-out infinite; }
+.dot.warn { background: var(--amber); box-shadow: 0 0 8px rgba(232, 168, 56, 0.6); }
+@keyframes dotPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
+.pill.live { color: var(--green); border-color: rgba(74, 222, 128, 0.45); }
+.pill.live .dot { background: var(--green); box-shadow: 0 0 8px rgba(74, 222, 128, 0.6); }
+.pill.mock { color: var(--amber); border-color: rgba(232, 168, 56, 0.45); }
+.pill.mock .dot { background: var(--amber); box-shadow: 0 0 8px rgba(232, 168, 56, 0.6); }
+
+.hdr-right { text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 3px; }
+.clock {
+  font-size: clamp(22px, 2.9vw, 38px); line-height: 1; font-weight: 700;
+  color: var(--cyan-hot); text-shadow: 0 0 16px rgba(127, 223, 255, 0.5);
+}
+.clock .cs { font-size: 0.5em; color: var(--cyan-dim); text-shadow: none; }
+.hdr-meta { font-size: 8.5px; color: var(--cyan-dim); letter-spacing: 0.13em; }
+
+/* ---------- vitals ------------------------------------------------------- */
+.vital { margin-bottom: 7px; }
+.vital:last-child { margin-bottom: 0; }
+.vital-top { display: flex; justify-content: space-between; font-size: 8.5px; color: var(--cyan-dim); margin-bottom: 3px; }
+.vital-top .v { color: var(--cyan); }
+.vital-track { height: 5px; background: rgba(127, 223, 255, 0.09); border: 1px solid var(--line-soft); overflow: hidden; }
+.vital-fill {
+  height: 100%; background: linear-gradient(90deg, var(--cyan-dim), var(--cyan));
+  box-shadow: 0 0 10px rgba(127, 223, 255, 0.5);
+  transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.vital-fill.warn { background: linear-gradient(90deg, #8a6420, var(--amber)); box-shadow: 0 0 10px rgba(232, 168, 56, 0.5); }
+.vital-fill.bad { background: linear-gradient(90deg, #8a3030, var(--red)); box-shadow: 0 0 10px rgba(255, 107, 107, 0.5); }
+
+/* ---------- log feeds ---------------------------------------------------- */
+.log { height: 100%; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; gap: 2px; }
+.log-line {
+  font-size: 9px; line-height: 1.45; color: var(--cyan-dim); letter-spacing: 0.05em;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  animation: lineIn 0.35s ease-out;
+}
+.log-line .ts { color: var(--cyan-faint); }
+.log-line.hi { color: var(--cyan-hot); text-shadow: var(--glow); }
+.log-line.warn { color: var(--amber); }
+.log-line.you { color: #ffffff; }
+@keyframes lineIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+
+/* ---------- centre / orb ------------------------------------------------- */
+.centre {
+  position: relative; min-height: 0; min-width: 0;
+  display: grid; grid-template-rows: minmax(0, 1fr) auto;
+  gap: 6px;
+}
+.orb-wrap { position: relative; min-height: 0; min-width: 0; display: grid; place-items: center; }
+.orb-stage { position: relative; aspect-ratio: 1 / 1; height: 100%; max-width: 100%; }
+.orb-stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.rings { position: absolute; inset: 0; pointer-events: none; }
+.rings svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.ring-spin-cw { transform-origin: 50% 50%; animation: spinCW 24s linear infinite; }
+.ring-spin-ccw { transform-origin: 50% 50%; animation: spinCCW 38s linear infinite; }
+.ring-spin-slow { transform-origin: 50% 50%; animation: spinCW 90s linear infinite; }
+@keyframes spinCW { to { transform: rotate(360deg); } }
+@keyframes spinCCW { to { transform: rotate(-360deg); } }
+.orb-hit {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  width: 46%; height: 46%; border-radius: 50%; cursor: pointer; background: transparent;
+  border: 0; padding: 0;
+}
+.orb-hit:focus-visible { outline: 1px dashed var(--cyan); outline-offset: 6px; }
+.orb-caption {
+  position: absolute; left: 50%; bottom: 2%; transform: translateX(-50%);
+  font-size: 9px; color: var(--cyan-dim); letter-spacing: 0.16em; white-space: nowrap;
+}
+.reply-zone { min-height: 0; display: flex; flex-direction: column; gap: 6px; }
+.reply {
+  border: 1px solid var(--line-soft); background: rgba(6, 18, 28, 0.6);
+  padding: 7px 10px; min-height: 46px; max-height: 88px; overflow-y: auto;
+  font-size: 10.5px; line-height: 1.55; letter-spacing: 0.03em;
+  color: var(--cyan-hot); text-transform: none;
+}
+.reply .src { display: block; margin-top: 4px; font-size: 8.5px; color: var(--cyan-dim); text-transform: uppercase; letter-spacing: 0.1em; }
+.reply::-webkit-scrollbar { width: 4px; }
+.reply::-webkit-scrollbar-thumb { background: var(--cyan-faint); }
+.controls { display: flex; gap: 6px; align-items: stretch; }
+.txt {
+  flex: 1 1 auto; min-width: 0;
+  background: rgba(6, 18, 28, 0.75); border: 1px solid var(--line);
+  color: var(--cyan-hot); font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.05em;
+  padding: 7px 10px; text-transform: none;
+}
+.txt::placeholder { color: var(--cyan-faint); text-transform: uppercase; letter-spacing: 0.1em; }
+.txt:focus { outline: none; border-color: var(--cyan); box-shadow: 0 0 12px rgba(127, 223, 255, 0.25); }
+.btn {
+  background: rgba(127, 223, 255, 0.07); border: 1px solid var(--line);
+  color: var(--cyan); font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.12em;
+  padding: 7px 12px; cursor: pointer; text-transform: uppercase;
+  transition: background 0.15s ease, box-shadow 0.15s ease, color 0.15s ease;
+}
+.btn:hover { background: rgba(127, 223, 255, 0.16); color: var(--cyan-hot); box-shadow: 0 0 14px rgba(127, 223, 255, 0.25); }
+.btn:active { transform: translateY(1px); }
+.btn.accent { border-color: rgba(232, 168, 56, 0.5); color: var(--amber); background: rgba(232, 168, 56, 0.08); }
+.btn.accent:hover { background: rgba(232, 168, 56, 0.18); color: #ffd489; box-shadow: 0 0 14px rgba(232, 168, 56, 0.25); }
+
+/* ---------- radar + waveform -------------------------------------------- */
+.canvas-box { position: relative; width: 100%; }
+.canvas-box canvas { display: block; width: 100%; height: 100%; }
+.radar-box { aspect-ratio: 1 / 1; max-height: 118px; margin: 0 auto; }
+.wave-box { height: 44px; }
+.wave-state { font-size: 8.5px; color: var(--cyan-dim); text-align: center; margin-top: 4px; letter-spacing: 0.14em; }
+
+/* ---------- objective ---------------------------------------------------- */
+.objective {
+  border: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(9, 26, 38, 0.8), rgba(4, 14, 22, 0.7));
+  padding: 9px 14px 10px; position: relative;
+}
+.objective::before, .objective::after {
+  content: ""; position: absolute; width: 10px; height: 10px; border-color: var(--cyan); opacity: 0.8;
+}
+.objective::before { bottom: -1px; left: -1px; border-bottom: 2px solid; border-left: 2px solid; }
+.objective::after { bottom: -1px; right: -1px; border-bottom: 2px solid; border-right: 2px solid; }
+.obj-grid { display: grid; grid-template-columns: auto auto minmax(0, 1fr); align-items: center; gap: 18px; }
+.obj-block .lbl { font-size: 8.5px; color: var(--cyan-dim); letter-spacing: 0.16em; margin-bottom: 2px; }
+.obj-target { font-size: clamp(20px, 2.6vw, 32px); line-height: 1; color: var(--cyan); text-shadow: var(--glow); }
+.obj-current { font-size: clamp(22px, 3vw, 38px); line-height: 1; color: var(--cyan-hot); text-shadow: 0 0 16px rgba(127, 223, 255, 0.5); }
+.placeholder-tag {
+  display: inline-block; margin-left: 6px; vertical-align: middle;
+  font-size: 8px; color: var(--amber); border: 1px solid rgba(232, 168, 56, 0.5); padding: 1px 5px;
+}
+.seg-bar { display: flex; gap: 2px; height: 12px; margin: 7px 0 6px; }
+.seg { flex: 1 1 0; background: rgba(127, 223, 255, 0.09); border: 1px solid var(--line-soft); }
+.seg.on { background: linear-gradient(180deg, var(--cyan), var(--cyan-dim)); box-shadow: 0 0 8px rgba(127, 223, 255, 0.5); border-color: transparent; }
+.seg.edge { background: var(--cyan-hot); box-shadow: 0 0 14px rgba(127, 223, 255, 0.8); border-color: transparent; }
+.stat-row { display: flex; flex-wrap: wrap; gap: 10px 22px; }
+.stat { display: flex; flex-direction: column; gap: 2px; }
+.stat .k { font-size: 8px; color: var(--cyan-dim); letter-spacing: 0.14em; }
+.stat .v { font-size: 13px; color: var(--cyan-hot); }
+.stat .v.unavail { color: var(--amber); font-size: 11px; }
+.stat .v.warn { color: var(--amber); }
+.stat .v.good { color: var(--green); }
+
+/* Small screens: the "one screen" rule only holds on a laptop. Below that,
+   let it scroll rather than crushing every panel into illegibility. */
+@media (max-width: 1000px), (max-height: 620px) {
+  body { overflow: auto; }
+  .hud { height: auto; min-height: 100vh; }
+  .mid { grid-template-columns: 1fr; }
+  .orb-stage { height: auto; width: min(62vw, 340px); }
+  .obj-grid { grid-template-columns: 1fr; gap: 10px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bg-scan, .ring-spin-cw, .ring-spin-ccw, .ring-spin-slow, .dot.pulse { animation: none !important; }
+  .boot { opacity: 1; }
+  .boot.on { animation: none; }
+}
+</style>
+</head>
+<body>
+<div class="bg-grid"></div>
+<div class="bg-scan"></div>
+<div class="bg-vignette"></div>
+
+<div class="hud">
+
+  <!-- ======================= HEADER ======================= -->
+  <header class="hdr boot" data-boot="0">
+    <div>
+      <div class="wordmark">J.A.R.V.I.S.</div>
+      <div class="expansion">JUST A RATHER VERY INTELLIGENT SYSTEM</div>
+      <div class="objective-line">OBJECTIVE: <b id="objectiveText">—</b></div>
+      <div class="pills">
+        <span class="pill" id="pillOnline"><span class="dot pulse"></span>ONLINE</span>
+        <span class="pill"><span class="dot"></span>SECURE</span>
+        <span class="pill"><span class="dot"></span>ENCRYPTED</span>
+        <span class="pill"><span class="dot"></span>AUTO-LVL8</span>
+        <span class="pill mock" id="pillData" title="Where the numbers on this screen come from"><span class="dot"></span>DATA: MOCK</span>
+      </div>
+    </div>
+    <div class="hdr-right">
+      <div class="clock" id="clock">00:00:00<span class="cs">.00</span></div>
+      <div class="hdr-meta" id="dateLine">—</div>
+      <div class="hdr-meta" id="sessionLine">SESSION —</div>
+    </div>
+  </header>
+
+  <!-- ======================= MIDDLE ======================= -->
+  <div class="mid">
+
+    <!-- LEFT COLUMN -->
+    <div class="col col-left">
+      <section class="panel boot" data-boot="1">
+        <div class="panel-title"><span>SYSTEM VITALS</span><span class="tag" id="vitalsTag">NOMINAL</span></div>
+        <div class="panel-body" id="vitals"></div>
+      </section>
+      <section class="panel boot" data-boot="3">
+        <div class="panel-title"><span>TELEMETRY</span><span class="tag">STREAM</span></div>
+        <div class="panel-body"><div class="log" id="telemetry"></div></div>
+      </section>
+    </div>
+
+    <!-- CENTRE -->
+    <div class="centre">
+      <div class="orb-wrap boot" data-boot="2">
+        <div class="orb-stage">
+          <canvas id="orb"></canvas>
+          <div class="rings">
+            <svg viewBox="0 0 400 400" aria-hidden="true">
+              <g class="ring-spin-cw">
+                <circle cx="200" cy="200" r="168" fill="none" stroke="rgba(127,223,255,0.35)" stroke-width="1"
+                        stroke-dasharray="52 14 8 14"></circle>
+              </g>
+              <g class="ring-spin-ccw">
+                <circle cx="200" cy="200" r="150" fill="none" stroke="rgba(127,223,255,0.2)" stroke-width="1"
+                        stroke-dasharray="4 10"></circle>
+                <path d="M200 60 A140 140 0 0 1 316 128" fill="none" stroke="rgba(127,223,255,0.6)" stroke-width="2"></path>
+                <path d="M84 272 A140 140 0 0 0 200 340" fill="none" stroke="rgba(127,223,255,0.6)" stroke-width="2"></path>
+              </g>
+              <g class="ring-spin-slow" id="tickRing"></g>
+            </svg>
+          </div>
+          <button type="button" class="orb-hit" id="orbHit" aria-label="Tap to talk to Jarvis"></button>
+          <div class="orb-caption" id="orbCaption">TAP ORB OR HOLD SPACE TO SPEAK</div>
+        </div>
+      </div>
+      <div class="reply-zone boot" data-boot="4">
+        <div class="reply" id="reply">Standing by.</div>
+        <div class="controls">
+          <input class="txt" id="txt" type="text" autocomplete="off" spellcheck="false"
+                 placeholder="Type a question — or hold space to talk">
+          <button type="button" class="btn" id="sendBtn">SEND</button>
+          <button type="button" class="btn accent" id="briefBtn">MORNING BRIEF</button>
+          <button type="button" class="btn" id="muteBtn" title="Toggle spoken output">VOICE: ON</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT COLUMN -->
+    <div class="col col-right">
+      <section class="panel boot" data-boot="5">
+        <div class="panel-title"><span>PROXIMITY</span><span class="tag" id="radarTag">0 CONTACTS</span></div>
+        <div class="panel-body">
+          <div class="canvas-box radar-box"><canvas id="radar"></canvas></div>
+        </div>
+      </section>
+      <section class="panel boot" data-boot="6">
+        <div class="panel-title"><span>AUDIO I/O</span><span class="tag" id="audioTag">IDLE</span></div>
+        <div class="panel-body">
+          <div class="canvas-box wave-box"><canvas id="wave"></canvas></div>
+          <div class="wave-state" id="waveState">NO SIGNAL</div>
+        </div>
+      </section>
+      <section class="panel boot" data-boot="7">
+        <div class="panel-title"><span>DIAGNOSTICS</span><span class="tag">AGENTS</span></div>
+        <div class="panel-body"><div class="log" id="diagnostics"></div></div>
+      </section>
+    </div>
+  </div>
+
+  <!-- ======================= OBJECTIVE ======================= -->
+  <section class="objective boot" data-boot="8">
+    <div class="obj-grid">
+      <div class="obj-block">
+        <div class="lbl">TARGET</div>
+        <div class="obj-target" id="objTarget">—<span class="placeholder-tag" id="targetTag" hidden>PLACEHOLDER</span></div>
+      </div>
+      <div class="obj-block">
+        <div class="lbl" id="objCurrentLabel">CURRENT</div>
+        <div class="obj-current" id="objCurrent">—</div>
+      </div>
+      <div class="obj-block" style="min-width:0">
+        <div class="lbl" id="objLabel">PRIMARY OBJECTIVE</div>
+        <div class="seg-bar" id="segBar"></div>
+        <div class="stat-row" id="statRow"></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+/* ==========================================================================
+   1. MISSION DATA — the single source for every number on this screen.
+   ==========================================================================
+
+   Wiring rule (matches the rest of this repo): a number is only ever shown
+   with its SOURCE and the DATE it came from. A field that has not been wired
+   to a real source yet keeps `v: null`, renders as UNAVAILABLE, and the
+   assistant refuses to reason about it. Nothing here is estimated into
+   existence — an unknown stays unknown until a real source fills it.
+
+   Every leaf metric is m(value, source, asOf):
+     v      — the number/string, or null for UNAVAILABLE
+     source — where it came from (or PLACEHOLDER: ... if you must set it by hand)
+     asOf   — ISO date the figure was true
+
+   To go live, do NOT edit this object. Write data/jarvis-data.json with the
+   same shape (see data/jarvis-data.sample.json) and this page will load it,
+   section by section, and flip the DATA pill from MOCK to LIVE. Sections
+   absent from that file keep the mock values below and stay flagged MOCK.
+   ========================================================================== */
+
+function m(v, source, asOf) { return { v: v, source: source || 'UNSOURCED', asOf: asOf || null }; }
+
+const MOCK_DATE = '2026-08-14';
+
+const MISSION_DATA = {
+
+  /* ---- who this screen belongs to, and what it is pointed at ---------- */
+  meta: {
+    operator: 'EVANS',
+    org: 'DIAZ CONSULTING FIRM',
+    /* The one line under the wordmark. Keep it to a single sentence you
+       would actually act on this quarter. */
+    objective: 'CONVERT THE ECHELON PROPOSAL AND CLEAR EVERY BLOCKED CLIENT ITEM'
+  },
+
+  /* ---- the one number that matters, bottom of the screen -------------- */
+  objective: {
+    label: 'REVENUE COLLECTED — AUGUST',
+    currentLabel: 'COLLECTED',
+    unit: 'USD',
+    /* PLACEHOLDER by design: a target is a decision, not a data source.
+       Set your real number here and the PLACEHOLDER tag disappears. */
+    target: m(10000, 'PLACEHOLDER: set your real monthly target', MOCK_DATE),
+    current: m(2500, 'vault pipeline notes — deal fields only', MOCK_DATE),
+    /* Free-text status + ETA shown on the objective card. */
+    status: m('ON TRACK', 'derived from progress vs. days remaining', MOCK_DATE),
+    eta: m('SEP 01', 'end of billing month', MOCK_DATE)
+  },
+
+  /* ---- money ---------------------------------------------------------- */
+  revenue: {
+    collectedMTD: m(2500, 'vault pipeline notes — deal fields only', MOCK_DATE),
+    outstanding:  m(500,  'Robert Davis P.A. — invoice open', MOCK_DATE),
+    /* Not wired yet: no connector is reading a payment processor. Left
+       UNAVAILABLE rather than guessed. */
+    yesterday:    m(null, 'NOT WIRED — needs Stripe/RevenueCat connector', null),
+    lastMonth:    m(null, 'NOT WIRED — needs Stripe/RevenueCat connector', null)
+  },
+
+  /* ---- the book of work (mirrors the Command Center counts) ----------- */
+  book: {
+    attention:   m(22, 'vault: status blocked, or active and untouched 7d+', MOCK_DATE),
+    nextActions: m(29, 'vault: notes carrying a next_action field', MOCK_DATE),
+    clients:     m(7,  'vault: notes tagged client', MOCK_DATE),
+    projects:    m(24, 'vault: notes tagged project, non-deferred', MOCK_DATE),
+    parked:      m(0,  'vault: notes with status deferred', MOCK_DATE)
+  },
+
+  /* ---- open pipeline, most valuable first ------------------------------ */
+  pipeline: {
+    asOf: MOCK_DATE,
+    source: 'vault pipeline notes',
+    items: [
+      { name: 'ECHELON LEGAL, PLLC', stage: 'PROPOSAL', value: 3000, note: '3 tiers out — 1.5K / 3K / 5K + 500/MO' },
+      { name: 'ROBERT DAVIS P.A.',   stage: 'ACTIVE',   value: 1500, note: '1.5K IN · 500 OUTSTANDING' },
+      { name: 'GERLACH LAW, PLLC',   stage: 'ACTIVE',   value: 1000, note: '1K IN · PAID IN FULL' }
+    ]
+  },
+
+  /* ---- what the Operator agent did on its last run --------------------- */
+  operator: {
+    asOf: MOCK_DATE,
+    resolved:  m(null, 'NOT WIRED — Operator writes this after each run', null),
+    drafted:   m(null, 'NOT WIRED — Operator writes this after each run', null),
+    escalated: m(null, 'NOT WIRED — Operator writes this after each run', null),
+    published: m(null, 'NOT WIRED — Operator writes this after each run', null)
+  },
+
+  /* ---- what the Advisor agent decided this morning --------------------- */
+  advisor: {
+    asOf: MOCK_DATE,
+    /* Exactly three, ranked. Each carries the evidence it came from and the
+       cost of ignoring it — an unsupported recommendation is not shown. */
+    recommendations: [
+      {
+        action: 'Send the Echelon Legal proposal decision deadline today.',
+        evidence: 'Proposal issued with three tiers and no close date; it is the largest open figure in the pipeline at $3,000 recommended.',
+        cost: 'Every week without a deadline is a week the 3K sits unbilled and the tiers get renegotiated downward.'
+      },
+      {
+        action: 'Invoice-chase the $500 outstanding on Robert Davis P.A.',
+        evidence: '$1,500 collected against $2,000 agreed; the balance has been open since the engagement started.',
+        cost: 'Receivables past 30 days collect at a materially lower rate, and this is the only outstanding balance on the book.'
+      },
+      {
+        action: 'Clear the oldest blocked item in Attention before adding new work.',
+        evidence: '22 items are blocked or untouched for 7+ days while 29 next actions are queued behind them.',
+        cost: 'The blocked count is the number that grows on its own — new projects make it worse, not better.'
+      }
+    ],
+    /* Anything recommended in the last 7 days and not acted on. This is what
+       stops the briefing from being a thing you read and forget. */
+    unactioned: [
+      'Echelon Legal decision deadline — recommended 3 days running, still open.'
+    ]
+  },
+
+  /* ---- proximity: what is closing in. distance 0 = on top of you ------- */
+  proximity: {
+    asOf: MOCK_DATE,
+    contacts: [
+      { label: 'ECHELON DECISION', distance: 0.22, level: 'warn' },
+      { label: 'DAVIS BALANCE',    distance: 0.38, level: 'warn' },
+      { label: 'BLOCKED x22',      distance: 0.55, level: 'bad'  },
+      { label: 'CONTENT QUEUE',    distance: 0.78, level: 'ok'   }
+    ]
+  },
+
+  /* ---- opening telemetry lines (the live feed adds to these) ---------- */
+  /* Decorative only. Anything that makes a CLAIM about the agents is computed
+     at boot instead (see startFeeds) — a feed line that says three
+     recommendations are queued when the Advisor has not run is the same lie
+     as an invented number, just in smaller type. */
+  telemetrySeed: [
+    'VAULT MIRROR SYNCED',
+    'PIPELINE INDEX REBUILT'
+  ]
+};
+
+/* ==========================================================================
+   2. LIVE DATA — replace mock section by section, never all at once.
+   ========================================================================== */
+
+const DATA_URL = 'data/jarvis-data.json';
+const LIVE_SECTIONS = new Set();
+const MERGEABLE = ['meta', 'objective', 'revenue', 'book', 'pipeline', 'operator', 'advisor', 'proximity'];
+
+async function loadLiveData() {
+  try {
+    const res = await fetch(DATA_URL, { cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const live = await res.json();
+    MERGEABLE.forEach(function (key) {
+      if (live && Object.prototype.hasOwnProperty.call(live, key)) {
+        MISSION_DATA[key] = live[key];
+        LIVE_SECTIONS.add(key);
+      }
+    });
+    return LIVE_SECTIONS.size;
+  } catch (err) {
+    /* No file, bad JSON, or file:// — stay on mock and say so out loud
+       rather than showing fake numbers under a LIVE badge. */
+    return 0;
+  }
+}
+
+function updateDataPill() {
+  const pill = document.getElementById('pillData');
+  const n = LIVE_SECTIONS.size, total = MERGEABLE.length;
+  pill.classList.remove('live', 'mock');
+  if (n === 0) {
+    pill.classList.add('mock');
+    pill.innerHTML = '<span class="dot"></span>DATA: MOCK';
+    pill.title = 'Every number on this screen is mock data from MISSION_DATA. Write ' + DATA_URL + ' to go live.';
+  } else if (n < total) {
+    pill.classList.add('mock');
+    pill.innerHTML = '<span class="dot"></span>DATA: ' + n + '/' + total + ' LIVE';
+    pill.title = 'Live sections: ' + Array.from(LIVE_SECTIONS).join(', ') + '. The rest is still mock.';
+  } else {
+    pill.classList.add('live');
+    pill.innerHTML = '<span class="dot pulse"></span>DATA: LIVE';
+    pill.title = 'Every section loaded from ' + DATA_URL;
+  }
+}
+
+/* ==========================================================================
+   3. Small helpers
+   ========================================================================== */
+
+const $ = function (id) { return document.getElementById(id); };
+const clamp = function (n, lo, hi) { return Math.max(lo, Math.min(hi, n)); };
+const pad = function (n, w) { return String(n).padStart(w || 2, '0'); };
+
+function isKnown(metric) { return metric && metric.v !== null && metric.v !== undefined && metric.v !== ''; }
+
+function money(n) {
+  return '$' + Number(n).toLocaleString('en-US', { maximumFractionDigits: 0 });
+}
+
+/* Render a metric for the screen. Unknown reads UNAVAILABLE — never a dash
+   that could be mistaken for zero. */
+function show(metric, formatter) {
+  if (!isKnown(metric)) return 'UNAVAILABLE';
+  return formatter ? formatter(metric.v) : String(metric.v);
+}
+
+/* Render a metric for something the assistant SAYS, with its provenance. */
+function say(metric, formatter) {
+  if (!isKnown(metric)) return 'unavailable — ' + (metric ? metric.source : 'no source');
+  const val = formatter ? formatter(metric.v) : String(metric.v);
+  return val;
+}
+
+function provenance(metric) {
+  if (!metric) return '';
+  const when = metric.asOf ? ' · as of ' + metric.asOf : '';
+  return 'Source: ' + metric.source + when;
+}
+
+function stamp() {
+  const d = new Date();
+  return pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+}
+
+/* ==========================================================================
+   4. Clock — hours, minutes, seconds, hundredths
+   ========================================================================== */
+
+const SESSION_ID = 'DCF-' + Math.random().toString(16).slice(2, 8).toUpperCase();
+
+function tickClock() {
+  const d = new Date();
+  const cs = Math.floor(d.getMilliseconds() / 10);
+  $('clock').innerHTML = pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds()) +
+    '<span class="cs">.' + pad(cs) + '</span>';
+  requestAnimationFrame(tickClock);
+}
+
+function renderHeader() {
+  const d = new Date();
+  const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+  const days = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+  $('dateLine').textContent = days[d.getDay()] + ' ' + pad(d.getDate()) + ' ' + months[d.getMonth()] + ' ' + d.getFullYear();
+  $('sessionLine').textContent = 'SESSION ' + SESSION_ID + ' · ' + (MISSION_DATA.meta.org || '');
+  $('objectiveText').textContent = MISSION_DATA.meta.objective || '[SET YOUR CURRENT GOAL]';
+}
+
+/* ==========================================================================
+   5. The orb — a few hundred particles on a sphere, spun in 3D
+   ========================================================================== */
+
+const orbCanvas = $('orb');
+const orbCtx = orbCanvas.getContext('2d');
+const PARTICLES = [];
+let orbEnergy = 0;      /* 0 idle → 1 speaking/processing */
+let orbEnergyTarget = 0;
+
+(function buildSphere() {
+  /* Fibonacci sphere: even coverage without clumping at the poles. */
+  const N = 620;
+  const golden = Math.PI * (3 - Math.sqrt(5));
+  for (let i = 0; i < N; i++) {
+    const y = 1 - (i / (N - 1)) * 2;
+    const r = Math.sqrt(Math.max(0, 1 - y * y));
+    const theta = golden * i;
+    PARTICLES.push({ x: Math.cos(theta) * r, y: y, z: Math.sin(theta) * r, seed: Math.random() });
+  }
+})();
+
+function sizeCanvas(canvas) {
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const rect = canvas.getBoundingClientRect();
+  const w = Math.max(1, Math.floor(rect.width * dpr));
+  const h = Math.max(1, Math.floor(rect.height * dpr));
+  if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
+  return { w: canvas.width, h: canvas.height, dpr: dpr };
+}
+
+let orbT = 0;
+function drawOrb(dt) {
+  const size = sizeCanvas(orbCanvas);
+  const w = size.w, h = size.h;
+  orbCtx.clearRect(0, 0, w, h);
+
+  orbEnergy += (orbEnergyTarget - orbEnergy) * Math.min(1, dt * 4);
+  orbT += dt * (0.22 + orbEnergy * 0.5);
+
+  const cx = w / 2, cy = h / 2;
+  const R = Math.min(w, h) * (0.205 + orbEnergy * 0.012);
+  const tiltX = 0.42 + Math.sin(orbT * 0.23) * 0.1;
+  const cosY = Math.cos(orbT), sinY = Math.sin(orbT);
+  const cosX = Math.cos(tiltX), sinX = Math.sin(tiltX);
+
+  /* Core glow, brighter while it talks. */
+  const core = orbCtx.createRadialGradient(cx, cy, 0, cx, cy, R * 1.9);
+  core.addColorStop(0, 'rgba(127,223,255,' + (0.20 + orbEnergy * 0.3).toFixed(3) + ')');
+  core.addColorStop(0.45, 'rgba(61,143,174,' + (0.09 + orbEnergy * 0.14).toFixed(3) + ')');
+  core.addColorStop(1, 'rgba(3,10,18,0)');
+  orbCtx.fillStyle = core;
+  orbCtx.beginPath(); orbCtx.arc(cx, cy, R * 1.9, 0, Math.PI * 2); orbCtx.fill();
+
+  for (let i = 0; i < PARTICLES.length; i++) {
+    const p = PARTICLES[i];
+    /* rotate about Y, then tilt about X */
+    const x1 = p.x * cosY - p.z * sinY;
+    const z1 = p.x * sinY + p.z * cosY;
+    const y2 = p.y * cosX - z1 * sinX;
+    const z2 = p.y * sinX + z1 * cosX;
+
+    /* perspective */
+    const persp = 2.6 / (2.6 - z2);
+    /* particles breathe outward a touch when the assistant is speaking */
+    const swell = 1 + orbEnergy * 0.06 * Math.sin(orbT * 6 + p.seed * 9);
+    const sx = cx + x1 * R * persp * swell;
+    const sy = cy + y2 * R * persp * swell;
+
+    const depth = (z2 + 1) / 2;                        /* 0 back → 1 front */
+    const alpha = (0.14 + depth * 0.72) * (0.55 + orbEnergy * 0.45);
+    const rad = (0.5 + depth * 1.5) * size.dpr;
+
+    orbCtx.fillStyle = 'rgba(' + (127 + orbEnergy * 90) + ',' + (223 + orbEnergy * 25) + ',255,' + alpha.toFixed(3) + ')';
+    orbCtx.beginPath(); orbCtx.arc(sx, sy, rad, 0, Math.PI * 2); orbCtx.fill();
+  }
+
+  /* Equator sweep line for a sense of rotation direction. */
+  orbCtx.strokeStyle = 'rgba(127,223,255,' + (0.14 + orbEnergy * 0.2).toFixed(3) + ')';
+  orbCtx.lineWidth = 1 * size.dpr;
+  orbCtx.beginPath();
+  orbCtx.ellipse(cx, cy, R * 1.02, R * 1.02 * Math.abs(Math.sin(tiltX)) + 1, 0, 0, Math.PI * 2);
+  orbCtx.stroke();
+}
+
+/* Tick marks around the outer ring, drawn once. */
+(function buildTicks() {
+  const g = $('tickRing');
+  const NS = 'http://www.w3.org/2000/svg';
+  for (let i = 0; i < 72; i++) {
+    const a = (i / 72) * Math.PI * 2;
+    const long = i % 6 === 0;
+    const r1 = 182, r2 = long ? 168 : 176;
+    const line = document.createElementNS(NS, 'line');
+    line.setAttribute('x1', (200 + Math.cos(a) * r1).toFixed(2));
+    line.setAttribute('y1', (200 + Math.sin(a) * r1).toFixed(2));
+    line.setAttribute('x2', (200 + Math.cos(a) * r2).toFixed(2));
+    line.setAttribute('y2', (200 + Math.sin(a) * r2).toFixed(2));
+    line.setAttribute('stroke', long ? 'rgba(127,223,255,0.55)' : 'rgba(127,223,255,0.22)');
+    line.setAttribute('stroke-width', long ? '1.6' : '1');
+    g.appendChild(line);
+  }
+})();
+
+/* ==========================================================================
+   6. Vitals — six bars, each tied to something real where one exists
+   ========================================================================== */
+
+/* Each vital declares how its base value is computed from MISSION_DATA, so a
+   bar is never just decoration. `jitter` is presentation only. */
+function vitalSpecs() {
+  const b = MISSION_DATA.book, o = MISSION_DATA.objective;
+  const attention = isKnown(b.attention) ? b.attention.v : null;
+  const target = isKnown(o.target) ? o.target.v : null;
+  const current = isKnown(o.current) ? o.current.v : null;
+
+  const progress = (target && current !== null) ? clamp(current / target * 100, 0, 100) : null;
+
+  return [
+    /* Colour this one against the PACE of the month, not the raw percentage.
+       25% collected is fine on the 8th and alarming on the 28th; a bar that
+       goes red every time a month turns over is a bar you learn to ignore. */
+    { label: 'OBJECTIVE PROGRESS', base: progress, jitter: 0, invert: false,
+      sev: progress === null ? null : clamp((expectedPacePct() - progress) * 2.5, 0, 100) },
+    { label: 'ATTENTION LOAD', base: attention === null ? null : clamp(attention * 3, 0, 100), jitter: 0.4, invert: true },
+    { label: 'PIPELINE COVERAGE', base: pipelineCoverage(), jitter: 0.6, invert: false },
+    { label: 'DATA FRESHNESS', base: freshness(), jitter: 0.3, invert: false },
+    { label: 'AGENT UPLINK', base: LIVE_SECTIONS.size ? 60 + LIVE_SECTIONS.size * 5 : 34, jitter: 2.5, invert: false },
+    { label: 'VOICE LINK', base: voiceLinkLevel(), jitter: 0, invert: false }
+  ];
+}
+
+/* Reads the actual browser capability rather than drawing a decorative bar:
+   full marks needs speech in AND out, half means you can only type. */
+function voiceLinkLevel() {
+  const canHear = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+  const canSpeak = !!window.speechSynthesis;
+  return (canHear ? 50 : 0) + (canSpeak && voiceEnabled ? 50 : 0);
+}
+
+/* How far through the current month we are, as a percentage. */
+function expectedPacePct() {
+  const now = new Date();
+  const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  return clamp(now.getDate() / daysInMonth * 100, 0, 100);
+}
+
+function pipelineCoverage() {
+  const p = MISSION_DATA.pipeline;
+  const t = MISSION_DATA.objective.target;
+  if (!p || !p.items || !p.items.length || !isKnown(t)) return null;
+  /* Only agreed figures count toward coverage, same rule as the total. */
+  const open = p.items.reduce(function (sum, i) {
+    return sum + (typeof i.value === 'number' && isFinite(i.value) ? i.value : 0);
+  }, 0);
+  return clamp(open / t.v * 100, 0, 100);
+}
+
+/* How stale is the newest figure on the screen? 100 = today. */
+function freshness() {
+  const dates = [];
+  MERGEABLE.forEach(function (key) {
+    const sec = MISSION_DATA[key];
+    if (!sec) return;
+    Object.keys(sec).forEach(function (k) {
+      const val = sec[k];
+      if (val && typeof val === 'object' && val.asOf) dates.push(val.asOf);
+    });
+    if (sec.asOf) dates.push(sec.asOf);
+  });
+  if (!dates.length) return null;
+  const newest = dates.sort().slice(-1)[0];
+  const ageDays = Math.max(0, (Date.now() - Date.parse(newest + 'T00:00:00')) / 86400000);
+  return clamp(100 - ageDays * 12, 0, 100);
+}
+
+function renderVitals() {
+  const specs = vitalSpecs();
+  $('vitals').innerHTML = specs.map(function (s, i) {
+    return '<div class="vital" data-i="' + i + '">' +
+      '<div class="vital-top"><span>' + s.label + '</span><span class="v" data-v="' + i + '">—</span></div>' +
+      '<div class="vital-track"><div class="vital-fill" data-f="' + i + '" style="width:0%"></div></div>' +
+      '</div>';
+  }).join('');
+  animateVitals(specs);
+  /* Recompute the bases each tick, not just the jitter, so a bar reflects a
+     muted voice link or a newly loaded data section instead of a stale read. */
+  setInterval(function () { animateVitals(vitalSpecs()); }, 2600);
+}
+
+function animateVitals(specs) {
+  let worst = 'NOMINAL';
+  specs.forEach(function (s, i) {
+    const fill = document.querySelector('[data-f="' + i + '"]');
+    const label = document.querySelector('[data-v="' + i + '"]');
+    if (!fill || !label) return;
+    if (s.base === null) {
+      fill.style.width = '0%';
+      fill.className = 'vital-fill warn';
+      label.textContent = 'N/A';
+      return;
+    }
+    const val = clamp(s.base + (Math.random() - 0.5) * 2 * s.jitter, 0, 100);
+    fill.style.width = val.toFixed(1) + '%';
+    /* "invert" bars are ones where a HIGH reading is bad (attention load).
+       A spec may override with its own severity when neither direction of the
+       raw value tells you whether the reading is actually a problem. */
+    const severity = typeof s.sev === 'number' ? s.sev : (s.invert ? val : 100 - val);
+    fill.className = 'vital-fill' + (severity > 70 ? ' bad' : severity > 45 ? ' warn' : '');
+    if (severity > 70) worst = 'ATTENTION REQUIRED';
+    else if (severity > 45 && worst === 'NOMINAL') worst = 'DEGRADED';
+    label.textContent = Math.round(val) + '%';
+  });
+  $('vitalsTag').textContent = worst;
+}
+
+/* ==========================================================================
+   7. Telemetry + diagnostics feeds
+   ========================================================================== */
+
+const MAX_LINES = 40;
+
+function recommendationCount() {
+  return ((MISSION_DATA.advisor && MISSION_DATA.advisor.recommendations) || []).length;
+}
+
+function pushLine(target, text, cls) {
+  const box = $(target);
+  const el = document.createElement('div');
+  el.className = 'log-line' + (cls ? ' ' + cls : '');
+  el.innerHTML = '<span class="ts">' + stamp() + '</span> ' + escapeHtml(typeof text === 'function' ? text() : text);
+  box.appendChild(el);
+  while (box.children.length > MAX_LINES) box.removeChild(box.firstChild);
+}
+
+const TELEMETRY_POOL = [
+  'VAULT INDEX SCAN COMPLETE',
+  'PIPELINE DELTA: NONE',
+  'ATTENTION QUEUE RE-RANKED',
+  'MIRROR HEARTBEAT OK',
+  'CACHE WARM · 0 STALE READS',
+  'CLIENT NOTES CHECKSUM MATCH',
+  'NEXT-ACTION INDEX REBUILT',
+  'OBJECTIVE RECALCULATED',
+  'CONNECTOR POLL: NO NEW EVENTS'
+];
+
+/* `t` may be a function so a line can report live state instead of asserting
+   a number that was true when this file was written. */
+const DIAG_POOL = [
+  { t: 'SCOUT: READ-ONLY · NO WRITES ISSUED' },
+  { t: 'OPERATOR: DRAFT-ONLY MODE ACTIVE', c: 'warn' },
+  { t: function () {
+      const n = recommendationCount();
+      return n ? 'ADVISOR: ' + n + ' RECOMMENDATIONS HELD' : 'ADVISOR: NOT RUN — NO RECOMMENDATIONS';
+    } },
+  { t: 'ESCALATION GATE: ARMED' },
+  { t: 'SPEND GATE: ARMED · APPROVAL REQUIRED', c: 'warn' },
+  { t: 'FAQ INDEX LOADED' },
+  { t: 'AUTONOMY LEVEL: DRAFTS ONLY' }
+];
+
+function startFeeds() {
+  (MISSION_DATA.telemetrySeed || []).forEach(function (line) { pushLine('telemetry', line); });
+
+  /* Two computed lines, so the feed reports the state the screen is actually
+     in rather than the state it was written in. */
+  pushLine('telemetry',
+    LIVE_SECTIONS.size
+      ? 'SCOUT: ' + LIVE_SECTIONS.size + ' SECTIONS LOADED FROM SOURCE'
+      : 'SCOUT: NO LIVE DATA — RUNNING ON MOCK',
+    LIVE_SECTIONS.size ? '' : 'warn');
+  pushLine('telemetry',
+    recommendationCount()
+      ? 'ADVISOR: ' + recommendationCount() + ' RECOMMENDATIONS QUEUED'
+      : 'ADVISOR: NOT RUN — NO RECOMMENDATIONS', recommendationCount() ? '' : 'warn');
+
+  DIAG_POOL.slice(0, 3).forEach(function (d) { pushLine('diagnostics', d.t, d.c); });
+
+  setInterval(function () {
+    pushLine('telemetry', TELEMETRY_POOL[Math.floor(Math.random() * TELEMETRY_POOL.length)]);
+  }, 3800);
+
+  setInterval(function () {
+    const d = DIAG_POOL[Math.floor(Math.random() * DIAG_POOL.length)];
+    pushLine('diagnostics', d.t, d.c);
+  }, 5200);
+}
+
+/* ==========================================================================
+   8. Radar — contacts from MISSION_DATA.proximity
+   ========================================================================== */
+
+const radarCanvas = $('radar');
+const radarCtx = radarCanvas.getContext('2d');
+let sweep = 0;
+
+function drawRadar(dt) {
+  const size = sizeCanvas(radarCanvas);
+  const w = size.w, h = size.h;
+  const cx = w / 2, cy = h / 2, R = Math.min(w, h) / 2 - 2 * size.dpr;
+  radarCtx.clearRect(0, 0, w, h);
+  sweep += dt * 1.1;
+
+  radarCtx.lineWidth = 1 * size.dpr;
+  radarCtx.strokeStyle = 'rgba(127,223,255,0.22)';
+  for (let i = 1; i <= 3; i++) {
+    radarCtx.beginPath(); radarCtx.arc(cx, cy, R * (i / 3), 0, Math.PI * 2); radarCtx.stroke();
+  }
+  radarCtx.beginPath();
+  radarCtx.moveTo(cx - R, cy); radarCtx.lineTo(cx + R, cy);
+  radarCtx.moveTo(cx, cy - R); radarCtx.lineTo(cx, cy + R);
+  radarCtx.stroke();
+
+  /* sweep wedge */
+  const grad = radarCtx.createConicGradient
+    ? radarCtx.createConicGradient(sweep, cx, cy)
+    : null;
+  if (grad) {
+    grad.addColorStop(0, 'rgba(127,223,255,0.30)');
+    grad.addColorStop(0.10, 'rgba(127,223,255,0.02)');
+    grad.addColorStop(1, 'rgba(127,223,255,0)');
+    radarCtx.fillStyle = grad;
+    radarCtx.beginPath(); radarCtx.arc(cx, cy, R, 0, Math.PI * 2); radarCtx.fill();
+  }
+  radarCtx.strokeStyle = 'rgba(127,223,255,0.75)';
+  radarCtx.beginPath();
+  radarCtx.moveTo(cx, cy);
+  radarCtx.lineTo(cx + Math.cos(sweep) * R, cy + Math.sin(sweep) * R);
+  radarCtx.stroke();
+
+  /* contacts: blip brightens as the sweep passes over it */
+  const contacts = (MISSION_DATA.proximity && MISSION_DATA.proximity.contacts) || [];
+  contacts.forEach(function (c, i) {
+    const angle = (i / Math.max(1, contacts.length)) * Math.PI * 2 + 0.6;
+    const dist = clamp(c.distance, 0.05, 0.95) * R;
+    const x = cx + Math.cos(angle) * dist, y = cy + Math.sin(angle) * dist;
+    let delta = (sweep - angle) % (Math.PI * 2);
+    if (delta < 0) delta += Math.PI * 2;
+    const hot = clamp(1 - delta / 1.6, 0, 1);
+    const col = c.level === 'bad' ? '255,107,107' : c.level === 'warn' ? '232,168,56' : '127,223,255';
+    radarCtx.fillStyle = 'rgba(' + col + ',' + (0.25 + hot * 0.75).toFixed(3) + ')';
+    radarCtx.beginPath();
+    radarCtx.arc(x, y, (1.8 + hot * 2.2) * size.dpr, 0, Math.PI * 2);
+    radarCtx.fill();
+  });
+  $('radarTag').textContent = contacts.length + ' CONTACT' + (contacts.length === 1 ? '' : 'S');
+}
+
+/* ==========================================================================
+   9. Waveform — live while listening or speaking, flat when idle
+   ========================================================================== */
+
+const waveCanvas = $('wave');
+const waveCtx = waveCanvas.getContext('2d');
+let waveT = 0;
+let voiceState = 'idle';   /* idle | listening | thinking | speaking */
+
+function drawWave(dt) {
+  const size = sizeCanvas(waveCanvas);
+  const w = size.w, h = size.h;
+  waveCtx.clearRect(0, 0, w, h);
+  waveT += dt;
+
+  const active = voiceState === 'listening' || voiceState === 'speaking' || voiceState === 'thinking';
+  const amp = active ? (voiceState === 'thinking' ? h * 0.12 : h * 0.34) : 0.6 * size.dpr;
+  const colour = voiceState === 'listening' ? '214,246,255' : '127,223,255';
+
+  waveCtx.lineWidth = 1.4 * size.dpr;
+  waveCtx.strokeStyle = 'rgba(' + colour + ',' + (active ? 0.95 : 0.35) + ')';
+  waveCtx.shadowBlur = active ? 10 * size.dpr : 0;
+  waveCtx.shadowColor = 'rgba(127,223,255,0.6)';
+  waveCtx.beginPath();
+  for (let x = 0; x <= w; x += 2 * size.dpr) {
+    const p = x / w;
+    /* Layered sines with an envelope so it reads as speech, not a test tone. */
+    const envelope = Math.sin(p * Math.PI);
+    const y = h / 2 +
+      Math.sin(p * 22 + waveT * 9) * amp * 0.45 * envelope +
+      Math.sin(p * 7 - waveT * 5) * amp * 0.35 * envelope +
+      Math.sin(p * 41 + waveT * 14) * amp * 0.2 * envelope;
+    if (x === 0) waveCtx.moveTo(x, y); else waveCtx.lineTo(x, y);
+  }
+  waveCtx.stroke();
+  waveCtx.shadowBlur = 0;
+}
+
+function setVoiceState(state, caption) {
+  voiceState = state;
+  const map = {
+    idle:      { tag: 'IDLE',      wave: 'NO SIGNAL',        cap: 'TAP ORB OR HOLD SPACE TO SPEAK', energy: 0 },
+    listening: { tag: 'RX ACTIVE', wave: 'LISTENING',        cap: 'LISTENING — RELEASE TO SEND',    energy: 0.55 },
+    thinking:  { tag: 'PROCESS',   wave: 'PROCESSING',       cap: 'PROCESSING',                     energy: 0.75 },
+    speaking:  { tag: 'TX ACTIVE', wave: 'SPEAKING',         cap: 'RESPONDING',                     energy: 1 }
+  };
+  const s = map[state] || map.idle;
+  $('audioTag').textContent = s.tag;
+  $('waveState').textContent = s.wave;
+  $('orbCaption').textContent = caption || s.cap;
+  orbEnergyTarget = s.energy;
+}
+
+/* ==========================================================================
+   10. Objective card
+   ========================================================================== */
+
+const SEGMENTS = 44;
+
+function renderObjective() {
+  const o = MISSION_DATA.objective;
+  const fmt = function (n) { return o.unit === 'USD' ? money(n) : String(n); };
+
+  $('objLabel').textContent = o.label || 'PRIMARY OBJECTIVE';
+  $('objCurrentLabel').textContent = o.currentLabel || 'CURRENT';
+  $('objTarget').innerHTML = show(o.target, fmt) +
+    (isKnown(o.target) && /^PLACEHOLDER/i.test(o.target.source) ? '<span class="placeholder-tag">PLACEHOLDER</span>' : '');
+
+  /* Segmented bar */
+  const bar = $('segBar');
+  bar.innerHTML = Array.from({ length: SEGMENTS }, function () { return '<div class="seg"></div>'; }).join('');
+
+  const known = isKnown(o.current) && isKnown(o.target) && o.target.v > 0;
+  const pct = known ? clamp(o.current.v / o.target.v * 100, 0, 100) : 0;
+  const filled = Math.round(pct / 100 * SEGMENTS);
+  Array.from(bar.children).forEach(function (seg, i) {
+    if (i < filled) seg.classList.add(i === filled - 1 ? 'edge' : 'on');
+  });
+
+  /* Count the current value up rather than snapping to it. */
+  countTo($('objCurrent'), isKnown(o.current) ? o.current.v : null, fmt);
+
+  const b = MISSION_DATA.book, r = MISSION_DATA.revenue;
+  const stats = [
+    { k: 'PROGRESS', v: known ? Math.round(pct) + '%' : 'UNAVAILABLE', cls: known ? '' : 'unavail' },
+    { k: 'OUTSTANDING', v: show(r.outstanding, money), cls: isKnown(r.outstanding) && r.outstanding.v > 0 ? 'warn' : (isKnown(r.outstanding) ? 'good' : 'unavail') },
+    { k: 'CLIENTS', v: show(b.clients), cls: isKnown(b.clients) ? '' : 'unavail' },
+    { k: 'PROJECTS', v: show(b.projects), cls: isKnown(b.projects) ? '' : 'unavail' },
+    { k: 'ATTENTION', v: show(b.attention), cls: isKnown(b.attention) && b.attention.v > 0 ? 'warn' : (isKnown(b.attention) ? 'good' : 'unavail') },
+    { k: 'STATUS', v: show(o.status), cls: isKnown(o.status) ? '' : 'unavail' },
+    { k: 'ETA', v: show(o.eta), cls: isKnown(o.eta) ? '' : 'unavail' }
+  ];
+  $('statRow').innerHTML = stats.map(function (s) {
+    return '<div class="stat"><span class="k">' + s.k + '</span><span class="v ' + s.cls + '">' + s.v + '</span></div>';
+  }).join('');
+}
+
+function countTo(el, value, fmt) {
+  if (value === null) { el.textContent = 'UNAVAILABLE'; return; }
+  const start = performance.now(), dur = 1100;
+  function step(now) {
+    const p = clamp((now - start) / dur, 0, 1);
+    /* ease-out so it lands softly instead of stopping dead */
+    const eased = 1 - Math.pow(1 - p, 3);
+    el.textContent = fmt(Math.round(value * eased));
+    if (p < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+/* ==========================================================================
+   11. The brain — answers built ONLY from MISSION_DATA
+   ==========================================================================
+   This screen has no model behind it. It answers from the data object and
+   says so plainly when a field is not wired, which is the honest failure
+   mode: silence about a number beats a confident invented one.
+   ========================================================================== */
+
+function pipelineSentence() {
+  const p = MISSION_DATA.pipeline;
+  if (!p || !p.items || !p.items.length) return { text: 'No pipeline items are loaded.', src: '' };
+  /* An engagement with no agreed figure is reported, but left OUT of the
+     total — the same rule the Command Center applies. Counting it as zero
+     would understate the book; guessing a figure would overstate it. */
+  const priced = p.items.filter(function (i) { return typeof i.value === 'number' && isFinite(i.value); });
+  const total = priced.reduce(function (s, i) { return s + i.value; }, 0);
+  const lines = p.items.map(function (i) {
+    const fig = (typeof i.value === 'number' && isFinite(i.value)) ? money(i.value) : 'no agreed figure';
+    return i.name + ' — ' + i.stage + ', ' + fig + ' (' + i.note + ')';
+  }).join(' · ');
+  const head = priced.length === p.items.length
+    ? p.items.length + ' open items totalling ' + money(total) + '.'
+    : p.items.length + ' open items, ' + priced.length + ' with an agreed figure totalling ' + money(total) + '.';
+  return {
+    text: head + ' ' + lines,
+    src: 'Source: ' + (p.source || 'pipeline notes') + (p.asOf ? ' · as of ' + p.asOf : '')
+  };
+}
+
+function advisorSentence() {
+  const a = MISSION_DATA.advisor;
+  if (!a || !a.recommendations || !a.recommendations.length) {
+    return { text: 'The Advisor has no recommendations loaded. Today looks routine.', src: '' };
+  }
+  const text = a.recommendations.map(function (r, i) {
+    return (i + 1) + '. ' + r.action + ' Evidence: ' + r.evidence + ' Ignore it and: ' + r.cost;
+  }).join(' ');
+  const un = (a.unactioned && a.unactioned.length)
+    ? ' Still unactioned from the last seven days: ' + a.unactioned.join(' ')
+    : ' Nothing recommended in the last seven days is still outstanding.';
+  return { text: text + un, src: 'Source: Advisor run' + (a.asOf ? ' · as of ' + a.asOf : '') };
+}
+
+const INTENTS = [
+  {
+    keys: ['brief', 'briefing', 'morning', 'good morning', 'rundown'],
+    run: function () { return morningBrief(); }
+  },
+  {
+    keys: ['recommend', 'focus', 'today', 'priorit', 'what should i', 'advice', 'advisor'],
+    run: advisorSentence
+  },
+  {
+    keys: ['pipeline', 'deal', 'proposal', 'prospect'],
+    run: pipelineSentence
+  },
+  {
+    keys: ['revenue', 'money', 'collected', 'cash', 'income', 'earn', 'made', 'make', 'yesterday', 'last month'],
+    run: function (q) {
+      const r = MISSION_DATA.revenue;
+      /* Asked specifically about a period? Answer THAT field — including when
+         the honest answer is that it has no source yet. Folding it into the
+         month-to-date figure would quietly answer a different question. */
+      const period = /yesterday/.test(q) ? r.yesterday : /last month/.test(q) ? r.lastMonth : null;
+      if (period && !isKnown(period)) {
+        return {
+          text: 'That figure is unavailable — ' + period.source + '. What I do have: ' +
+                say(r.collectedMTD, money) + ' collected month to date.',
+          src: provenance(r.collectedMTD)
+        };
+      }
+      if (period) return { text: money(period.v) + '.', src: provenance(period) };
+
+      let text = 'Collected month to date: ' + say(r.collectedMTD, money) + '. Outstanding: ' + say(r.outstanding, money) + '.';
+      if (!isKnown(r.yesterday)) text += ' Yesterday and last-month comparisons are unavailable — no payment processor is connected yet.';
+      else text += ' Yesterday: ' + say(r.yesterday, money) + '.';
+      return { text: text, src: provenance(r.collectedMTD) };
+    }
+  },
+  {
+    keys: ['outstanding', 'owed', 'invoice', 'unpaid', 'receivab'],
+    run: function () {
+      const r = MISSION_DATA.revenue;
+      return { text: 'Outstanding balance: ' + say(r.outstanding, money) + '.', src: provenance(r.outstanding) };
+    }
+  },
+  {
+    keys: ['attention', 'blocked', 'stuck', 'stale', 'risk'],
+    run: function () {
+      const b = MISSION_DATA.book;
+      return {
+        text: say(b.attention) + ' items need attention, against ' + say(b.nextActions) + ' queued next actions.',
+        src: provenance(b.attention)
+      };
+    }
+  },
+  {
+    keys: ['client', 'customer', 'account'],
+    run: function () {
+      const b = MISSION_DATA.book;
+      return { text: 'Active clients: ' + say(b.clients) + '.', src: provenance(b.clients) };
+    }
+  },
+  {
+    keys: ['project', 'work in progress', 'wip'],
+    run: function () {
+      const b = MISSION_DATA.book;
+      return {
+        text: 'Active projects: ' + say(b.projects) + '. Parked: ' + say(b.parked) + '.',
+        src: provenance(b.projects)
+      };
+    }
+  },
+  {
+    keys: ['objective', 'target', 'goal', 'progress', 'how am i doing'],
+    run: function () {
+      const o = MISSION_DATA.objective;
+      if (!isKnown(o.current) || !isKnown(o.target)) {
+        return { text: 'Objective progress is unavailable — target or current value is not wired.', src: provenance(o.target) };
+      }
+      const pct = Math.round(o.current.v / o.target.v * 100);
+      let text = o.label + ': ' + money(o.current.v) + ' of ' + money(o.target.v) + ', ' + pct + ' percent. Status ' + say(o.status) + ', ETA ' + say(o.eta) + '.';
+      if (/^PLACEHOLDER/i.test(o.target.source)) text += ' Note: the target is a placeholder, not a real figure.';
+      return { text: text, src: provenance(o.current) };
+    }
+  },
+  {
+    keys: ['operator', 'email', 'inbox', 'escalat', 'drafted'],
+    run: function () {
+      const op = MISSION_DATA.operator;
+      if (!isKnown(op.resolved) && !isKnown(op.drafted) && !isKnown(op.escalated)) {
+        return { text: 'The Operator has not reported a run yet. Resolved, drafted and escalated counts are unavailable.', src: 'Source: Operator run log — not wired' };
+      }
+      return {
+        text: 'Operator last run — resolved ' + say(op.resolved) + ', drafted ' + say(op.drafted) +
+              ', escalated ' + say(op.escalated) + ', published ' + say(op.published) + '.',
+        src: 'Source: Operator run log' + (op.asOf ? ' · as of ' + op.asOf : '')
+      };
+    }
+  },
+  {
+    keys: ['source', 'where did', 'how do you know', 'provenance', 'trust'],
+    run: function () {
+      return {
+        text: 'Every figure on this screen carries its source and date. ' +
+              (LIVE_SECTIONS.size === 0
+                ? 'Right now all sections are mock data from the built-in data object — nothing here is real yet.'
+                : Array.from(LIVE_SECTIONS).join(', ') + ' loaded live; the rest is still mock.'),
+        src: 'Source: data mode indicator'
+      };
+    }
+  },
+  {
+    keys: ['status', 'system', 'diagnostic', 'health', 'you there', 'online'],
+    run: function () {
+      return {
+        text: 'All systems online. Scout read-only, Operator in draft-only mode, Advisor holding ' +
+              ((MISSION_DATA.advisor.recommendations || []).length) + ' recommendations. Data mode: ' +
+              (LIVE_SECTIONS.size === 0 ? 'mock' : LIVE_SECTIONS.size + ' of ' + MERGEABLE.length + ' sections live') + '.',
+        src: ''
+      };
+    }
+  },
+  {
+    keys: ['time', 'clock', 'date', 'what day'],
+    run: function () {
+      const d = new Date();
+      return { text: 'It is ' + d.toLocaleTimeString() + ' on ' + d.toDateString() + '.', src: '' };
+    }
+  },
+  {
+    keys: ['hello', 'hi ', 'hey', 'jarvis', 'you awake'],
+    run: function () {
+      return { text: 'At your service. Ask me for the brief, the pipeline, what needs attention, or what to focus on today.', src: '' };
+    }
+  },
+  {
+    keys: ['thank', 'cheers', 'good work'],
+    run: function () { return { text: 'A pleasure. Standing by.', src: '' }; }
+  },
+  {
+    keys: ['help', 'what can you', 'commands'],
+    run: function () {
+      return {
+        text: 'I answer from one data object: brief, objective, revenue, outstanding, pipeline, clients, projects, attention, ' +
+              'operator, advisor recommendations, sources, and system status. Anything not wired to a real source I report as unavailable rather than guessing.',
+        src: ''
+      };
+    }
+  }
+];
+
+function answer(query) {
+  const q = ' ' + String(query || '').toLowerCase().trim() + ' ';
+  if (!q.trim()) return { text: 'I did not catch that.', src: '' };
+  for (let i = 0; i < INTENTS.length; i++) {
+    const hit = INTENTS[i].keys.some(function (k) { return q.indexOf(k) !== -1; });
+    if (hit) return INTENTS[i].run(q);
+  }
+  return {
+    text: 'That is not wired into my data object yet, so I will not guess at it. I can give you the morning brief, ' +
+          'the objective, revenue and outstanding, the pipeline, client and project counts, what needs attention, ' +
+          'or the Advisor’s three recommendations.',
+    src: ''
+  };
+}
+
+function morningBrief() {
+  const o = MISSION_DATA.objective, r = MISSION_DATA.revenue, b = MISSION_DATA.book;
+  const hour = new Date().getHours();
+  const greet = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+  const parts = [];
+
+  parts.push(greet + ', ' + (MISSION_DATA.meta.operator || 'sir') + '. Here is the brief.');
+
+  if (LIVE_SECTIONS.size === 0) {
+    parts.push('Standing caveat: every figure that follows is mock data. Nothing here has been read from a real source yet.');
+  } else if (LIVE_SECTIONS.size < MERGEABLE.length) {
+    parts.push('Caveat: ' + LIVE_SECTIONS.size + ' of ' + MERGEABLE.length + ' sections are live; the rest is still mock.');
+  }
+
+  if (isKnown(o.current) && isKnown(o.target)) {
+    const pct = Math.round(o.current.v / o.target.v * 100);
+    parts.push(o.label + ' stands at ' + money(o.current.v) + ' against ' + money(o.target.v) + ', ' + pct + ' percent, status ' + say(o.status) + '.');
+  } else {
+    parts.push('Objective progress is unavailable — it has no wired source.');
+  }
+
+  parts.push('Outstanding receivables: ' + say(r.outstanding, money) + '.');
+  parts.push(say(b.attention) + ' items need attention, ' + say(b.nextActions) + ' next actions queued across ' +
+             say(b.clients) + ' clients and ' + say(b.projects) + ' projects.');
+
+  const p = pipelineSentence();
+  parts.push('Pipeline: ' + p.text);
+
+  const recs = MISSION_DATA.advisor.recommendations || [];
+  if (!recs.length) {
+    /* The Scout gathers; the Advisor decides. If the Advisor has not run,
+       say so — do not dress the numbers up as a recommendation. */
+    parts.push('The Advisor has not run yet, so I have no recommendations for you today — only the numbers above.');
+  } else {
+    parts.push('My top ' + (recs.length === 3 ? 'three' : recs.length) + ' for today.');
+    recs.forEach(function (r2, i) {
+      parts.push('Number ' + (i + 1) + '. ' + r2.action + ' The evidence: ' + r2.evidence + ' Ignore it this week and: ' + r2.cost);
+    });
+  }
+
+  const un = MISSION_DATA.advisor.unactioned || [];
+  if (un.length) parts.push('Still unactioned from the last seven days: ' + un.join(' '));
+
+  return { text: parts.join(' '), src: 'Source: Scout, Operator and Advisor runs · ' + (MISSION_DATA.advisor.asOf || 'undated') };
+}
+
+/* ==========================================================================
+   12. Voice — browser speech recognition in, speech synthesis out
+   ========================================================================== */
+
+/* ElevenLabs, when you want the proper British Jarvis rather than whatever
+   voice the operating system ships. Leave `endpoint` null and the browser's
+   own speech synthesis is used instead — the page works either way.
+
+   The key never lives here: this page is public. `endpoint` points at the
+   small proxy in voice/elevenlabs-proxy.js, which holds the key as a secret.
+   If the proxy is unreachable or errors, speech falls back to the browser
+   rather than going silent. */
+const VOICE_CONFIG = {
+  endpoint: null,                            /* e.g. 'https://jarvis-voice.<you>.workers.dev' */
+  voiceId: 'JBFqnCBsd6RMkjVDRZzb',           /* George — British male */
+  model: 'eleven_turbo_v2_5'
+};
+
+let voiceEnabled = true;
+let recognition = null;
+let listening = false;
+let spaceHeld = false;
+let currentAudio = null;
+
+function pickVoice() {
+  const voices = window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
+  if (!voices.length) return null;
+  /* Jarvis is British. Fall back through en-GB, then any English voice. */
+  const preferred = ['Daniel', 'Google UK English Male', 'Arthur', 'Oliver', 'Google UK English Female'];
+  for (let i = 0; i < preferred.length; i++) {
+    const hit = voices.find(function (v) { return v.name.indexOf(preferred[i]) !== -1; });
+    if (hit) return hit;
+  }
+  return voices.find(function (v) { return /^en-GB/i.test(v.lang); }) ||
+         voices.find(function (v) { return /^en/i.test(v.lang); }) || null;
+}
+
+/* Stop whatever is currently talking, by either route. */
+function stopSpeaking() {
+  if (window.speechSynthesis) window.speechSynthesis.cancel();
+  if (currentAudio) {
+    currentAudio.pause();
+    if (currentAudio.src.startsWith('blob:')) URL.revokeObjectURL(currentAudio.src);
+    currentAudio = null;
+  }
+}
+
+function speak(text) {
+  if (!voiceEnabled) { setVoiceState('idle'); return; }
+  stopSpeaking();
+  if (VOICE_CONFIG.endpoint) speakViaProxy(text);
+  else speakViaBrowser(text);
+}
+
+function speakViaProxy(text) {
+  /* Stay in PROCESSING until audio actually starts — the fetch takes real
+     time, and pulsing the orb as though it is already talking is a small lie
+     the rest of this screen does not tell. */
+  setVoiceState('thinking');
+  fetch(VOICE_CONFIG.endpoint, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text: text, voiceId: VOICE_CONFIG.voiceId, model: VOICE_CONFIG.model })
+  })
+    .then(function (res) {
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return res.blob();
+    })
+    .then(function (blob) {
+      const url = URL.createObjectURL(blob);
+      const audio = new Audio(url);
+      currentAudio = audio;
+      const done = function () {
+        URL.revokeObjectURL(url);
+        if (currentAudio === audio) currentAudio = null;
+        setVoiceState('idle');
+      };
+      audio.onplay = function () { setVoiceState('speaking'); };
+      audio.onended = done;
+      audio.onerror = done;
+      return audio.play();
+    })
+    .catch(function (err) {
+      /* A voice that goes silent on an error is worse than a plainer voice.
+         Say so in diagnostics and finish the sentence in the browser. */
+      pushLine('diagnostics', 'VOICE PROXY FAILED (' + String(err.message || err).toUpperCase() + ') — USING BROWSER VOICE', 'warn');
+      speakViaBrowser(text);
+    });
+}
+
+function speakViaBrowser(text) {
+  if (!window.speechSynthesis) { setVoiceState('idle'); return; }
+  window.speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  const v = pickVoice();
+  if (v) { utter.voice = v; utter.lang = v.lang; }
+  utter.rate = 1.02;
+  utter.pitch = 0.92;
+
+  /* Watchdogs. A machine with no speech engine installed fires neither
+     onstart nor onend, and without these the orb would pulse as though it
+     were mid-sentence forever. First timer catches "never started"; second
+     catches "started but never finished", with a generous per-character
+     budget so a long morning brief is never cut off early. */
+  let started = false, finished = false;
+  const done = function () {
+    if (finished) return;
+    finished = true;
+    clearTimeout(startTimer);
+    clearTimeout(endTimer);
+    setVoiceState('idle');
+  };
+  const startTimer = setTimeout(function () {
+    if (started || finished) return;
+    pushLine('diagnostics', 'NO SPEECH ENGINE AVAILABLE — TEXT ONLY', 'warn');
+    done();
+  }, 1800);
+  const endTimer = setTimeout(done, 5000 + text.length * 100);
+
+  utter.onstart = function () { started = true; clearTimeout(startTimer); setVoiceState('speaking'); };
+  utter.onend = done;
+  utter.onerror = done;
+  window.speechSynthesis.speak(utter);
+}
+
+function respond(query) {
+  pushLine('telemetry', 'YOU: ' + query.toUpperCase(), 'you');
+  setVoiceState('thinking');
+  const res = answer(query);
+  /* A beat of "processing" so the orb visibly reacts before it answers. */
+  setTimeout(function () {
+    $('reply').innerHTML = escapeHtml(res.text) + (res.src ? '<span class="src">' + escapeHtml(res.src) + '</span>' : '');
+    $('reply').scrollTop = 0;
+    pushLine('telemetry', 'JARVIS: RESPONSE DELIVERED', 'hi');
+    speak(res.text);
+    if (!voiceEnabled) setVoiceState('idle');
+  }, 320);
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, function (c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+  });
+}
+
+function initRecognition() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) {
+    pushLine('diagnostics', 'SPEECH INPUT UNSUPPORTED — USE TEXT', 'warn');
+    return null;
+  }
+  const rec = new SR();
+  rec.lang = 'en-US';
+  rec.interimResults = false;
+  rec.maxAlternatives = 1;
+  rec.continuous = false;
+
+  rec.onstart = function () { listening = true; setVoiceState('listening'); };
+  rec.onerror = function (e) {
+    listening = false;
+    pushLine('diagnostics', 'MIC ERROR: ' + String(e.error || 'unknown').toUpperCase(), 'warn');
+    setVoiceState('idle');
+  };
+  rec.onend = function () { listening = false; if (voiceState === 'listening') setVoiceState('idle'); };
+  rec.onresult = function (e) {
+    const said = e.results[0][0].transcript;
+    respond(said);
+  };
+  return rec;
+}
+
+function startListening() {
+  if (!recognition || listening) return;
+  stopSpeaking();
+  try { recognition.start(); } catch (err) { /* already started — ignore */ }
+}
+
+function stopListening() {
+  if (!recognition || !listening) return;
+  try { recognition.stop(); } catch (err) { /* not started — ignore */ }
+}
+
+/* ==========================================================================
+   13. Wiring the controls
+   ========================================================================== */
+
+function bindControls() {
+  $('orbHit').addEventListener('click', function () {
+    if (listening) stopListening();
+    else if (recognition) startListening();
+    else $('txt').focus();
+  });
+
+  $('sendBtn').addEventListener('click', submitText);
+  $('txt').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') { e.preventDefault(); submitText(); }
+  });
+
+  $('briefBtn').addEventListener('click', function () { respond('morning brief'); });
+
+  $('muteBtn').addEventListener('click', function () {
+    voiceEnabled = !voiceEnabled;
+    $('muteBtn').textContent = 'VOICE: ' + (voiceEnabled ? 'ON' : 'OFF');
+    if (!voiceEnabled) { stopSpeaking(); setVoiceState('idle'); }
+    pushLine('diagnostics', 'SPEECH OUTPUT ' + (voiceEnabled ? 'ENABLED' : 'MUTED'));
+  });
+
+  /* Hold space to talk — but never while typing in the text box. */
+  document.addEventListener('keydown', function (e) {
+    if (e.code !== 'Space' || e.repeat) return;
+    if (document.activeElement === $('txt')) return;
+    e.preventDefault();
+    spaceHeld = true;
+    startListening();
+  });
+  document.addEventListener('keyup', function (e) {
+    if (e.code !== 'Space' || !spaceHeld) return;
+    spaceHeld = false;
+    stopListening();
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+      stopSpeaking();
+      stopListening();
+      setVoiceState('idle');
+    }
+  });
+}
+
+function submitText() {
+  const val = $('txt').value.trim();
+  if (!val) return;
+  $('txt').value = '';
+  respond(val);
+}
+
+/* ==========================================================================
+   14. Boot sequence — panels flicker on one by one, then a greeting
+   ========================================================================== */
+
+function boot() {
+  const panels = Array.from(document.querySelectorAll('.boot')).sort(function (a, b) {
+    return Number(a.dataset.boot) - Number(b.dataset.boot);
+  });
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const step = reduced ? 0 : 170;
+
+  panels.forEach(function (el, i) {
+    setTimeout(function () {
+      el.classList.add('on');
+      pushLine('telemetry', 'PANEL ' + pad(i + 1) + ' ONLINE');
+    }, i * step);
+  });
+
+  setTimeout(function () {
+    const hour = new Date().getHours();
+    const greet = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+    const name = MISSION_DATA.meta.operator || 'sir';
+    const mode = LIVE_SECTIONS.size === 0
+      ? ' All systems online, running on mock data.'
+      : ' All systems online, ' + LIVE_SECTIONS.size + ' of ' + MERGEABLE.length + ' data sections live.';
+    const line = greet + ', ' + name + '.' + mode + ' Say the word, or press the morning brief.';
+    $('reply').textContent = line;
+    pushLine('telemetry', 'BOOT COMPLETE', 'hi');
+    speak(line);
+  }, panels.length * step + 350);
+}
+
+/* ==========================================================================
+   15. Animation loop + start
+   ========================================================================== */
+
+let lastFrame = performance.now();
+function loop(now) {
+  const dt = Math.min(0.05, (now - lastFrame) / 1000);
+  lastFrame = now;
+  drawOrb(dt);
+  drawRadar(dt);
+  drawWave(dt);
+  requestAnimationFrame(loop);
+}
+
+async function start() {
+  await loadLiveData();
+  updateDataPill();
+  renderHeader();
+  renderObjective();
+  renderVitals();
+  startFeeds();
+  bindControls();
+  setVoiceState('idle');
+  recognition = initRecognition();
+  tickClock();
+  requestAnimationFrame(loop);
+  boot();
+
+  /* Voices load asynchronously in most browsers; re-pick once they arrive. */
+  if (window.speechSynthesis) {
+    window.speechSynthesis.onvoiceschanged = function () { pickVoice(); };
+  }
+  /* Re-render the objective on resize so the segmented bar stays crisp. */
+  window.addEventListener('resize', function () {
+    clearTimeout(window.__objTimer);
+    window.__objTimer = setTimeout(renderObjective, 250);
+  });
+}
+
+start();
+</script>
+</body>
+</html>

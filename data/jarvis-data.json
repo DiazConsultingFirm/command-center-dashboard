@@ -1,0 +1,131 @@
+{
+  "_generatedBy": "agents/scout-vault.mjs — read from the Command Center mirror. Do not hand-edit; rerun the Scout instead.",
+  "objective": {
+    "label": "REVENUE COLLECTED — TO DATE",
+    "currentLabel": "COLLECTED",
+    "unit": "USD",
+    "target": {
+      "v": 10000,
+      "source": "PLACEHOLDER: set your real monthly target",
+      "asOf": "2026-08-14"
+    },
+    "current": {
+      "v": 2500,
+      "source": "Command Center mirror (index.html) — pipeline snapshot: Collected",
+      "asOf": "2026-08-14"
+    },
+    "status": {
+      "v": "NO TARGET SET",
+      "source": "target is a placeholder — set a real one to get a pace status",
+      "asOf": "2026-08-14"
+    },
+    "eta": {
+      "v": "END OF MONTH",
+      "source": "billing month boundary",
+      "asOf": "2026-08-14"
+    }
+  },
+  "revenue": {
+    "collectedMTD": {
+      "v": 2500,
+      "source": "Command Center mirror (index.html) — pipeline snapshot: Collected",
+      "asOf": "2026-08-14"
+    },
+    "outstanding": {
+      "v": 500,
+      "source": "Command Center mirror (index.html) — pipeline snapshot: Outstanding",
+      "asOf": "2026-08-14"
+    },
+    "yesterday": {
+      "v": null,
+      "source": "NOT WIRED — needs a payment processor connector",
+      "asOf": null
+    },
+    "lastMonth": {
+      "v": null,
+      "source": "NOT WIRED — needs a payment processor connector",
+      "asOf": null
+    }
+  },
+  "book": {
+    "attention": {
+      "v": 22,
+      "source": "Command Center mirror (index.html) — KPI: Needs Attention",
+      "asOf": "2026-08-14"
+    },
+    "nextActions": {
+      "v": 29,
+      "source": "Command Center mirror (index.html) — sidebar count: Next Actions",
+      "asOf": "2026-08-14"
+    },
+    "clients": {
+      "v": 7,
+      "source": "Command Center mirror (index.html) — KPI: Clients",
+      "asOf": "2026-08-14"
+    },
+    "projects": {
+      "v": 24,
+      "source": "Command Center mirror (index.html) — KPI: Projects",
+      "asOf": "2026-08-14"
+    },
+    "parked": {
+      "v": 0,
+      "source": "Command Center mirror (index.html) — sidebar count: Parked",
+      "asOf": "2026-08-14"
+    }
+  },
+  "pipeline": {
+    "asOf": "2026-08-14",
+    "source": "Command Center mirror (index.html) — pipeline panel",
+    "items": [
+      {
+        "name": "GERLACH LAW, PLLC",
+        "stage": "ACTIVE",
+        "value": 1000,
+        "note": "$1,000 RECEIVED"
+      },
+      {
+        "name": "ROBERT DAVIS P.A.",
+        "stage": "ACTIVE",
+        "value": 2000,
+        "note": "$1,500 RECEIVED · $500 OWED"
+      },
+      {
+        "name": "ECHELON LEGAL, PLLC",
+        "stage": "PROSPECT",
+        "value": 3000,
+        "note": "$1,500 / $3,000 (RECOMMENDED) / $5,000 + $500/MO"
+      }
+    ]
+  },
+  "proximity": {
+    "asOf": "2026-08-14",
+    "contacts": [
+      {
+        "label": "DCF HUB SHELL CANON",
+        "distance": 0.3666666666666667,
+        "level": "warn"
+      },
+      {
+        "label": "PROJECT REGISTRY",
+        "distance": 0.3666666666666667,
+        "level": "bad"
+      },
+      {
+        "label": "INCOME STREAM 2 TIKTO…",
+        "distance": 0.5,
+        "level": "bad"
+      },
+      {
+        "label": "CLAUDE DESIGN DCF SYS…",
+        "distance": 0.5333333333333333,
+        "level": "warn"
+      }
+    ]
+  },
+  "advisor": {
+    "asOf": "2026-08-14",
+    "recommendations": [],
+    "unactioned": []
+  }
+}
