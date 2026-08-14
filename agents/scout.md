@@ -57,6 +57,30 @@ Output twice:
 
 ---
 
+## Its first real source: `scout-vault.mjs`
+
+The mirror in this repo is already a source, so the Scout has something real to
+read before any connector exists:
+
+```sh
+node agents/scout-vault.mjs --dry-run   # audit what it finds, write nothing
+node agents/scout-vault.mjs             # write data/jarvis-data.json
+```
+
+It parses `index.html` for the money snapshot, the book-of-work counts, the
+pipeline, and the four most urgent Attention items (which become radar
+contacts, ranked by how long they have sat idle). Zero dependencies,
+read-only, one audit line printed per field.
+
+The rules above are enforced in that script, not merely documented in it:
+a field it cannot parse is written as `null` with a `PARSE FAILED` source; the
+date comes from the mirror's own timestamp so a mirror that stopped updating
+reports its true age; a pipeline figure is counted only when the note states
+it explicitly; and it never writes an Advisor recommendation.
+
+Use it as the pattern for every connector you add later: read, stamp, and
+refuse to guess.
+
 ## Why the UNAVAILABLE rule is non-negotiable
 
 A briefing with one invented number is worse than no briefing, because you

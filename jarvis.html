@@ -570,11 +570,13 @@ const MISSION_DATA = {
   },
 
   /* ---- opening telemetry lines (the live feed adds to these) ---------- */
+  /* Decorative only. Anything that makes a CLAIM about the agents is computed
+     at boot instead (see startFeeds) — a feed line that says three
+     recommendations are queued when the Advisor has not run is the same lie
+     as an invented number, just in smaller type. */
   telemetrySeed: [
     'VAULT MIRROR SYNCED',
-    'SCOUT: LAST RUN COMPLETE',
-    'PIPELINE INDEX REBUILT',
-    'ADVISOR: 3 RECOMMENDATIONS QUEUED'
+    'PIPELINE INDEX REBUILT'
   ]
 };
 
@@ -837,7 +839,10 @@ function pipelineCoverage() {
   const p = MISSION_DATA.pipeline;
   const t = MISSION_DATA.objective.target;
   if (!p || !p.items || !p.items.length || !isKnown(t)) return null;
-  const open = p.items.reduce(function (sum, i) { return sum + (Number(i.value) || 0); }, 0);
+  /* Only agreed figures count toward coverage, same rule as the total. */
+  const open = p.items.reduce(function (sum, i) {
+    return sum + (typeof i.value === 'number' && isFinite(i.value) ? i.value : 0);
+  }, 0);
   return clamp(open / t.v * 100, 0, 100);
 }
 
@@ -905,11 +910,15 @@ function animateVitals(specs) {
 
 const MAX_LINES = 40;
 
+function recommendationCount() {
+  return ((MISSION_DATA.advisor && MISSION_DATA.advisor.recommendations) || []).length;
+}
+
 function pushLine(target, text, cls) {
   const box = $(target);
   const el = document.createElement('div');
   el.className = 'log-line' + (cls ? ' ' + cls : '');
-  el.innerHTML = '<span class="ts">' + stamp() + '</span> ' + text;
+  el.innerHTML = '<span class="ts">' + stamp() + '</span> ' + escapeHtml(typeof text === 'function' ? text() : text);
   box.appendChild(el);
   while (box.children.length > MAX_LINES) box.removeChild(box.firstChild);
 }
@@ -926,10 +935,15 @@ const TELEMETRY_POOL = [
   'CONNECTOR POLL: NO NEW EVENTS'
 ];
 
+/* `t` may be a function so a line can report live state instead of asserting
+   a number that was true when this file was written. */
 const DIAG_POOL = [
   { t: 'SCOUT: READ-ONLY · NO WRITES ISSUED' },
   { t: 'OPERATOR: DRAFT-ONLY MODE ACTIVE', c: 'warn' },
-  { t: 'ADVISOR: 3 RECOMMENDATIONS HELD' },
+  { t: function () {
+      const n = recommendationCount();
+      return n ? 'ADVISOR: ' + n + ' RECOMMENDATIONS HELD' : 'ADVISOR: NOT RUN — NO RECOMMENDATIONS';
+    } },
   { t: 'ESCALATION GATE: ARMED' },
   { t: 'SPEND GATE: ARMED · APPROVAL REQUIRED', c: 'warn' },
   { t: 'FAQ INDEX LOADED' },
@@ -938,6 +952,19 @@ const DIAG_POOL = [
 
 function startFeeds() {
   (MISSION_DATA.telemetrySeed || []).forEach(function (line) { pushLine('telemetry', line); });
+
+  /* Two computed lines, so the feed reports the state the screen is actually
+     in rather than the state it was written in. */
+  pushLine('telemetry',
+    LIVE_SECTIONS.size
+      ? 'SCOUT: ' + LIVE_SECTIONS.size + ' SECTIONS LOADED FROM SOURCE'
+      : 'SCOUT: NO LIVE DATA — RUNNING ON MOCK',
+    LIVE_SECTIONS.size ? '' : 'warn');
+  pushLine('telemetry',
+    recommendationCount()
+      ? 'ADVISOR: ' + recommendationCount() + ' RECOMMENDATIONS QUEUED'
+      : 'ADVISOR: NOT RUN — NO RECOMMENDATIONS', recommendationCount() ? '' : 'warn');
+
   DIAG_POOL.slice(0, 3).forEach(function (d) { pushLine('diagnostics', d.t, d.c); });
 
   setInterval(function () {
@@ -1131,12 +1158,20 @@ function countTo(el, value, fmt) {
 function pipelineSentence() {
   const p = MISSION_DATA.pipeline;
   if (!p || !p.items || !p.items.length) return { text: 'No pipeline items are loaded.', src: '' };
-  const total = p.items.reduce(function (s, i) { return s + (Number(i.value) || 0); }, 0);
+  /* An engagement with no agreed figure is reported, but left OUT of the
+     total — the same rule the Command Center applies. Counting it as zero
+     would understate the book; guessing a figure would overstate it. */
+  const priced = p.items.filter(function (i) { return typeof i.value === 'number' && isFinite(i.value); });
+  const total = priced.reduce(function (s, i) { return s + i.value; }, 0);
   const lines = p.items.map(function (i) {
-    return i.name + ' — ' + i.stage + ', ' + money(i.value) + ' (' + i.note + ')';
+    const fig = (typeof i.value === 'number' && isFinite(i.value)) ? money(i.value) : 'no agreed figure';
+    return i.name + ' — ' + i.stage + ', ' + fig + ' (' + i.note + ')';
   }).join(' · ');
+  const head = priced.length === p.items.length
+    ? p.items.length + ' open items totalling ' + money(total) + '.'
+    : p.items.length + ' open items, ' + priced.length + ' with an agreed figure totalling ' + money(total) + '.';
   return {
-    text: p.items.length + ' open items totalling ' + money(total) + '. ' + lines,
+    text: head + ' ' + lines,
     src: 'Source: ' + (p.source || 'pipeline notes') + (p.asOf ? ' · as of ' + p.asOf : '')
   };
 }
@@ -1347,10 +1382,17 @@ function morningBrief() {
   const p = pipelineSentence();
   parts.push('Pipeline: ' + p.text);
 
-  parts.push('My top three for today.');
-  (MISSION_DATA.advisor.recommendations || []).forEach(function (r2, i) {
-    parts.push('Number ' + (i + 1) + '. ' + r2.action + ' The evidence: ' + r2.evidence + ' Ignore it this week and: ' + r2.cost);
-  });
+  const recs = MISSION_DATA.advisor.recommendations || [];
+  if (!recs.length) {
+    /* The Scout gathers; the Advisor decides. If the Advisor has not run,
+       say so — do not dress the numbers up as a recommendation. */
+    parts.push('The Advisor has not run yet, so I have no recommendations for you today — only the numbers above.');
+  } else {
+    parts.push('My top ' + (recs.length === 3 ? 'three' : recs.length) + ' for today.');
+    recs.forEach(function (r2, i) {
+      parts.push('Number ' + (i + 1) + '. ' + r2.action + ' The evidence: ' + r2.evidence + ' Ignore it this week and: ' + r2.cost);
+    });
+  }
 
   const un = MISSION_DATA.advisor.unactioned || [];
   if (un.length) parts.push('Still unactioned from the last seven days: ' + un.join(' '));

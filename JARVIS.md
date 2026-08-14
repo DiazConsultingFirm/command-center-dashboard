@@ -62,14 +62,37 @@ answer. That is a feature of a screen you are meant to trust at a glance.
 The header carries a **DATA** pill: `MOCK`, `n/8 LIVE`, or `LIVE`. It is the
 one thing on the screen you should look at before believing any other number.
 
-1. Copy `data/jarvis-data.sample.json` to `data/jarvis-data.json`.
-2. Delete every section you have not actually wired to a real source. Sections
-   you omit keep their mock values and stay flagged as mock — which is correct,
-   and much better than a live badge over a stale guess.
-3. Point the Scout at that file and let it rewrite the sections it can read.
-4. Serve the folder over http (`python3 -m http.server`) — `fetch` cannot read
-   a local file over `file://`, so opening the page directly falls back to mock
-   data and says so.
+The fastest route to real numbers is already built. The Command Center mirror
+is itself a source, so the Scout can read it with no connectors at all:
+
+```sh
+node agents/scout-vault.mjs --dry-run   # show what it found, write nothing
+node agents/scout-vault.mjs             # write data/jarvis-data.json
+python3 -m http.server                  # then open jarvis.html
+```
+
+That gets you **7 of 8 sections live** — money, the book of work, the pipeline,
+and the radar, all read from `index.html` and stamped with the mirror's own
+date. Zero dependencies, read-only, and it prints an audit line per field so
+you can see exactly what it read and what it could not.
+
+Two things it deliberately will **not** do:
+
+- **Author recommendations.** Gathering and advising are different jobs. The
+  screen says the Advisor has not run rather than reading invented advice
+  aloud. That section goes live when you turn the Advisor on.
+- **Set your target.** A target is a decision, not a data source, so it stays
+  tagged PLACEHOLDER and the status reads `NO TARGET SET` until you put a real
+  number in. Once set, the Scout preserves it across every future run and
+  starts reporting real pace.
+
+For anything the mirror does not carry (a payment processor, the inbox), add
+it the same way, one section at a time. Sections you never write keep their
+mock values and stay flagged as mock — which is correct, and much better than
+a live badge over a stale guess.
+
+Note `fetch` cannot read a local file over `file://`, so opening the page
+directly always falls back to mock data — and says so in the DATA pill.
 
 Each metric is `{ v, source, asOf }`. `v: null` renders as **UNAVAILABLE** in
 amber and the assistant refuses to reason about it out loud.

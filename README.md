@@ -12,7 +12,9 @@ DCF Command Center - live read-only mirror of the second-brain vault
   mock data on day one and on real data field by field after that.
 - **`agents/`** — the three agent prompts behind it: the Scout (gathers), the
   Operator (works), the Advisor (decides), plus the FAQ file that bounds what
-  the Operator may answer on its own.
+  the Operator may answer on its own. `agents/scout-vault.mjs` is the Scout's
+  first real source — it reads this repo's own mirror and writes the live data
+  file, no connectors required.
 - **`JARVIS.md`** — how the pieces fit, the build order, and the rules that
   keep it safe.
 
