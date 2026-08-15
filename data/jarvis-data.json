@@ -15,12 +15,12 @@
       "asOf": "2026-08-15"
     },
     "current": {
-      "v": 2500,
-      "source": "Command Center mirror (index.html) — pipeline snapshot: Collected",
+      "v": 3500,
+      "source": "reported by Evans — same corrected collected figure the objective card measures against (not in the vault mirror yet)",
       "asOf": "2026-08-15"
     },
     "status": {
-      "v": "BEHIND PACE",
+      "v": "ON TRACK",
       "source": "derived: collected vs. pace of the month",
       "asOf": "2026-08-15"
     },
@@ -32,13 +32,13 @@
   },
   "revenue": {
     "collectedMTD": {
-      "v": 2500,
-      "source": "Command Center mirror (index.html) — pipeline snapshot: Collected",
+      "v": 3500,
+      "source": "reported by Evans — mirror's $2,500 plus Robert's $500 balance and Angela's $500 August payment, which has no vault note yet (not in the vault mirror yet)",
       "asOf": "2026-08-15"
     },
     "outstanding": {
-      "v": 500,
-      "source": "Command Center mirror (index.html) — pipeline snapshot: Outstanding",
+      "v": 0,
+      "source": "reported by Evans — Robert Davis P.A. paid the $500 balance in August; the vault note still shows it open (not in the vault mirror yet)",
       "asOf": "2026-08-15"
     },
     "yesterday": {
@@ -93,7 +93,7 @@
         "name": "ROBERT DAVIS P.A.",
         "stage": "ACTIVE",
         "value": 2000,
-        "note": "$1,500 RECEIVED · $500 OWED"
+        "note": "$2,000 RECEIVED · PAID IN FULL"
       },
       {
         "name": "ECHELON LEGAL, PLLC",
@@ -133,8 +133,8 @@
     "recommendations": [
       {
         "action": "Reschedule the Echelon Legal meeting today and put a decision date on the proposal.",
-        "evidence": "The Project Registry note carries 'reschedule Echelon meeting (follow up by 2026-08-01)' and that follow-up date passed 14 days ago. Echelon is the largest open figure at $3,000 recommended and the only account still unconverted at PROSPECT stage — half of the $6,000 August target sits on it.",
-        "cost": "The proposal has now been open longer than the follow-up window it was given, with no date attached. Without Echelon the target is unreachable: the other two agreed figures total $3,000."
+        "evidence": "The Project Registry note carries 'reschedule Echelon meeting (follow up by 2026-08-01)' and that follow-up date passed 14 days ago. Echelon is the largest open figure at $3,000 recommended and the only account still unconverted at PROSPECT stage — with $3,500 of the $6,000 August target collected, Echelon is what closes the remaining $2,500.",
+        "cost": "The proposal has now been open longer than the follow-up window it was given, with no date attached. Nothing else on the board can close the $2,500 still needed this month."
       },
       {
         "action": "Finish Davis motion pipeline v2 and close out the open question on filing #252050912.",
@@ -148,7 +148,7 @@
       }
     ],
     "unactioned": [
-      "Vault is stale on two client facts: Robert's $500 shows as outstanding though it is paid, and Angela's August payment is not recorded at all. The dashboard will keep reporting both wrongly until the notes are updated — a stale note, not a broken dashboard."
+      "Two vault notes are still stale: Robert's paid $500 balance and Angela's $500 August payment. Both are corrected on the screen through data/overrides.json, not in the vault. Fix the notes, confirm the mirror carries it, then delete the override file — a correction nobody retires becomes a second source of truth."
     ]
   }
 }

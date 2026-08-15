@@ -1,0 +1,45 @@
+{
+  "_readme": [
+    "Human corrections applied ON TOP of the Command Center mirror by",
+    "agents/scout-vault.mjs. Use this when you know something the vault does not",
+    "yet — a payment that landed this morning, a client with no note.",
+    "",
+    "Every field patched here reads as 'reported by <reportedBy>' on the screen,",
+    "never as a mirror figure, so provenance stays honest.",
+    "",
+    "THIS FILE IS TEMPORARY BY DESIGN. It patches a stale note; it does not fix",
+    "one. Update the vault, confirm the mirror carries it through, then delete",
+    "this file. The Scout warns once these corrections are more than a week old,",
+    "because an override nobody retires becomes a second source of truth — the",
+    "exact thing this system is built to avoid.",
+    "",
+    "Nothing here may contain anything that is not already fit to be public:",
+    "this repo is a public mirror. See 'What never goes in this repo' in",
+    "JARVIS.md."
+  ],
+
+  "asOf": "2026-08-15",
+  "reportedBy": "Evans",
+
+  "metrics": {
+    "revenue.outstanding": {
+      "v": 0,
+      "note": "Robert Davis P.A. paid the $500 balance in August; the vault note still shows it open"
+    },
+    "revenue.collectedMTD": {
+      "v": 3500,
+      "note": "mirror's $2,500 plus Robert's $500 balance and Angela's $500 August payment, which has no vault note yet"
+    },
+    "objective.current": {
+      "v": 3500,
+      "note": "same corrected collected figure the objective card measures against"
+    }
+  },
+
+  "pipeline": {
+    "ROBERT DAVIS P.A.": {
+      "value": 2000,
+      "note": "$2,000 received · paid in full"
+    }
+  }
+}

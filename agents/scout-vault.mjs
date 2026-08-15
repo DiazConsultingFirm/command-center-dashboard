@@ -204,6 +204,88 @@ function paceStatus(current, target, targetIsReal) {
   return 'WELL BEHIND';
 }
 
+/* ------------------------------------------------ human corrections layer */
+
+/**
+ * Sometimes you know something the mirror does not yet: a client paid this
+ * morning, a payment arrived from someone the vault has no note for. Editing
+ * data/jarvis-data.json by hand does not survive — this script rewrites those
+ * fields from the mirror on the next run, which is exactly the behaviour that
+ * keeps the numbers trustworthy.
+ *
+ * So corrections live in data/overrides.json instead, and they are applied
+ * ON TOP of the mirror, each carrying its own source. The screen never claims
+ * the mirror said something it did not: an overridden figure reads
+ * "reported by Evans", not "Command Center mirror".
+ *
+ * An override is a patch on a stale note, not a replacement for fixing it.
+ * The Scout warns while one is active and escalates that warning as it ages,
+ * because a correction nobody ever retires quietly becomes a second source of
+ * truth — the thing this whole design exists to avoid.
+ */
+const OVERRIDES = join(ROOT, 'data', 'overrides.json');
+
+function applyOverrides(out) {
+  if (!existsSync(OVERRIDES)) return;
+
+  let ov;
+  try {
+    ov = JSON.parse(readFileSync(OVERRIDES, 'utf8'));
+  } catch (err) {
+    console.error(`\noverrides.json is not valid JSON — IGNORED (${err.message}).`);
+    console.error('The mirror figures stand. Fix the file or delete it.');
+    return;
+  }
+
+  const who = ov.reportedBy || 'a human';
+  const when = ov.asOf || null;
+  const applied = [];
+
+  /* Metric patches, addressed by dotted path: "revenue.outstanding". */
+  for (const [path, patch] of Object.entries(ov.metrics || {})) {
+    const parts = path.split('.');
+    let node = out;
+    for (const p of parts.slice(0, -1)) node = node?.[p];
+    const leaf = parts[parts.length - 1];
+    if (!node || !(leaf in node)) {
+      console.error(`  override SKIPPED — "${path}" is not a field this script writes`);
+      continue;
+    }
+    node[leaf] = {
+      v: patch.v,
+      source: `reported by ${who} — ${patch.note || 'correction'} (not in the vault mirror yet)`,
+      asOf: when
+    };
+    applied.push(`${path} = ${patch.v}`);
+  }
+
+  /* Pipeline patches, addressed by the item's name as the mirror renders it. */
+  for (const [name, patch] of Object.entries(ov.pipeline || {})) {
+    const item = (out.pipeline.items || []).find((i) => i.name === name.toUpperCase());
+    if (!item) {
+      console.error(`  override SKIPPED — no pipeline item named "${name}"`);
+      continue;
+    }
+    if ('value' in patch) item.value = patch.value;
+    if ('note' in patch) item.note = String(patch.note).toUpperCase();
+    if ('stage' in patch) item.stage = String(patch.stage).toUpperCase();
+    applied.push(`pipeline: ${name}`);
+  }
+
+  if (!applied.length) return;
+
+  const ageDays = when ? Math.floor((Date.now() - Date.parse(when + 'T00:00:00')) / 86400000) : null;
+  console.log(`\n${applied.length} override(s) applied on top of the mirror, reported by ${who}:`);
+  applied.forEach((a) => console.log(`  ${a}`));
+  console.log(`These read as "reported by ${who}" on the screen, never as mirror figures.`);
+  if (ageDays !== null && ageDays >= 7) {
+    console.log(`\n  WARNING: these corrections are ${ageDays} days old. Update the vault notes and`);
+    console.log('  delete data/overrides.json — a permanent override is a second source of truth.');
+  } else {
+    console.log('Retire them by fixing the vault note, then deleting data/overrides.json.');
+  }
+}
+
 /* -------------------------------------------- preserve human-set decisions */
 
 let previous = {};
@@ -280,6 +362,23 @@ const out = {
 
 console.log(`Scout — read ${MIRROR.replace(ROOT + '/', '')}, mirror dated ${asOf}\n`);
 console.log(notes.join('\n'));
+
+/* Corrections go on last, so they sit on top of whatever the mirror said. */
+applyOverrides(out);
+
+/* The pace verdict has to be recomputed afterwards: if a correction moved the
+   collected figure, a status derived from the pre-override number would be a
+   verdict on a figure no longer on the screen. */
+if (targetIsReal && isFinite(out.objective.current?.v)) {
+  const restated = paceStatus(out.objective.current.v, target, targetIsReal);
+  if (restated && restated !== out.objective.status.v) {
+    out.objective.status = {
+      v: restated,
+      source: 'derived: collected vs. pace of the month',
+      asOf: out.objective.current.asOf || asOf
+    };
+  }
+}
 
 const unavailable = notes.filter((n) => n.includes('UNAVAILABLE')).length;
 console.log(`\n${unavailable === 0 ? 'Every field read cleanly.' : unavailable + ' field(s) could not be read and were written as UNAVAILABLE.'}`);
