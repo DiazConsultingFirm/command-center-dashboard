@@ -1370,7 +1370,14 @@ function morningBrief() {
 
   if (isKnown(o.current) && isKnown(o.target)) {
     const pct = Math.round(o.current.v / o.target.v * 100);
-    parts.push(o.label + ' stands at ' + money(o.current.v) + ' against ' + money(o.target.v) + ', ' + pct + ' percent, status ' + say(o.status) + '.');
+    /* Never recite a percentage against a placeholder without saying so —
+       spoken aloud, "25 percent" sounds like a measurement either way. */
+    if (/^PLACEHOLDER/i.test(o.target.source)) {
+      parts.push(o.label + ' stands at ' + money(o.current.v) + '. I have no real target to measure that against — the ' +
+                 money(o.target.v) + ' on screen is a placeholder, so treat the percentage as meaningless until you set one.');
+    } else {
+      parts.push(o.label + ' stands at ' + money(o.current.v) + ' against ' + money(o.target.v) + ', ' + pct + ' percent, status ' + say(o.status) + '.');
+    }
   } else {
     parts.push('Objective progress is unavailable — it has no wired source.');
   }
