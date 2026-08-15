@@ -1,7 +1,7 @@
 {
-  "_generatedBy": "agents/scout-vault.mjs \u2014 read from the Command Center mirror. Do not hand-edit; rerun the Scout instead.",
+  "_generatedBy": "agents/scout-vault.mjs — read from the Command Center mirror. Do not hand-edit; rerun the Scout instead.",
   "objective": {
-    "label": "REVENUE COLLECTED \u2014 TO DATE",
+    "label": "REVENUE COLLECTED — TO DATE",
     "currentLabel": "COLLECTED",
     "unit": "USD",
     "target": {
@@ -11,12 +11,12 @@
     },
     "current": {
       "v": 2500,
-      "source": "Command Center mirror (index.html) \u2014 pipeline snapshot: Collected",
+      "source": "Command Center mirror (index.html) — pipeline snapshot: Collected",
       "asOf": "2026-08-14"
     },
     "status": {
       "v": "NO TARGET SET",
-      "source": "target is a placeholder \u2014 set a real one to get a pace status",
+      "source": "target is a placeholder — set a real one to get a pace status",
       "asOf": "2026-08-14"
     },
     "eta": {
@@ -28,55 +28,55 @@
   "revenue": {
     "collectedMTD": {
       "v": 2500,
-      "source": "Command Center mirror (index.html) \u2014 pipeline snapshot: Collected",
+      "source": "Command Center mirror (index.html) — pipeline snapshot: Collected",
       "asOf": "2026-08-14"
     },
     "outstanding": {
       "v": 500,
-      "source": "Command Center mirror (index.html) \u2014 pipeline snapshot: Outstanding",
+      "source": "Command Center mirror (index.html) — pipeline snapshot: Outstanding",
       "asOf": "2026-08-14"
     },
     "yesterday": {
       "v": null,
-      "source": "NOT WIRED \u2014 needs a payment processor connector",
+      "source": "NOT WIRED — needs a payment processor connector",
       "asOf": null
     },
     "lastMonth": {
       "v": null,
-      "source": "NOT WIRED \u2014 needs a payment processor connector",
+      "source": "NOT WIRED — needs a payment processor connector",
       "asOf": null
     }
   },
   "book": {
     "attention": {
       "v": 22,
-      "source": "Command Center mirror (index.html) \u2014 KPI: Needs Attention",
+      "source": "Command Center mirror (index.html) — KPI: Needs Attention",
       "asOf": "2026-08-14"
     },
     "nextActions": {
       "v": 29,
-      "source": "Command Center mirror (index.html) \u2014 sidebar count: Next Actions",
+      "source": "Command Center mirror (index.html) — sidebar count: Next Actions",
       "asOf": "2026-08-14"
     },
     "clients": {
       "v": 7,
-      "source": "Command Center mirror (index.html) \u2014 KPI: Clients",
+      "source": "Command Center mirror (index.html) — KPI: Clients",
       "asOf": "2026-08-14"
     },
     "projects": {
       "v": 24,
-      "source": "Command Center mirror (index.html) \u2014 KPI: Projects",
+      "source": "Command Center mirror (index.html) — KPI: Projects",
       "asOf": "2026-08-14"
     },
     "parked": {
       "v": 0,
-      "source": "Command Center mirror (index.html) \u2014 sidebar count: Parked",
+      "source": "Command Center mirror (index.html) — sidebar count: Parked",
       "asOf": "2026-08-14"
     }
   },
   "pipeline": {
     "asOf": "2026-08-14",
-    "source": "Command Center mirror (index.html) \u2014 pipeline panel",
+    "source": "Command Center mirror (index.html) — pipeline panel",
     "items": [
       {
         "name": "GERLACH LAW, PLLC",
@@ -88,7 +88,7 @@
         "name": "ROBERT DAVIS P.A.",
         "stage": "ACTIVE",
         "value": 2000,
-        "note": "$1,500 RECEIVED \u00b7 $500 OWED"
+        "note": "$1,500 RECEIVED · $500 OWED"
       },
       {
         "name": "ECHELON LEGAL, PLLC",
@@ -112,12 +112,12 @@
         "level": "bad"
       },
       {
-        "label": "INCOME STREAM 2 TIKTO\u2026",
+        "label": "INCOME STREAM 2 TIKTO…",
         "distance": 0.5,
         "level": "bad"
       },
       {
-        "label": "CLAUDE DESIGN DCF SYS\u2026",
+        "label": "CLAUDE DESIGN DCF SYS…",
         "distance": 0.5333333333333333,
         "level": "warn"
       }
@@ -138,7 +138,7 @@
       },
       {
         "action": "Push the 6 unpushed commits on dcf-website-factory main.",
-        "evidence": "Two separate notes flag it \u2014 the Project Registry and the 2026-07-25 CLAUDE.md restructure \u2014 both listing 'push factory main (6 unpushed commits + WIP)'.",
+        "evidence": "Two separate notes flag it — the Project Registry and the 2026-07-25 CLAUDE.md restructure — both listing 'push factory main (6 unpushed commits + WIP)'.",
         "cost": "This is the only item on the board that can be lost outright rather than merely delayed: unpushed work exists on one machine. It is also the cheapest thing on this list to clear."
       }
     ],
