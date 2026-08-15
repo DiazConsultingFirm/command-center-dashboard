@@ -1,12 +1,17 @@
 {
   "_generatedBy": "agents/scout-vault.mjs — read from the Command Center mirror. Do not hand-edit; rerun the Scout instead.",
+  "meta": {
+    "operator": "EVANS",
+    "org": "DIAZ CONSULTING FIRM",
+    "objective": "CONVERT ECHELON AND CLEAR THE BLOCKED QUEUE"
+  },
   "objective": {
     "label": "REVENUE COLLECTED — TO DATE",
     "currentLabel": "COLLECTED",
     "unit": "USD",
     "target": {
-      "v": 10000,
-      "source": "PLACEHOLDER: set your real monthly target",
+      "v": 6000,
+      "source": "August consulting target — the three agreed pipeline figures (1,000 + 2,000 + 3,000)",
       "asOf": "2026-08-15"
     },
     "current": {
@@ -15,8 +20,8 @@
       "asOf": "2026-08-15"
     },
     "status": {
-      "v": "NO TARGET SET",
-      "source": "target is a placeholder — set a real one to get a pace status",
+      "v": "BEHIND PACE",
+      "source": "derived: collected vs. pace of the month",
       "asOf": "2026-08-15"
     },
     "eta": {
@@ -124,24 +129,26 @@
     ]
   },
   "advisor": {
-    "asOf": "2026-08-14",
+    "asOf": "2026-08-15",
     "recommendations": [
       {
         "action": "Reschedule the Echelon Legal meeting today and put a decision date on the proposal.",
-        "evidence": "The Project Registry note carries 'reschedule Echelon meeting (follow up by 2026-08-01)' and that follow-up date passed 13 days ago. Echelon is the largest open figure on the pipeline at $3,000 recommended, and the only account still unconverted at PROSPECT stage.",
-        "cost": "The proposal has now been open longer than the follow-up window it was given, with no date attached. Another week of silence is another week the $3,000 is unbilled and the three tiers are negotiated from a weaker position."
+        "evidence": "The Project Registry note carries 'reschedule Echelon meeting (follow up by 2026-08-01)' and that follow-up date passed 14 days ago. Echelon is the largest open figure at $3,000 recommended and the only account still unconverted at PROSPECT stage — half of the $6,000 August target sits on it.",
+        "cost": "The proposal has now been open longer than the follow-up window it was given, with no date attached. Without Echelon the target is unreachable: the other two agreed figures total $3,000."
       },
       {
-        "action": "Finish Davis motion pipeline v2 and confirm whether filing #252050912 still needs resending, then bill the balance.",
-        "evidence": "The Davis Motion Pipeline note was due 2026-07-22 and has sat 14 days idle with the filing question still open. Robert Davis P.A. is also the only account carrying an outstanding balance: $1,500 received against $500 owed.",
-        "cost": "The one client who owes you money is the one whose delivery is furthest past its own due date. Every week that stays true makes the invoice conversation harder to open."
+        "action": "Finish Davis motion pipeline v2 and close out the open question on filing #252050912.",
+        "evidence": "The Davis Motion Pipeline note was due 2026-07-22 and has sat 14 days idle with the filing question unresolved. This is delivery, not billing — Robert has since paid, though the vault note has not caught up.",
+        "cost": "It is the oldest overdue commitment to a paying client on the board, and it is now the only thing outstanding on that engagement."
       },
       {
         "action": "Push the 6 unpushed commits on dcf-website-factory main.",
         "evidence": "Two separate notes flag it — the Project Registry and the 2026-07-25 CLAUDE.md restructure — both listing 'push factory main (6 unpushed commits + WIP)'.",
-        "cost": "This is the only item on the board that can be lost outright rather than merely delayed: unpushed work exists on one machine. It is also the cheapest thing on this list to clear."
+        "cost": "The only item on the board that can be lost outright rather than merely delayed: unpushed work exists on one machine. Also the cheapest to clear."
       }
     ],
-    "unactioned": []
+    "unactioned": [
+      "Vault is stale on two client facts: Robert's $500 shows as outstanding though it is paid, and Angela's August payment is not recorded at all. The dashboard will keep reporting both wrongly until the notes are updated — a stale note, not a broken dashboard."
+    ]
   }
 }

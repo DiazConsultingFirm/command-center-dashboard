@@ -111,6 +111,28 @@ and its push trigger ignores that path, so it cannot retrigger itself.
 > from the deliberately excluded job-search notes — that section does not
 > belong in this repo, because this repo is a public mirror.
 
+### What never goes in this repo
+
+Decided 2026-08-15, and it is not a judgement call to be re-made each time:
+
+- **Employment income.** Salary, sign-on bonus, employer, offer terms. The
+  Command Center already states that job-search detail is excluded, and this
+  screen is published to a public URL. Git history is permanent, so there is no
+  taking it back after the fact.
+- **Anything sourced from a person rather than the mirror.** If you tell an
+  agent a figure in conversation, that is not a source the Scout can read or
+  re-verify tomorrow. Correct the vault note instead and let the mirror carry
+  it through — the numbers here are only ever as good as their provenance.
+
+Consulting figures — collected, outstanding, the pipeline — stay, because they
+are already public in `index.html`. Nothing on this screen is more exposed than
+the mirror it reads.
+
+**Corollary worth knowing:** when a client fact changes, the fix belongs in the
+vault, not here. A hand-edit would be overwritten by the next Scout run anyway,
+which is the system working as intended. As the Command Center itself puts it:
+a stale number means a stale note, not a broken dashboard.
+
 Two sections the Scout passes through untouched rather than rewriting: the
 Advisor's recommendations and the Operator's run counts. Those agents own
 them, and a Scout rerun three hours later must not wipe the morning's advice.
