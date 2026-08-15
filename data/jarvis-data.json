@@ -7,34 +7,34 @@
     "target": {
       "v": 10000,
       "source": "PLACEHOLDER: set your real monthly target",
-      "asOf": "2026-08-14"
+      "asOf": "2026-08-15"
     },
     "current": {
       "v": 2500,
       "source": "Command Center mirror (index.html) — pipeline snapshot: Collected",
-      "asOf": "2026-08-14"
+      "asOf": "2026-08-15"
     },
     "status": {
       "v": "NO TARGET SET",
       "source": "target is a placeholder — set a real one to get a pace status",
-      "asOf": "2026-08-14"
+      "asOf": "2026-08-15"
     },
     "eta": {
       "v": "END OF MONTH",
       "source": "billing month boundary",
-      "asOf": "2026-08-14"
+      "asOf": "2026-08-15"
     }
   },
   "revenue": {
     "collectedMTD": {
       "v": 2500,
       "source": "Command Center mirror (index.html) — pipeline snapshot: Collected",
-      "asOf": "2026-08-14"
+      "asOf": "2026-08-15"
     },
     "outstanding": {
       "v": 500,
       "source": "Command Center mirror (index.html) — pipeline snapshot: Outstanding",
-      "asOf": "2026-08-14"
+      "asOf": "2026-08-15"
     },
     "yesterday": {
       "v": null,
@@ -49,33 +49,33 @@
   },
   "book": {
     "attention": {
-      "v": 22,
+      "v": 23,
       "source": "Command Center mirror (index.html) — KPI: Needs Attention",
-      "asOf": "2026-08-14"
+      "asOf": "2026-08-15"
     },
     "nextActions": {
       "v": 29,
       "source": "Command Center mirror (index.html) — sidebar count: Next Actions",
-      "asOf": "2026-08-14"
+      "asOf": "2026-08-15"
     },
     "clients": {
       "v": 7,
       "source": "Command Center mirror (index.html) — KPI: Clients",
-      "asOf": "2026-08-14"
+      "asOf": "2026-08-15"
     },
     "projects": {
       "v": 24,
       "source": "Command Center mirror (index.html) — KPI: Projects",
-      "asOf": "2026-08-14"
+      "asOf": "2026-08-15"
     },
     "parked": {
       "v": 0,
       "source": "Command Center mirror (index.html) — sidebar count: Parked",
-      "asOf": "2026-08-14"
+      "asOf": "2026-08-15"
     }
   },
   "pipeline": {
-    "asOf": "2026-08-14",
+    "asOf": "2026-08-15",
     "source": "Command Center mirror (index.html) — pipeline panel",
     "items": [
       {
@@ -99,26 +99,26 @@
     ]
   },
   "proximity": {
-    "asOf": "2026-08-14",
+    "asOf": "2026-08-15",
     "contacts": [
       {
         "label": "DCF HUB SHELL CANON",
-        "distance": 0.3666666666666667,
+        "distance": 0.33333333333333337,
         "level": "warn"
       },
       {
         "label": "PROJECT REGISTRY",
-        "distance": 0.3666666666666667,
+        "distance": 0.33333333333333337,
         "level": "bad"
       },
       {
         "label": "INCOME STREAM 2 TIKTO…",
-        "distance": 0.5,
+        "distance": 0.4666666666666667,
         "level": "bad"
       },
       {
         "label": "CLAUDE DESIGN DCF SYS…",
-        "distance": 0.5333333333333333,
+        "distance": 0.5,
         "level": "warn"
       }
     ]
