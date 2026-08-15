@@ -115,6 +115,22 @@ Two sections the Scout passes through untouched rather than rewriting: the
 Advisor's recommendations and the Operator's run counts. Those agents own
 them, and a Scout rerun three hours later must not wipe the morning's advice.
 
+### Writing to the data file
+
+Every agent writes its section through `agents/lib/data-file.mjs`. Never hand-
+edit `data/jarvis-data.json`, and never write it from a script that escapes
+non-ASCII.
+
+That is a rule with a scar behind it. The Scout writes from Node with raw
+UTF-8; an agent writing the same content from Python escapes it (`—`
+where the Scout puts `—`). The bytes differ, the content does not, and the
+next Scout run commits a "data refresh" that changed nothing but encoding —
+a history that lies about when your numbers actually moved. One writer, one
+encoding, and a diff means a real change.
+
+The lib also reports whether the file actually changed, so a run that finds
+nothing new can skip the commit instead of adding noise.
+
 ### The voice
 
 Out of the box it uses the browser's own speech synthesis, preferring a
