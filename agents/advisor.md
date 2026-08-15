@@ -47,13 +47,77 @@ Rules:
 End by listing everything you recommended in the last 7 days that I have not
 acted on.
 
-Write your three recommendations and the unactioned list into the advisor
-section of data/jarvis-data.json, following data/jarvis-data.sample.json. The
-mission control screen reads them from there and speaks them in the morning
-brief.
+Do not edit data/jarvis-data.json yourself. Emit your recommendations and the
+unactioned list as a single JSON object — asOf, recommendations, unactioned —
+and publish it:
+
+  cat advisor.json | node agents/advisor-write.mjs
+
+That script is the only writer of the advisor section. It checks your brief
+against the rules above and refuses to publish one that breaks them. The
+mission control screen reads the result and speaks it in the morning brief.
 ```
 
 ---
+
+## The write path
+
+The Advisor reasons in prose and must not hand-write JSON. When it did, it
+wrote the same content in different bytes than the Scout does — `—`
+where the Scout writes `—` — and the next Scout run committed an 18-line
+diff that changed nothing but encoding (commit 401b1a7). A history that claims
+your numbers moved on a day they did not is worse than no history.
+
+So there is one writer, and this is it:
+
+```sh
+cat advisor.json | node agents/advisor-write.mjs      # publish
+node agents/advisor-write.mjs --file advisor.json     # same, from a path
+node agents/advisor-write.mjs --file x.json --dry-run # validate, write nothing
+node agents/advisor-write.mjs --check                 # lint what is already live
+```
+
+It writes through `agents/lib/data-file.mjs`, so the encoding, the key order
+and the trailing newline are the same ones the Scout produces. A diff now means
+a real change. It prints whether the file actually changed — when it says
+**no change**, skip the commit; there is nothing to record.
+
+The payload is the section itself (a whole-file `{ "advisor": { … } }` wrapper
+is also accepted):
+
+```json
+{
+  "asOf": "2026-08-15",
+  "recommendations": [
+    { "action": "…", "evidence": "…", "cost": "…" }
+  ],
+  "unactioned": ["…"]
+}
+```
+
+### What it enforces
+
+The rules above are prose, and prose is advisory until something checks it.
+These are checked mechanically, before anything reaches the screen. A brief
+that fails is rejected whole, with every problem listed at once, and
+yesterday's advice stays up until a corrected one is published.
+
+| Rejected | Why |
+|---|---|
+| More than three recommendations | Three is the ceiling. A fourth means the ranking was never forced to make a decision. |
+| A missing or empty `action`, `evidence`, or `cost` | A recommendation without evidence is an opinion; without a cost it is a suggestion. Whitespace is empty. |
+| `unactioned` that is not an array of strings | The list that makes this a system rather than a briefing. Pass `[]` and mean it. |
+| `asOf` missing, malformed, not a real date, or in the future | The screen speaks that date as the age of the advice. A brief cannot be stamped tomorrow. |
+| Any field of the wrong type, or a key the contract does not name | An unexpected key is almost always a misspelled one, and silently dropping it publishes a brief missing the field you thought you wrote. |
+
+**Zero recommendations is valid, deliberately.** It is how the Advisor says the
+day looks routine, and how the screen says the Advisor has not run yet. The one
+count that can be wrong automatically is too many, never too few.
+
+`--check` validates the section already in `data/jarvis-data.json` and writes
+nothing, so it works as a lint step before a commit. It also warns when the
+section is valid but not in canonical form — that is a phantom diff waiting to
+happen on someone else's run.
 
 ## Why the last line matters most
 
