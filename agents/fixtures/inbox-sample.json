@@ -1,0 +1,53 @@
+{
+  "_readme": "SYNTHETIC TEST DATA. Every message, name and address below was invented for testing agents/operator-triage.mjs. Nothing here came from a real inbox, and none of these people exist. Addresses are all @example.com / @example.org, which are reserved by RFC 2606 and can never be real. This file is the ONLY input the triage tool is meant to run on until Evans has watched it for a week.",
+  "messages": [
+    {
+      "id": "m-01",
+      "from": "sample.client@example.com",
+      "subject": "Quick question about what you offer",
+      "body": "Hi Evans, I found you through a referral. Could you explain what exactly you do for clients? I want to know whether you handle bookkeeping as well as forecasting before I take up more of your time. Thanks."
+    },
+    {
+      "id": "m-02",
+      "from": "unhappy.buyer@example.com",
+      "subject": "Refund for last month",
+      "body": "I would like a refund for last month's invoice. We did not end up using the reporting package and I think it is fair to get that money back."
+    },
+    {
+      "id": "m-03",
+      "from": "frustrated.owner@example.org",
+      "subject": "This is not what we agreed",
+      "body": "I am very unhappy with the last report. It was late, half the numbers do not match our books, and this is the second time. This is unacceptable and I want to talk about it today."
+    },
+    {
+      "id": "m-04",
+      "from": "budget.shopper@example.com",
+      "subject": "Re: proposal",
+      "body": "Thanks for sending this over. Honestly it is above our budget. Could you do the same scope for $2,000 instead? If you can meet us there we can sign this week."
+    },
+    {
+      "id": "m-05",
+      "from": "deadline.driven@example.com",
+      "subject": "Need this done before the board meeting",
+      "body": "Our board meets on September 1. Can you commit to delivering the full model by then? I need a firm yes so I can put it on the agenda."
+    },
+    {
+      "id": "m-06",
+      "from": "counsel@example.org",
+      "subject": "NDA and indemnity clause",
+      "body": "I am the attorney for one of your prospective clients. Before we proceed, our legal team needs you to sign our NDA and we would like to discuss the indemnity clause in your contract."
+    },
+    {
+      "id": "m-07",
+      "from": "new.lead@example.com",
+      "subject": "How do I book a call?",
+      "body": "Hello, how do I book a call with you to talk this through? Is there a calendar link I should use, or do you prefer I just suggest a few times?"
+    },
+    {
+      "id": "m-08",
+      "from": "happy.client@example.com",
+      "subject": "Thank you",
+      "body": "Just wanted to say thanks for the walkthrough yesterday. Really helpful. No reply needed."
+    }
+  ]
+}
