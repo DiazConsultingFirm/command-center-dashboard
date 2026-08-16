@@ -144,11 +144,28 @@ check('advisor-write: zero recommendations is valid', () => {
   return 'accepted';
 });
 
-check('faq-check: empty answers are safe, and it says so', () => {
+check('faq-check: the live FAQ carries no sendable placeholder', () => {
   const r = run(['agents/faq-check.mjs']);
-  assert(r.code === 0, 'an empty FAQ should pass — it escalates rather than misinforms');
+  assert(r.code === 0, `the live FAQ has a half-filled answer that would be sent verbatim: ${r.out}`);
   assert(/escalat/i.test(r.out), 'no verdict about escalation');
   return (r.out.match(/coverage\s+(\d+%)/) || [])[1] || 'reported';
+});
+
+/* Answers now sit next to `> Source:` citations naming the Notion page each
+   one came from. Those citations are for Evans, not for clients, and the only
+   thing keeping them apart is that the parser stops at a blockquote. Delete
+   that one marker while editing and a client receives "Source: Gerlach Master
+   Plan, hard blockers" appended to their answer. This asserts the separation
+   holds on the real file rather than trusting that nobody breaks it. */
+check('faq: a source citation never becomes part of an answer', () => {
+  const r = run(['agents/faq-check.mjs', '--json']);
+  const report = JSON.parse(r.out);
+  assert(report.total > 0, 'parsed no questions at all');
+  const leaked = report.entries.filter((e) => /\bSource:/i.test(e.answer));
+  assert(!leaked.length, `citation leaked into the answer for: ${leaked.map((e) => e.question).join('; ')}`);
+  /* Without this the check passes vacuously the day every answer is empty. */
+  assert(report.answered > 0, 'no answered questions, so this proves nothing');
+  return `${report.answered} answered, none carrying a citation`;
 });
 
 check('faq-check: a half-filled answer fails', () => {
