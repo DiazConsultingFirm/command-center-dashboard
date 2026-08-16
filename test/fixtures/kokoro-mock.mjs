@@ -47,9 +47,15 @@ function wav(samples, rate) {
 class KokoroTTSImpl {
   static async from_pretrained(model, opts = {}) {
     if (MODE === 'loadfail') throw new Error('mock: model host unreachable');
+    /* TWO files on purpose. transformers.js reports 0→100 per file, and a
+       single-file mock cannot catch a throttle that goes quiet once the first
+       file completes — which is exactly the bug a global high-water mark had.
+       The second file is what makes that test able to fail. */
     if (opts && typeof opts.progress_callback === 'function') {
-      for (const progress of [0, 10, 50, 100]) {
-        opts.progress_callback({ status: 'progress', file: 'model_q8.onnx', progress });
+      for (const file of ['model_q8.onnx', 'voices.bin']) {
+        for (const progress of [0, 10, 50, 100]) {
+          opts.progress_callback({ status: 'progress', file, progress });
+        }
       }
     }
     return new KokoroTTSImpl(model, opts);

@@ -1581,16 +1581,6 @@ function renderVoicePicker() {
   if (!sel) return;
   const voices = englishVoices();
 
-  if (!voices.length) {
-    sel.innerHTML = '<option>NO VOICES</option>';
-    sel.disabled = true;
-    sel.title = 'This device has no speech voices installed. Text still works.';
-    return;
-  }
-
-  const current = pickVoice();
-  sel.disabled = false;
-
   /* Kokoro sits at the top as the deliberate upgrade, labelled with what it
      costs you — nobody should trigger a few-hundred-megabyte download from a
      dropdown without being told. */
@@ -1599,6 +1589,23 @@ function renderVoicePicker() {
     : 'KOKORO · UK NEURAL · DOWNLOADS ONCE';
   const kokoroOpt = '<option value="' + KOKORO_VOICE_VALUE + '"' +
     (chosenVoiceName === KOKORO_VOICE_VALUE ? ' selected' : '') + '>' + kokoroLabel + '</option>';
+
+  /* A machine with no OS speech voices is the one that needs Kokoro MOST: it
+     runs in the browser and needs no installed voice, so it is the only route
+     to spoken output left. An earlier version returned here before adding the
+     option at all, which handed exactly those machines a disabled "NO VOICES"
+     dropdown and no way to reach the one voice that would have worked. A
+     locked-down corporate image or a Linux box without speech-dispatcher hits
+     this, and so does headless Chromium. */
+  if (!voices.length) {
+    sel.innerHTML = kokoroOpt;
+    sel.disabled = false;
+    sel.title = 'This device has no OS speech voices. Kokoro runs inside the browser and does not need one.';
+    return;
+  }
+
+  const current = pickVoice();
+  sel.disabled = false;
 
   sel.innerHTML = kokoroOpt + voices.map(function (v) {
     const gb = /^en-GB/i.test(v.lang) ? ' · UK' : '';
@@ -1700,16 +1707,23 @@ async function loadKokoro() {
   pushLine('diagnostics', 'KOKORO: LOADING MODEL · ' + device.toUpperCase(), 'warn');
   $('reply').textContent = 'Downloading the neural voice. This happens once — the browser caches it afterwards.';
 
-  /* Progress is reported per file and can fire often; throttle it so the
-     telemetry feed stays readable rather than becoming a scrollbar. */
-  let lastShown = -1;
+  /* Progress fires often, so it is throttled to every tenth percent to keep
+     the telemetry feed readable rather than turning it into a scrollbar.
+
+     Throttled PER FILE, not globally. transformers.js reports 0→100 for each
+     file it fetches, so a single high-water mark goes quiet the moment the
+     first file finishes — which is precisely the long stretch of the download
+     where a frozen-looking readout does the most damage. */
+  const lastShown = Object.create(null);
   const onProgress = function (p) {
     if (!p || typeof p.progress !== 'number') return;
     const pct = Math.floor(p.progress);
-    if (pct <= lastShown || pct % 10 !== 0) return;
-    lastShown = pct;
-    $('reply').textContent = 'Downloading the neural voice — ' + pct + '%.';
-    pushLine('telemetry', 'KOKORO: ' + pct + '%');
+    if (pct % 10 !== 0) return;
+    const file = String(p.file || p.name || 'model');
+    if (lastShown[file] === pct) return;
+    lastShown[file] = pct;
+    $('reply').textContent = 'Downloading the neural voice — ' + file + ' at ' + pct + '%.';
+    pushLine('telemetry', 'KOKORO: ' + file.toUpperCase() + ' ' + pct + '%');
   };
 
   kokoroLoading = (async function () {
@@ -1805,7 +1819,18 @@ function speakViaKokoro(text) {
       audio.onplay = function () { setVoiceState('speaking'); };
       audio.onended = done;
       audio.onerror = done;
-      return audio.play();
+      /* A rejected play() is NOT a Kokoro failure and must not reach the outer
+         catch. The model loaded and is sitting in the browser cache; an
+         autoplay block is the browser's default posture, and the reason the
+         download is gated behind a real gesture in the first place. Sharing
+         the failure path threw away the voice preference after a
+         several-hundred-megabyte download that had actually succeeded. */
+      return audio.play().catch(function (err) {
+        pushLine('diagnostics',
+          'KOKORO READY, PLAYBACK BLOCKED (' + String(err.message || err).slice(0, 40).toUpperCase() +
+          ') — CLICK THE ORB OR HOLD SPACE TO ALLOW AUDIO', 'warn');
+        done();
+      });
     })
     .catch(function (err) {
       /* Falling back loudly. A neural voice that fails silently would look

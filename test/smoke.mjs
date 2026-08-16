@@ -264,12 +264,25 @@ if (!CLI_ONLY) {
   const browser = await chromium.launch({ args: ['--autoplay-policy=no-user-gesture-required'] });
 
   /** A page with stubbed voices and deterministic audio playback. */
-  async function page(kokoroMode) {
+  /**
+   * opts.noVoices  — pretend the OS has no speech voices at all.
+   * opts.blockPlay — make audio.play() reject, as an autoplay block does.
+   *
+   * Both stubs exist because the defaults below hide real bugs. Stubbing
+   * getVoices to a populated list meant no test ever saw the empty-list
+   * branch, and resolving play() unconditionally meant no test ever saw a
+   * rejection. Each of those blind spots was concealing a live defect.
+   */
+  async function page(kokoroMode, opts) {
+    const noVoices = !!(opts && opts.noVoices);
+    const blockPlay = !!(opts && opts.blockPlay);
     const p = await browser.newPage({ viewport: { width: 1440, height: 820 } });
     const errors = [];
     p.on('pageerror', (e) => errors.push(e.message));
-    await p.addInitScript(() => {
-      const fake = [{ name: 'Daniel', lang: 'en-GB' }, { name: 'Samantha', lang: 'en-US' }];
+    await p.addInitScript((cfg) => {
+      const fake = cfg.noVoices
+        ? []
+        : [{ name: 'Daniel', lang: 'en-GB' }, { name: 'Samantha', lang: 'en-US' }];
       Object.defineProperty(window.speechSynthesis, 'getVoices', { value: () => fake, configurable: true });
       /* Deterministic playback: real audio devices are not guaranteed headless,
          and a flaky play() would make these tests lie in both directions. */
@@ -277,11 +290,12 @@ if (!CLI_ONLY) {
       const realCreate = URL.createObjectURL.bind(URL);
       URL.createObjectURL = (b) => { window.__blobs++; return realCreate(b); };
       HTMLMediaElement.prototype.play = function () {
+        if (cfg.blockPlay) return Promise.reject(new Error('NotAllowedError: autoplay blocked'));
         setTimeout(() => { this.onplay && this.onplay(); }, 10);
         setTimeout(() => { this.onended && this.onended(); }, 60);
         return Promise.resolve();
       };
-    });
+    }, { noVoices, blockPlay });
     await p.goto(`http://127.0.0.1:${PORT}/jarvis.html`, { waitUntil: 'networkidle' });
     await p.waitForTimeout(2600);
     if (kokoroMode) {
@@ -431,11 +445,53 @@ if (!CLI_ONLY) {
     return 'encoded and played';
   });
 
-  await checkAsync('progress is reported while downloading', async () => {
+  await checkAsync('progress keeps reporting past the first file', async () => {
     const r = await runKokoro('toBlob');
-    const pct = r.tele.filter((l) => /KOKORO: \d+%/.test(l));
+    const pct = r.tele.filter((l) => /KOKORO: \S+ \d+%/.test(l));
     assert(pct.length >= 3, `only ${pct.length} progress lines — a silent download looks frozen`);
-    return pct.length + ' updates';
+    /* The defect this catches: one global high-water mark reports every
+       percent of the first file, then drops every later file's progress
+       because it never exceeds 100. The readout dies partway through a
+       several-hundred-megabyte download and the page looks hung. */
+    assert(pct.some((l) => /VOICES\.BIN/.test(l)),
+      'went silent after the first file finished — later files reported nothing');
+    return pct.length + ' updates across 2 files';
+  });
+
+  await checkAsync('a device with no OS voices can still reach Kokoro', async () => {
+    const { p, errors } = await page(null, { noVoices: true });
+    const r = await p.evaluate(() => {
+      const sel = document.getElementById('voicePick');
+      return { opts: [...sel.options].map((o) => o.text), disabled: sel.disabled };
+    });
+    await p.close();
+    assert(errors.length === 0, `page errors: ${errors[0]}`);
+    /* Kokoro runs in the browser and needs no installed voice, so this is the
+       one machine where it is the ONLY route to speech. The picker used to
+       return early here and show a disabled "NO VOICES", hiding the single
+       option that would have worked. */
+    assert(!r.disabled, 'the picker was disabled, leaving no way to select anything');
+    assert(r.opts.some((o) => /KOKORO/.test(o)), `Kokoro not offered: ${JSON.stringify(r.opts)}`);
+    return 'offered on a voiceless device';
+  });
+
+  await checkAsync('blocked playback keeps the downloaded voice', async () => {
+    const { p, errors } = await page('toBlob', { blockPlay: true });
+    await p.selectOption('#voicePick', '__kokoro__');
+    await p.waitForTimeout(1800);
+    const diag = await logs(p, '#diagnostics');
+    const saved = await p.evaluate(() => localStorage.getItem('jarvisVoice'));
+    const state = await p.evaluate(() => document.getElementById('waveState').textContent);
+    await p.close();
+    assert(errors.length === 0, `page errors: ${errors[0]}`);
+    /* An autoplay block is not a Kokoro failure. The model downloaded and is
+       cached; discarding the preference here would throw away several hundred
+       megabytes of work over a rejected promise. */
+    assert(!diag.some((l) => /KOKORO FAILED/.test(l)), 'treated an autoplay block as a model failure');
+    assert(diag.some((l) => /PLAYBACK BLOCKED/.test(l)), 'said nothing about why it went quiet');
+    assert(saved === '__kokoro__', `discarded the voice preference: ${saved}`);
+    assert(state === 'NO SIGNAL', `left the UI stuck: ${state}`);
+    return 'kept the preference, reported the block';
   });
 
   await checkAsync('a voice the model lacks is substituted, not failed', async () => {
