@@ -261,6 +261,12 @@ body {
 }
 .btn:hover { background: rgba(127, 223, 255, 0.16); color: var(--cyan-hot); box-shadow: 0 0 14px rgba(127, 223, 255, 0.25); }
 .btn:active { transform: translateY(1px); }
+/* The voice picker is a <select> dressed as a button. Capped so a device with
+   a long voice name cannot push the row wide enough to break the one-screen
+   layout — the name is informative, not load-bearing. */
+.sel { max-width: 170px; appearance: none; cursor: pointer; padding-right: 8px; }
+.sel:focus { outline: none; border-color: var(--cyan); }
+.sel option { background: #07131d; color: var(--cyan-hot); }
 .btn.accent { border-color: rgba(232, 168, 56, 0.5); color: var(--amber); background: rgba(232, 168, 56, 0.08); }
 .btn.accent:hover { background: rgba(232, 168, 56, 0.18); color: #ffd489; box-shadow: 0 0 14px rgba(232, 168, 56, 0.25); }
 
@@ -392,6 +398,7 @@ body {
                  placeholder="Type a question — or hold space to talk">
           <button type="button" class="btn" id="sendBtn">SEND</button>
           <button type="button" class="btn accent" id="briefBtn">MORNING BRIEF</button>
+          <select class="btn sel" id="voicePick" title="Which installed voice speaks. Free — these come from your device."></select>
           <button type="button" class="btn" id="muteBtn" title="Toggle spoken output">VOICE: ON</button>
         </div>
       </div>
@@ -1431,9 +1438,34 @@ let listening = false;
 let spaceHeld = false;
 let currentAudio = null;
 
+/* A chosen voice wins over the preference order, and persists — the whole
+   point is picking once and never thinking about it again. */
+let chosenVoiceName = null;
+try { chosenVoiceName = localStorage.getItem('jarvisVoice'); } catch (e) {}
+
+function englishVoices() {
+  const voices = window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
+  /* British first, then the rest of English: the list is ordered the way you
+     would want to audition it, not the arbitrary order the OS returns. */
+  return voices
+    .filter(function (v) { return /^en/i.test(v.lang); })
+    .sort(function (a, b) {
+      const gb = function (v) { return /^en-GB/i.test(v.lang) ? 0 : 1; };
+      return gb(a) - gb(b) || a.name.localeCompare(b.name);
+    });
+}
+
 function pickVoice() {
   const voices = window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
   if (!voices.length) return null;
+
+  if (chosenVoiceName) {
+    const chosen = voices.find(function (v) { return v.name === chosenVoiceName; });
+    if (chosen) return chosen;
+    /* The saved voice is gone — a different machine, or an uninstalled one.
+       Fall through to the default rather than going silent. */
+  }
+
   /* Jarvis is British. Fall back through en-GB, then any English voice. */
   const preferred = ['Daniel', 'Google UK English Male', 'Arthur', 'Oliver', 'Google UK English Female'];
   for (let i = 0; i < preferred.length; i++) {
@@ -1442,6 +1474,30 @@ function pickVoice() {
   }
   return voices.find(function (v) { return /^en-GB/i.test(v.lang); }) ||
          voices.find(function (v) { return /^en/i.test(v.lang); }) || null;
+}
+
+/* Voices arrive asynchronously and can arrive twice, so this is written to be
+   safe to call repeatedly. */
+function renderVoicePicker() {
+  const sel = $('voicePick');
+  if (!sel) return;
+  const voices = englishVoices();
+
+  if (!voices.length) {
+    sel.innerHTML = '<option>NO VOICES</option>';
+    sel.disabled = true;
+    sel.title = 'This device has no speech voices installed. Text still works.';
+    return;
+  }
+
+  const current = pickVoice();
+  sel.disabled = false;
+  sel.innerHTML = voices.map(function (v) {
+    const gb = /^en-GB/i.test(v.lang) ? ' · UK' : '';
+    return '<option value="' + escapeHtml(v.name) + '"' + (current && v.name === current.name ? ' selected' : '') + '>' +
+           escapeHtml(v.name) + gb + '</option>';
+  }).join('');
+  sel.title = voices.length + ' English voice(s) installed on this device. Add more in your OS speech settings — the good British ones are free.';
 }
 
 /* Stop whatever is currently talking, by either route. */
@@ -1501,8 +1557,19 @@ function speakViaBrowser(text) {
   if (!window.speechSynthesis) { setVoiceState('idle'); return; }
   window.speechSynthesis.cancel();
   const utter = new SpeechSynthesisUtterance(text);
+  /* Assigning a voice can throw — a saved voice that no longer exists, or an
+     engine that reports one it will not accept. Speaking in the default voice
+     beats not speaking, and this runs BEFORE the watchdogs below, so an
+     unguarded throw here would leave the orb pulsing mid-sentence forever. */
   const v = pickVoice();
-  if (v) { utter.voice = v; utter.lang = v.lang; }
+  if (v) {
+    try {
+      utter.voice = v;
+      utter.lang = v.lang;
+    } catch (err) {
+      pushLine('diagnostics', 'VOICE UNAVAILABLE — USING SYSTEM DEFAULT', 'warn');
+    }
+  }
   utter.rate = 1.02;
   utter.pitch = 0.92;
 
@@ -1607,6 +1674,15 @@ function bindControls() {
 
   $('briefBtn').addEventListener('click', function () { respond('morning brief'); });
 
+  /* Picking a voice speaks a sample immediately — you choose by ear, not by
+     reading a name you have never heard. */
+  $('voicePick').addEventListener('change', function (e) {
+    chosenVoiceName = e.target.value;
+    try { localStorage.setItem('jarvisVoice', chosenVoiceName); } catch (err) {}
+    pushLine('diagnostics', 'VOICE SET: ' + chosenVoiceName.toUpperCase());
+    if (voiceEnabled) speakViaBrowser('Voice set. At your service.');
+  });
+
   $('muteBtn').addEventListener('click', function () {
     voiceEnabled = !voiceEnabled;
     $('muteBtn').textContent = 'VOICE: ' + (voiceEnabled ? 'ON' : 'OFF');
@@ -1705,7 +1781,10 @@ async function start() {
 
   /* Voices load asynchronously in most browsers; re-pick once they arrive. */
   if (window.speechSynthesis) {
-    window.speechSynthesis.onvoiceschanged = function () { pickVoice(); };
+    renderVoicePicker();
+    /* Chrome populates the voice list asynchronously and fires this once it
+       has — without re-rendering, the picker would sit empty on first load. */
+    window.speechSynthesis.onvoiceschanged = renderVoicePicker;
   }
   /* Re-render the objective on resize so the segmented bar stays crisp. */
   window.addEventListener('resize', function () {
