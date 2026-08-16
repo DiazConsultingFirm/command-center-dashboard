@@ -226,6 +226,53 @@ for (const [label, args] of [
   });
 }
 
+/* The standalone build is the copy that gets hosted or emailed, which makes it
+   the copy most likely to be read by someone who cannot check it against the
+   vault. Two things must hold: the figures are actually inside it, and it says
+   out loud that they are frozen. */
+check('build-standalone: bakes the data in and labels itself a snapshot', () => {
+  const out = join(ROOT, 'test', '.tmp-standalone.html');
+  const r = run(['agents/build-standalone.mjs', '--out', out]);
+  assert(r.code === 0, `build failed: ${r.out}`);
+  const built = readFileSync(out, 'utf8');
+  execFileSync('rm', ['-f', out]);
+
+  assert(built.includes('const INLINE_DATA = {'), 'no data was baked in');
+  assert(!/await fetch\(DATA_URL/.test(built), 'still fetches at runtime — it would show mock data when hosted');
+  assert(/SNAPSHOT · \d{4}-\d{2}-\d{2}/.test(built), 'no dated SNAPSHOT pill — a frozen page that looks live');
+  /* Proof the bake is real rather than an empty object that happens to parse. */
+  const live = JSON.parse(readFileSync(join(ROOT, 'data', 'jarvis-data.json'), 'utf8'));
+  assert(built.includes(JSON.stringify(live.meta.operator)), 'baked data does not match the real file');
+  return 'baked, and labelled';
+});
+
+check('build-standalone: refuses to build when the loader has changed', () => {
+  /* The whole safety of this script is that it fails loudly instead of quietly
+     emitting a page that shows mock numbers under a LIVE badge. That guarantee
+     is worth nothing untested. */
+  const src = readFileSync(join(ROOT, 'jarvis.html'), 'utf8');
+  const broken = join(ROOT, 'test', '.tmp-jarvis.html');
+  const out = join(ROOT, 'test', '.tmp-nope.html');
+  execFileSync('bash', ['-c', `cat > ${JSON.stringify(broken)}`], {
+    input: src.replace("const res = await fetch(DATA_URL, { cache: 'no-store' });", 'const res = await grabTheData();')
+  });
+  /* Swap the real page for the mangled one just long enough to run the build. */
+  const backup = join(ROOT, 'test', '.tmp-jarvis-backup.html');
+  execFileSync('bash', ['-c', `cat > ${JSON.stringify(backup)}`], { input: src });
+  execFileSync('bash', ['-c', `cp ${JSON.stringify(broken)} ${JSON.stringify(join(ROOT, 'jarvis.html'))}`]);
+  const r = run(['agents/build-standalone.mjs', '--out', out]);
+  execFileSync('bash', ['-c', `cp ${JSON.stringify(backup)} ${JSON.stringify(join(ROOT, 'jarvis.html'))}`]);
+  const emitted = existsSync(out);
+  execFileSync('rm', ['-f', broken, backup, out]);
+
+  assert(r.code !== 0, 'built anyway against a loader it did not recognise');
+  assert(!emitted, 'emitted a file despite failing — it would silently show mock data');
+  assert(/loader has changed/i.test(r.out), `unhelpful error: ${r.out.slice(0, 120)}`);
+  /* The page must be exactly as it was, or this test just broke the repo. */
+  assert(readFileSync(join(ROOT, 'jarvis.html'), 'utf8') === src, 'did not restore jarvis.html');
+  return 'refused, and restored the page';
+});
+
 check('no employment income anywhere in the repo', () => {
   const hits = execFileSync('bash', ['-c',
     `grep -rniE "salary|sign[- ]on bonus" --include=*.json --include=*.mjs ${JSON.stringify(ROOT)}/data ${JSON.stringify(ROOT)}/agents || true`
