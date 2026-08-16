@@ -17,12 +17,12 @@
     "current": {
       "v": 3500,
       "source": "reported by Evans — same corrected collected figure the objective card measures against (not in the vault mirror yet)",
-      "asOf": "2026-08-15"
+      "asOf": "2026-08-16"
     },
     "status": {
       "v": "ON TRACK",
       "source": "derived: collected vs. pace of the month",
-      "asOf": "2026-08-15"
+      "asOf": "2026-08-16"
     },
     "eta": {
       "v": "END OF MONTH",
@@ -34,12 +34,12 @@
     "collectedMTD": {
       "v": 3500,
       "source": "reported by Evans — mirror's $2,500 plus Robert Davis P.A.'s $500 balance and Angela Gerlach's (Gerlach Legal) $500 August payment — both clients are documented; it is the August payments the vault has not recorded (not in the vault mirror yet)",
-      "asOf": "2026-08-15"
+      "asOf": "2026-08-16"
     },
     "outstanding": {
       "v": 0,
-      "source": "reported by Evans — Robert Davis P.A. paid the $500 balance in August; the vault note still shows it open. DISPUTED: the 2026-07-26 client draft asks for $1,000, not $500 — if that draft is right, this is $500, not zero (not in the vault mirror yet)",
-      "asOf": "2026-08-15"
+      "source": "reported by Evans — nothing is owed. Robert Davis P.A. has paid all $2,000 of Phase 1, confirmed by Evans on 2026-08-16; the vault note still shows a balance open. Angela Gerlach's balance is undefined in the vault, so it is not counted here either way (not in the vault mirror yet)",
+      "asOf": "2026-08-16"
     },
     "yesterday": {
       "v": null,

@@ -19,14 +19,14 @@
     "",
     "Correction 2026-08-16: an earlier version of this file described Angela as having no vault note at all. Wrong \u2014 Angela Gerlach is Gerlach Legal, an active client with a full Notion page and her own launch-protocol entry. What is missing is the August PAYMENT, not the client.",
     "",
-    "OPEN CONFLICT 2026-08-16, affects revenue.outstanding: the Robert Davis P.A. payment log in Notion records $1,500 received and $500 still owed on a $2,000 Phase 1. The client-facing outreach draft dated 2026-07-26 on the same account asks for 'the remaining $1,000 balance'. Both cannot be true. The $0 here assumes the payment log is right and the August $500 cleared it. If the draft is right, outstanding is $500. Resolve it in the vault, then retire this override."
+    "RESOLVED 2026-08-16: the Robert Davis P.A. payment log in Notion records $1,500 received and $500 still owed on a $2,000 Phase 1, while the client-facing outreach draft dated 2026-07-26 asks for 'the remaining $1,000 balance'. Neither is current. Evans confirmed on 2026-08-16 that Robert has paid all $2,000. Both Notion figures are stale and both should be corrected at the source, after which this override retires."
   ],
-  "asOf": "2026-08-15",
+  "asOf": "2026-08-16",
   "reportedBy": "Evans",
   "metrics": {
     "revenue.outstanding": {
       "v": 0,
-      "note": "Robert Davis P.A. paid the $500 balance in August; the vault note still shows it open. DISPUTED: the 2026-07-26 client draft asks for $1,000, not $500 — if that draft is right, this is $500, not zero"
+      "note": "nothing is owed. Robert Davis P.A. has paid all $2,000 of Phase 1, confirmed by Evans on 2026-08-16; the vault note still shows a balance open. Angela Gerlach's balance is undefined in the vault, so it is not counted here either way"
     },
     "revenue.collectedMTD": {
       "v": 3500,
