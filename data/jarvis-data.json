@@ -38,7 +38,7 @@
     },
     "outstanding": {
       "v": 0,
-      "source": "reported by Evans — Robert Davis P.A. paid the $500 balance in August; the vault note still shows it open (not in the vault mirror yet)",
+      "source": "reported by Evans — Robert Davis P.A. paid the $500 balance in August; the vault note still shows it open. DISPUTED: the 2026-07-26 client draft asks for $1,000, not $500 — if that draft is right, this is $500, not zero (not in the vault mirror yet)",
       "asOf": "2026-08-15"
     },
     "yesterday": {

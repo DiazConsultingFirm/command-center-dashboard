@@ -17,14 +17,16 @@
     "this repo is a public mirror. See 'What never goes in this repo' in",
     "JARVIS.md.",
     "",
-    "Correction 2026-08-16: an earlier version of this file described Angela as having no vault note at all. Wrong \u2014 Angela Gerlach is Gerlach Legal, an active client with a full Notion page and her own launch-protocol entry. What is missing is the August PAYMENT, not the client."
+    "Correction 2026-08-16: an earlier version of this file described Angela as having no vault note at all. Wrong \u2014 Angela Gerlach is Gerlach Legal, an active client with a full Notion page and her own launch-protocol entry. What is missing is the August PAYMENT, not the client.",
+    "",
+    "OPEN CONFLICT 2026-08-16, affects revenue.outstanding: the Robert Davis P.A. payment log in Notion records $1,500 received and $500 still owed on a $2,000 Phase 1. The client-facing outreach draft dated 2026-07-26 on the same account asks for 'the remaining $1,000 balance'. Both cannot be true. The $0 here assumes the payment log is right and the August $500 cleared it. If the draft is right, outstanding is $500. Resolve it in the vault, then retire this override."
   ],
   "asOf": "2026-08-15",
   "reportedBy": "Evans",
   "metrics": {
     "revenue.outstanding": {
       "v": 0,
-      "note": "Robert Davis P.A. paid the $500 balance in August; the vault note still shows it open"
+      "note": "Robert Davis P.A. paid the $500 balance in August; the vault note still shows it open. DISPUTED: the 2026-07-26 client draft asks for $1,000, not $500 — if that draft is right, this is $500, not zero"
     },
     "revenue.collectedMTD": {
       "v": 3500,

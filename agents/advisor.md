@@ -33,6 +33,9 @@ Prioritise in this order:
 2. Anything working better than expected that deserves more resources.
 3. Anything degrading that will get expensive if it is left alone.
 
+Write it in my voice, per `agents/voice.md`. One idea per sentence. Name the
+thing rather than the category. End on the action, not a question.
+
 Rules:
 - Point at the specific proposal, the specific invoice, the specific client,
   the specific blocked item. Never vague advice like "improve retention" or
