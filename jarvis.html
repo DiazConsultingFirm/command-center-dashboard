@@ -1432,11 +1432,45 @@ const VOICE_CONFIG = {
   model: 'eleven_turbo_v2_5'
 };
 
+/* ---------------------------------------------------------------- Kokoro ---
+   The free neural option: an Apache-2.0 model that runs IN THIS BROWSER. No
+   API key, no proxy, no per-character bill, and nothing leaves the machine —
+   which is why it suits a page that is otherwise entirely static.
+
+   The trade is a one-time model download of a few hundred megabytes, cached by
+   the browser afterwards. So it is opt-in: nothing is fetched until you choose
+   KOKORO in the voice menu, and visitors who never touch it pay nothing.
+
+   Everything here is written defensively on purpose. The library is loaded
+   from a CDN at runtime and its API may drift, so each step is feature-detected
+   and ANY failure falls back to the browser voice with the reason in
+   DIAGNOSTICS. A voice that degrades is fine; one that goes silently dead is
+   not. */
+const KOKORO = {
+  /* Unpinned so it resolves to a version that exists. Once you have confirmed
+     a working version in your browser, pin it here — a floating dependency on
+     a page you rely on every morning is a liability, not a convenience. */
+  cdn: 'https://cdn.jsdelivr.net/npm/kokoro-js/+esm',
+  model: 'onnx-community/Kokoro-82M-v1.0-ONNX',
+  /* British male. If the id is wrong for the model you get, the picker
+     repopulates from the model's own voice list once it loads. */
+  voice: 'bm_george',
+  /* q8 keeps the download small; 'fp32' sounds better and costs more bytes. */
+  dtype: 'q8'
+};
+
+/* The sentinel stored as the chosen voice when Kokoro is selected — it is not
+   a SpeechSynthesisVoice, so it needs a value the rest of the code can spot. */
+const KOKORO_VOICE_VALUE = '__kokoro__';
+
 let voiceEnabled = true;
 let recognition = null;
 let listening = false;
 let spaceHeld = false;
 let currentAudio = null;
+/* Set by the first real gesture. Gates the Kokoro download so it is a
+   consequence of asking for something, never of opening the page. */
+let userHasInteracted = false;
 
 /* A chosen voice wins over the preference order, and persists — the whole
    point is picking once and never thinking about it again. */
@@ -1492,9 +1526,20 @@ function renderVoicePicker() {
 
   const current = pickVoice();
   sel.disabled = false;
-  sel.innerHTML = voices.map(function (v) {
+
+  /* Kokoro sits at the top as the deliberate upgrade, labelled with what it
+     costs you — nobody should trigger a few-hundred-megabyte download from a
+     dropdown without being told. */
+  const kokoroLabel = kokoroTTS
+    ? 'KOKORO · UK NEURAL · READY'
+    : 'KOKORO · UK NEURAL · DOWNLOADS ONCE';
+  const kokoroOpt = '<option value="' + KOKORO_VOICE_VALUE + '"' +
+    (chosenVoiceName === KOKORO_VOICE_VALUE ? ' selected' : '') + '>' + kokoroLabel + '</option>';
+
+  sel.innerHTML = kokoroOpt + voices.map(function (v) {
     const gb = /^en-GB/i.test(v.lang) ? ' · UK' : '';
-    return '<option value="' + escapeHtml(v.name) + '"' + (current && v.name === current.name ? ' selected' : '') + '>' +
+    const isSelected = chosenVoiceName !== KOKORO_VOICE_VALUE && current && v.name === current.name;
+    return '<option value="' + escapeHtml(v.name) + '"' + (isSelected ? ' selected' : '') + '>' +
            escapeHtml(v.name) + gb + '</option>';
   }).join('');
   sel.title = voices.length + ' English voice(s) installed on this device. Add more in your OS speech settings — the good British ones are free.';
@@ -1513,8 +1558,26 @@ function stopSpeaking() {
 function speak(text) {
   if (!voiceEnabled) { setVoiceState('idle'); return; }
   stopSpeaking();
-  if (VOICE_CONFIG.endpoint) speakViaProxy(text);
-  else speakViaBrowser(text);
+  /* Order of preference: a configured proxy, then the local neural voice if
+     you picked it, then the operating system's own. Each falls back to the
+     next on failure rather than leaving you in silence. */
+  if (VOICE_CONFIG.endpoint) { speakViaProxy(text); return; }
+
+  if (chosenVoiceName === KOKORO_VOICE_VALUE) {
+    /* Never start a few-hundred-megabyte download just because a page opened.
+       The boot greeting speaks in the OS voice; Kokoro loads on the first
+       thing you actually ask for. (Browsers block autoplay before a gesture
+       anyway, so an auto-load would often burn the bandwidth and stay silent.) */
+    if (!kokoroTTS && !userHasInteracted) {
+      pushLine('diagnostics', 'KOKORO HELD — LOADS ON YOUR FIRST COMMAND, NOT ON PAGE LOAD');
+      speakViaBrowser(text);
+      return;
+    }
+    speakViaKokoro(text);
+    return;
+  }
+
+  speakViaBrowser(text);
 }
 
 function speakViaProxy(text) {
@@ -1549,6 +1612,144 @@ function speakViaProxy(text) {
       /* A voice that goes silent on an error is worse than a plainer voice.
          Say so in diagnostics and finish the sentence in the browser. */
       pushLine('diagnostics', 'VOICE PROXY FAILED (' + String(err.message || err).toUpperCase() + ') — USING BROWSER VOICE', 'warn');
+      speakViaBrowser(text);
+    });
+}
+
+/* ---------------------------------------------------------------- Kokoro ---
+   Loaded once, lazily, and only if you ask for it. */
+
+let kokoroTTS = null;        /* the loaded model, once ready */
+let kokoroLoading = null;    /* in-flight load, so two clicks do not fetch twice */
+let kokoroVoices = null;     /* voice ids the loaded model actually offers */
+
+function kokoroDevice() {
+  /* WebGPU is dramatically faster; wasm is the honest fallback everywhere else. */
+  return (typeof navigator !== 'undefined' && navigator.gpu) ? 'webgpu' : 'wasm';
+}
+
+async function loadKokoro() {
+  if (kokoroTTS) return kokoroTTS;
+  if (kokoroLoading) return kokoroLoading;
+
+  const device = kokoroDevice();
+  pushLine('diagnostics', 'KOKORO: LOADING MODEL · ' + device.toUpperCase(), 'warn');
+  $('reply').textContent = 'Downloading the neural voice. This happens once — the browser caches it afterwards.';
+
+  /* Progress is reported per file and can fire often; throttle it so the
+     telemetry feed stays readable rather than becoming a scrollbar. */
+  let lastShown = -1;
+  const onProgress = function (p) {
+    if (!p || typeof p.progress !== 'number') return;
+    const pct = Math.floor(p.progress);
+    if (pct <= lastShown || pct % 10 !== 0) return;
+    lastShown = pct;
+    $('reply').textContent = 'Downloading the neural voice — ' + pct + '%.';
+    pushLine('telemetry', 'KOKORO: ' + pct + '%');
+  };
+
+  kokoroLoading = (async function () {
+    const mod = await import(KOKORO.cdn);
+    const KokoroTTS = mod.KokoroTTS || (mod.default && mod.default.KokoroTTS);
+    if (!KokoroTTS || typeof KokoroTTS.from_pretrained !== 'function') {
+      throw new Error('kokoro-js loaded but KokoroTTS.from_pretrained is missing');
+    }
+    const tts = await KokoroTTS.from_pretrained(KOKORO.model, {
+      dtype: KOKORO.dtype,
+      device: device,
+      progress_callback: onProgress
+    });
+
+    /* Ask the model which voices it has rather than trusting the id above. */
+    try {
+      if (typeof tts.list_voices === 'function') {
+        const listed = tts.list_voices();
+        kokoroVoices = Array.isArray(listed) ? listed : Object.keys(listed || {});
+      } else if (tts.voices) {
+        kokoroVoices = Object.keys(tts.voices);
+      }
+    } catch (err) { kokoroVoices = null; }
+
+    if (kokoroVoices && kokoroVoices.length && kokoroVoices.indexOf(KOKORO.voice) === -1) {
+      /* Configured voice is not in this build. Prefer a British one, then any. */
+      const british = kokoroVoices.find(function (v) { return /^b[mf]_/.test(v); });
+      pushLine('diagnostics', 'KOKORO: VOICE "' + KOKORO.voice.toUpperCase() + '" NOT IN MODEL — USING ' +
+               String(british || kokoroVoices[0]).toUpperCase(), 'warn');
+      KOKORO.voice = british || kokoroVoices[0];
+    }
+
+    kokoroTTS = tts;
+    pushLine('diagnostics', 'KOKORO: READY · VOICE ' + String(KOKORO.voice).toUpperCase(), 'hi');
+    return tts;
+  })();
+
+  try {
+    return await kokoroLoading;
+  } finally {
+    kokoroLoading = null;
+  }
+}
+
+/* Minimal WAV wrapper, used only if the library hands back raw samples rather
+   than something already playable. */
+function wavFromFloat32(samples, sampleRate) {
+  const buffer = new ArrayBuffer(44 + samples.length * 2);
+  const view = new DataView(buffer);
+  const str = function (offset, s) { for (let i = 0; i < s.length; i++) view.setUint8(offset + i, s.charCodeAt(i)); };
+  str(0, 'RIFF'); view.setUint32(4, 36 + samples.length * 2, true); str(8, 'WAVE');
+  str(12, 'fmt '); view.setUint32(16, 16, true); view.setUint16(20, 1, true);
+  view.setUint16(22, 1, true); view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate * 2, true); view.setUint16(32, 2, true); view.setUint16(34, 16, true);
+  str(36, 'data'); view.setUint32(40, samples.length * 2, true);
+  for (let i = 0; i < samples.length; i++) {
+    const s = Math.max(-1, Math.min(1, samples[i]));
+    view.setInt16(44 + i * 2, s < 0 ? s * 0x8000 : s * 0x7fff, true);
+  }
+  return new Blob([view], { type: 'audio/wav' });
+}
+
+/* The result shape is the least stable part of the contract, so accept any of
+   the plausible ones rather than assuming one. */
+function kokoroResultToBlob(result) {
+  if (!result) return null;
+  if (result instanceof Blob) return result;
+  if (typeof result.toBlob === 'function') return result.toBlob();
+  if (typeof result.toWav === 'function') return new Blob([result.toWav()], { type: 'audio/wav' });
+  const samples = result.audio || result.data;
+  const rate = result.sampling_rate || result.sampleRate;
+  if (samples && rate) return wavFromFloat32(samples, rate);
+  return null;
+}
+
+function speakViaKokoro(text) {
+  setVoiceState('thinking');
+  loadKokoro()
+    .then(function (tts) {
+      return tts.generate(text, { voice: KOKORO.voice });
+    })
+    .then(function (result) {
+      const blob = kokoroResultToBlob(result);
+      if (!blob) throw new Error('unrecognised audio result from kokoro-js');
+      const url = URL.createObjectURL(blob);
+      const audio = new Audio(url);
+      currentAudio = audio;
+      const done = function () {
+        URL.revokeObjectURL(url);
+        if (currentAudio === audio) currentAudio = null;
+        setVoiceState('idle');
+      };
+      audio.onplay = function () { setVoiceState('speaking'); };
+      audio.onended = done;
+      audio.onerror = done;
+      return audio.play();
+    })
+    .catch(function (err) {
+      /* Falling back loudly. A neural voice that fails silently would look
+         identical to a broken dashboard. */
+      pushLine('diagnostics', 'KOKORO FAILED (' + String(err.message || err).slice(0, 60).toUpperCase() + ') — BROWSER VOICE', 'warn');
+      chosenVoiceName = null;    /* stop retrying a path that just failed */
+      try { localStorage.removeItem('jarvisVoice'); } catch (e) {}
+      renderVoicePicker();
       speakViaBrowser(text);
     });
 }
@@ -1661,6 +1862,12 @@ function stopListening() {
    ========================================================================== */
 
 function bindControls() {
+  /* One-shot: the first pointer or key event counts as "you are here and
+     asking", which is what unlocks a heavyweight voice download. */
+  const markInteracted = function () { userHasInteracted = true; };
+  document.addEventListener('pointerdown', markInteracted, { once: true });
+  document.addEventListener('keydown', markInteracted, { once: true });
+
   $('orbHit').addEventListener('click', function () {
     if (listening) stopListening();
     else if (recognition) startListening();
@@ -1679,6 +1886,16 @@ function bindControls() {
   $('voicePick').addEventListener('change', function (e) {
     chosenVoiceName = e.target.value;
     try { localStorage.setItem('jarvisVoice', chosenVoiceName); } catch (err) {}
+
+    if (chosenVoiceName === KOKORO_VOICE_VALUE) {
+      pushLine('diagnostics', 'VOICE SET: KOKORO (LOCAL NEURAL)');
+      /* Speaking the sample is what triggers the download — deliberate, so the
+         choice and the cost happen in the same gesture. */
+      if (voiceEnabled) speakViaKokoro('Kokoro online. At your service.');
+      else pushLine('diagnostics', 'KOKORO SELECTED — UNMUTE TO LOAD IT', 'warn');
+      return;
+    }
+
     pushLine('diagnostics', 'VOICE SET: ' + chosenVoiceName.toUpperCase());
     if (voiceEnabled) speakViaBrowser('Voice set. At your service.');
   });

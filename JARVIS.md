@@ -155,10 +155,47 @@ nothing new can skip the commit instead of adding noise.
 
 ### The voice
 
-Out of the box it uses the browser's own speech synthesis, preferring a
-British voice if the system has one. For the real thing, deploy
+Three options, in the order most people should try them:
+
+**1. The operating system's own voice (default, free, zero setup).** The voice
+menu in the control row lists every English voice installed on the device,
+British first. Pick one and it speaks a sample immediately; the choice sticks.
+The single biggest free upgrade is installing an enhanced British voice — on
+macOS, System Settings → Accessibility → Spoken Content → Manage Voices →
+Daniel (Enhanced). It is a different instrument from the default.
+
+**2. Kokoro, running in your browser (free, no key, no server).** An
+Apache-2.0 neural model that executes locally: nothing is sent anywhere, there
+is no API key and no per-character bill. Pick `KOKORO · UK NEURAL` from the
+voice menu. It downloads the model once (a few hundred megabytes, cached
+afterwards) and uses WebGPU where available, WASM otherwise.
+
+Deliberate behaviours worth knowing:
+
+- The download is triggered by *choosing* it, and on later visits by your
+  first command — never by the page merely loading. Opening the dashboard
+  should not cost you bandwidth you did not ask for.
+- The library is loaded from a CDN at runtime, so every step is
+  feature-detected. Any failure — CDN unreachable, API drift, an unsupported
+  device — logs the reason in DIAGNOSTICS, falls back to the OS voice, and
+  clears the saved preference so it does not retry a broken path every morning.
+- The model is asked which voices it actually has; a configured voice id that
+  the model does not carry is replaced with a British one from its real list.
+- `KOKORO.cdn` is unpinned so it resolves. **Pin it to a known-good version
+  once you have heard it work** — a floating dependency in something you rely
+  on daily is a liability.
+
+> Tested here: selection, the failure-and-fallback path, the load-on-gesture
+> guard, and persistence. **Not tested: actually generating speech** — this
+> container blocks the CDN and Hugging Face, so the model was never downloaded.
+> You are the first real run. If it does not work, the fallback means you get
+> the OS voice and a reason in DIAGNOSTICS rather than silence.
+
+**3. ElevenLabs (paid, a specific cloned voice).** Deploy
 `voice/elevenlabs-proxy.js` (a Cloudflare Worker) and point
-`VOICE_CONFIG.endpoint` in `jarvis.html` at it.
+`VOICE_CONFIG.endpoint` in `jarvis.html` at it. It takes precedence over both
+of the above. Worth it only if you want one identical branded voice across
+every device.
 
 The key lives in the Worker as a secret, never in the page — this site is
 public, and a key in a public page is a key you have given away. The proxy
