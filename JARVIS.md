@@ -204,6 +204,31 @@ single call cannot run up your credits, and takes an optional shared secret.
 If it is unreachable or errors, the page logs why in DIAGNOSTICS and finishes
 the sentence in the browser voice rather than going silent.
 
+## Testing
+
+```sh
+node test/smoke.mjs         # everything — agent tools and the screen
+node test/smoke.mjs --cli   # just the tools, no browser needed
+```
+
+34 checks, exits non-zero on any failure, and runs in CI on every push and pull
+request. It restores `data/jarvis-data.json` after every test that writes, and
+it never touches a mailbox or sends anything.
+
+What it actually asserts is the behaviour this system is built on, not just
+that the code runs: the Scout produces no churn on a rerun, an override is
+attributed to a human rather than impersonating the mirror, every malformed
+brief is refused *and writes nothing*, an unmeasured count stays `null` while a
+measured zero stays `0`, the screen refuses to invent an unwired figure or
+recite a percentage against a placeholder target, and no employment income has
+crept into the repo.
+
+The Kokoro tests run against `test/fixtures/kokoro-mock.mjs`, which can be told
+to fail in each way the real library might: a renamed export, an unreachable
+host, an unrecognisable result, a missing voice. Every one must fall back to
+the OS voice, clear the saved preference and log the reason. **This proves our
+half, not that kokoro-js works** — only hearing it speak proves that, once.
+
 ## The rules that keep it safe
 
 - **Nothing sends, spends, or publishes without you until it has earned it.**

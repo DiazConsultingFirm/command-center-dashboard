@@ -1,0 +1,37 @@
+name: Test
+
+# The rule is test everything, so it runs on every push and every PR rather
+# than when someone remembers. A red run means the dashboard is telling you
+# something untrue, or is about to.
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      # The vault mirror and the data it produces change hourly and are not
+      # code. Testing them on every auto-update would be noise, and the Scout's
+      # own audit output already covers that path.
+      - 'index.html'
+      - 'data/jarvis-data.json'
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # The browser half of the suite needs a real Chromium.
+      - name: Install Playwright Chromium
+        run: npx --yes playwright@1.56.1 install --with-deps chromium
+
+      - name: Install http-server
+        run: npm install --no-save http-server@14
+
+      - name: Run the full suite
+        run: node test/smoke.mjs
