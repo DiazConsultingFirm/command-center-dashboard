@@ -129,26 +129,28 @@
     ]
   },
   "advisor": {
-    "asOf": "2026-08-15",
+    "asOf": "2026-08-16",
     "recommendations": [
       {
-        "action": "Reschedule the Echelon Legal meeting today and put a decision date on the proposal.",
-        "evidence": "The Project Registry note carries 'reschedule Echelon meeting (follow up by 2026-08-01)' and that follow-up date passed 14 days ago. Echelon is the largest open figure at $3,000 recommended and the only account still unconverted at PROSPECT stage — with $3,500 of the $6,000 August target collected, Echelon is what closes the remaining $2,500.",
-        "cost": "The proposal has now been open longer than the follow-up window it was given, with no date attached. Nothing else on the board can close the $2,500 still needed this month."
+        "action": "Send Echelon Legal a reschedule with two concrete times and a date the proposal expires.",
+        "evidence": "The Project Registry note still reads \"reschedule Echelon meeting (follow up by 2026-08-01)\". That date passed 15 days ago. Echelon is the only account at PROSPECT and the largest open figure at $3,000 recommended, against $3,500 collected of a $6,000 target.",
+        "cost": "It is the only item on the board that can close the remaining $2,500 this month. Every week it sits, the offer gets older than the follow-up window you set for it, and $1,500 / $3,000 / $5,000 becomes a number you have to defend rather than present."
       },
       {
-        "action": "Finish Davis motion pipeline v2 and close out the open question on filing #252050912.",
-        "evidence": "The Davis Motion Pipeline note was due 2026-07-22 and has sat 14 days idle with the filing question unresolved. This is delivery, not billing — Robert has since paid, though the vault note has not caught up.",
-        "cost": "It is the oldest overdue commitment to a paying client on the board, and it is now the only thing outstanding on that engagement."
+        "action": "Text Robert Davis today and book a 15-minute slot for his b-roll recording.",
+        "evidence": "His note reads \"Awaiting Robert's b-roll recording time\" and has been blocked for 16 days. DCF's own working rule is a 7-day follow-up on anything blocked on a client, so this is more than twice past your own standard.",
+        "cost": "He has now paid all $2,000, so there is no money conversation sitting in the way of the ask, which will not stay true if the delivery gap keeps growing. The b-roll gates the video content and the Google Business Profile work, and both of those are what a Phase 2 retainer would be billed against."
       },
       {
         "action": "Push the 6 unpushed commits on dcf-website-factory main.",
-        "evidence": "Two separate notes flag it — the Project Registry and the 2026-07-25 CLAUDE.md restructure — both listing 'push factory main (6 unpushed commits + WIP)'.",
-        "cost": "The only item on the board that can be lost outright rather than merely delayed: unpushed work exists on one machine. Also the cheapest to clear."
+        "evidence": "Flagged in two separate notes, the Project Registry and the 2026-07-25 CLAUDE.md restructure, both listing \"push factory main (6 unpushed commits + WIP)\".",
+        "cost": "It is the only item on the board that can be lost outright rather than merely delayed, because the work exists on one machine. It is also the cheapest to clear."
       }
     ],
     "unactioned": [
-      "Two vault notes are still stale: Robert's paid $500 balance and Angela's $500 August payment. Both are corrected on the screen through data/overrides.json, not in the vault. Fix the notes, confirm the mirror carries it, then delete the override file — a correction nobody retires becomes a second source of truth."
+      "Davis motion pipeline v2 was recommended yesterday and has not moved. It was due 2026-07-22, which is now 25 days ago, and the open question on whether filing #252050912 still needs resending is still open. This is delivery owed to a client who has paid in full.",
+      "Echelon and the 6 unpushed commits were both recommended yesterday and are repeated above rather than retired, because today's data shows neither was touched.",
+      "The vault still says Robert Davis owes $500. He does not, he has paid all $2,000. That correction lives in data/overrides.json and not in the vault, which means it has to be reapplied on every refresh until the Notion note is fixed."
     ]
   }
 }
