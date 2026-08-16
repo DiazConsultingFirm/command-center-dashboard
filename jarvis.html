@@ -343,6 +343,7 @@ body {
         <span class="pill"><span class="dot"></span>ENCRYPTED</span>
         <span class="pill"><span class="dot"></span>AUTO-LVL8</span>
         <span class="pill mock" id="pillData" title="Where the numbers on this screen come from"><span class="dot"></span>DATA: MOCK</span>
+        <span class="pill" id="pillAdvice" title="How old the Advisor's recommendations are"><span class="dot"></span>ADVICE: —</span>
       </div>
     </div>
     <div class="hdr-right">
@@ -917,6 +918,57 @@ function animateVitals(specs) {
 
 const MAX_LINES = 40;
 
+/**
+ * How old the advice is, in whole days. Ages by wall clock rather than
+ * against the mirror: advice written on Friday is three days old on Monday
+ * even if no number moved, because the world moved.
+ */
+function adviceAgeDays() {
+  const asOf = MISSION_DATA.advisor && MISSION_DATA.advisor.asOf;
+  if (!asOf) return null;
+  const then = Date.parse(asOf + 'T00:00:00');
+  if (isNaN(then)) return null;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return Math.max(0, Math.round((today.getTime() - then) / 86400000));
+}
+
+/**
+ * Three-day-old advice sitting beside today's numbers looks exactly like
+ * fresh advice unless something says otherwise. On a screen whose whole claim
+ * is that you can trust it at a glance, that gap is the bug.
+ */
+function updateAdvicePill() {
+  const pill = $('pillAdvice');
+  if (!pill) return;
+  const age = adviceAgeDays();
+  const count = recommendationCount();
+  pill.classList.remove('mock', 'live');
+
+  if (!count) {
+    pill.classList.add('mock');
+    pill.innerHTML = '<span class="dot"></span>ADVISOR NOT RUN';
+    pill.title = 'The Advisor has published no recommendations. The numbers are still live.';
+    return;
+  }
+  if (age === null) {
+    pill.classList.add('mock');
+    pill.innerHTML = '<span class="dot"></span>ADVICE: UNDATED';
+    pill.title = 'The advice carries no date, so its age cannot be judged.';
+    return;
+  }
+  if (age === 0) {
+    pill.classList.add('live');
+    pill.innerHTML = '<span class="dot pulse"></span>ADVICE: TODAY';
+    pill.title = 'Published today.';
+    return;
+  }
+  pill.classList.add('mock');
+  pill.innerHTML = '<span class="dot"></span>ADVICE: ' + age + 'D OLD';
+  pill.title = 'These recommendations were written ' + age + ' day(s) ago, against older numbers. ' +
+               'The figures beside them are current.';
+}
+
 function recommendationCount() {
   return ((MISSION_DATA.advisor && MISSION_DATA.advisor.recommendations) || []).length;
 }
@@ -1191,10 +1243,14 @@ function advisorSentence() {
   const text = a.recommendations.map(function (r, i) {
     return (i + 1) + '. ' + r.action + ' Evidence: ' + r.evidence + ' Ignore it and: ' + r.cost;
   }).join(' ');
+  const age = adviceAgeDays();
+  const stale = (age !== null && age > 0)
+    ? ' These are ' + age + ' day' + (age === 1 ? '' : 's') + ' old.'
+    : '';
   const un = (a.unactioned && a.unactioned.length)
     ? ' Still unactioned from the last seven days: ' + a.unactioned.join(' ')
     : ' Nothing recommended in the last seven days is still outstanding.';
-  return { text: text + un, src: 'Source: Advisor run' + (a.asOf ? ' · as of ' + a.asOf : '') };
+  return { text: text + stale + un, src: 'Source: Advisor run' + (a.asOf ? ' · as of ' + a.asOf : '') };
 }
 
 const INTENTS = [
@@ -1397,6 +1453,14 @@ function morningBrief() {
   parts.push('Pipeline: ' + p.text);
 
   const recs = MISSION_DATA.advisor.recommendations || [];
+  /* Say the age out loud. Spoken, "my top three for today" is a claim about
+     freshness, and three-day-old advice delivered in that voice is a lie of
+     framing even when every word of it is true. */
+  const age = adviceAgeDays();
+  if (recs.length && age !== null && age > 0) {
+    parts.push('Before the recommendations: these are ' + age + ' day' + (age === 1 ? '' : 's') +
+               ' old, written on ' + MISSION_DATA.advisor.asOf + '. The figures above are current.');
+  }
   if (!recs.length) {
     /* The Scout gathers; the Advisor decides. If the Advisor has not run,
        say so — do not dress the numbers up as a recommendation. */
@@ -1986,6 +2050,7 @@ async function start() {
   await loadLiveData();
   updateDataPill();
   renderHeader();
+  updateAdvicePill();
   renderObjective();
   renderVitals();
   startFeeds();

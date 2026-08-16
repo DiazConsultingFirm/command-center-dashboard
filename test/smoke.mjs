@@ -318,6 +318,49 @@ if (!CLI_ONLY) {
     return 'excluded, and said so';
   });
 
+  await checkAsync('stale advice is flagged, on screen and out loud', async () => {
+    const { p } = await page();
+    const r = await p.evaluate(() => {
+      const d = new Date(); d.setDate(d.getDate() - 3);
+      const iso = d.toISOString().slice(0, 10);
+      MISSION_DATA.advisor = { asOf: iso, unactioned: [],
+        recommendations: [{ action: 'a', evidence: 'b', cost: 'c' }] };
+      updateAdvicePill();
+      return { pill: document.getElementById('pillAdvice').textContent, brief: morningBrief().text };
+    });
+    await p.close();
+    assert(/3D OLD/.test(r.pill), `pill did not flag the age: ${r.pill}`);
+    assert(/3 days old/.test(r.brief), 'the spoken brief presented stale advice as todays');
+    return 'flagged both ways';
+  });
+
+  await checkAsync('advice published today is not flagged as stale', async () => {
+    const { p } = await page();
+    const r = await p.evaluate(() => {
+      const iso = new Date().toISOString().slice(0, 10);
+      MISSION_DATA.advisor = { asOf: iso, unactioned: [],
+        recommendations: [{ action: 'a', evidence: 'b', cost: 'c' }] };
+      updateAdvicePill();
+      return { pill: document.getElementById('pillAdvice').textContent, brief: morningBrief().text };
+    });
+    await p.close();
+    assert(/TODAY/.test(r.pill), `fresh advice was not marked current: ${r.pill}`);
+    assert(!/days old/.test(r.brief), 'cried stale on advice written today');
+    return 'clean';
+  });
+
+  await checkAsync('an Advisor that never ran says so rather than showing an age', async () => {
+    const { p } = await page();
+    const pill = await p.evaluate(() => {
+      MISSION_DATA.advisor = { asOf: '2026-08-15', recommendations: [], unactioned: [] };
+      updateAdvicePill();
+      return document.getElementById('pillAdvice').textContent;
+    });
+    await p.close();
+    assert(/NOT RUN/.test(pill), `wrong state for an unrun Advisor: ${pill}`);
+    return 'says not run';
+  });
+
   await checkAsync('voice picker lists Kokoro first, UK voices next', async () => {
     const { p } = await page();
     const opts = await p.evaluate(() => [...document.getElementById('voicePick').options].map((o) => o.text));
