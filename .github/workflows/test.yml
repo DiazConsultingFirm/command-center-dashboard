@@ -26,12 +26,15 @@ jobs:
         with:
           node-version: '22'
 
-      # The browser half of the suite needs a real Chromium.
-      - name: Install Playwright Chromium
-        run: npx --yes playwright@1.56.1 install --with-deps chromium
+      # Both packages must be INSTALLED, not just invoked. `npx playwright
+      # install` downloads browsers using a throwaway copy and leaves nothing
+      # in node_modules, so the suite's `import('playwright')` had nothing to
+      # resolve — which is exactly how the first CI run failed.
+      - name: Install test dependencies
+        run: npm install --no-save playwright@1.56.1 http-server@14
 
-      - name: Install http-server
-        run: npm install --no-save http-server@14
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
 
       - name: Run the full suite
         run: node test/smoke.mjs

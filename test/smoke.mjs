@@ -214,11 +214,19 @@ if (!CLI_ONLY) {
      globally (this dev container). Hardcoding either path makes the suite
      runnable in exactly one place, which defeats the point of having it. */
   const { chromium } = await (async () => {
-    try {
-      return await import('playwright');
-    } catch (err) {
-      return await import('/opt/node22/lib/node_modules/playwright/index.mjs');
+    const tried = [];
+    for (const spec of ['playwright', '/opt/node22/lib/node_modules/playwright/index.mjs']) {
+      try {
+        return await import(spec);
+      } catch (err) {
+        tried.push(`${spec} (${String(err.code || err.message).slice(0, 40)})`);
+      }
     }
+    /* Say what was attempted. The first version of this swallowed the real
+       reason and surfaced an opaque ERR_MODULE_NOT_FOUND for the fallback
+       path, which sent me looking in the wrong place. */
+    throw new Error('Playwright not found. Tried: ' + tried.join(' | ') +
+      '. Install it with: npm install --no-save playwright');
   })();
 
   const serve = (port, dir) => spawn('npx', ['--no-install', 'http-server', dir, '-p', String(port), '-s', '--cors'],
