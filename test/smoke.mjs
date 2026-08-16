@@ -18,7 +18,7 @@
  */
 
 import { execFileSync, spawn } from 'node:child_process';
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -66,9 +66,16 @@ function run(args, input) {
 
 const DATA = join(ROOT, 'data', 'jarvis-data.json');
 const snapshot = existsSync(DATA) ? readFileSync(DATA, 'utf8') : null;
+const dataNow = () => (existsSync(DATA) ? readFileSync(DATA, 'utf8') : null);
+
+/* Restore what was actually there when the suite started — NOT what is in
+   git. An earlier version used `git checkout`, which reset the file to HEAD
+   and so silently destroyed any legitimate uncommitted change while also
+   false-failing the no-churn test. A test harness that eats real work is
+   worse than one that fails. */
 function restoreData() {
   if (snapshot === null) return;
-  execFileSync('git', ['checkout', '--', 'data/jarvis-data.json'], { cwd: ROOT });
+  if (dataNow() !== snapshot) writeFileSync(DATA, snapshot);
 }
 
 /* ======================================================== the agent tools == */
@@ -84,11 +91,16 @@ check('scout: reads the mirror cleanly', () => {
 });
 
 check('scout: no churn — a rerun changes nothing', () => {
+  /* Settle first, then compare two consecutive runs. Comparing against git
+     would conflate "the Scout is unstable" with "someone has uncommitted
+     work", which are completely different problems. */
   run(['agents/scout-vault.mjs']);
-  const after = execFileSync('git', ['diff', '--stat', '--', 'data/jarvis-data.json'], { cwd: ROOT, encoding: 'utf8' });
+  const settled = dataNow();
+  run(['agents/scout-vault.mjs']);
+  const rerun = dataNow();
   restoreData();
-  assert(after.trim() === '', `Scout rewrote the file: ${after.trim()}`);
-  return 'byte-identical';
+  assert(settled === rerun, 'a second Scout run produced different bytes');
+  return 'byte-identical across runs';
 });
 
 check('scout: overrides apply and are labelled, not disguised', () => {
@@ -121,8 +133,7 @@ for (const [label, payload] of BAD_BRIEFS) {
   check(`advisor-write: rejects ${label}`, () => {
     const r = run(['agents/advisor-write.mjs'], JSON.stringify(payload));
     assert(r.code !== 0, 'accepted a brief it should have refused');
-    const diff = execFileSync('git', ['diff', '--stat', '--', 'data/jarvis-data.json'], { cwd: ROOT, encoding: 'utf8' });
-    assert(diff.trim() === '', 'a rejected brief still wrote to the data file');
+    assert(dataNow() === snapshot, 'a rejected brief still wrote to the data file');
     return 'refused, wrote nothing';
   });
 }
@@ -193,8 +204,7 @@ for (const [label, args] of [
   check(`operator-report: refuses ${label}`, () => {
     const r = run(['agents/operator-report.mjs', ...args]);
     assert(r.code !== 0, 'accepted bad input');
-    const diff = execFileSync('git', ['diff', '--stat', '--', 'data/jarvis-data.json'], { cwd: ROOT, encoding: 'utf8' });
-    assert(diff.trim() === '', 'a refused run still wrote');
+    assert(dataNow() === snapshot, 'a refused run still wrote');
     return 'refused, wrote nothing';
   });
 }

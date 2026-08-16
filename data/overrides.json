@@ -2,7 +2,7 @@
   "_readme": [
     "Human corrections applied ON TOP of the Command Center mirror by",
     "agents/scout-vault.mjs. Use this when you know something the vault does not",
-    "yet — a payment that landed this morning, a client with no note.",
+    "yet \u2014 a payment that landed this morning, a client with no note.",
     "",
     "Every field patched here reads as 'reported by <reportedBy>' on the screen,",
     "never as a mirror figure, so provenance stays honest.",
@@ -10,17 +10,17 @@
     "THIS FILE IS TEMPORARY BY DESIGN. It patches a stale note; it does not fix",
     "one. Update the vault, confirm the mirror carries it through, then delete",
     "this file. The Scout warns once these corrections are more than a week old,",
-    "because an override nobody retires becomes a second source of truth — the",
+    "because an override nobody retires becomes a second source of truth \u2014 the",
     "exact thing this system is built to avoid.",
     "",
     "Nothing here may contain anything that is not already fit to be public:",
     "this repo is a public mirror. See 'What never goes in this repo' in",
-    "JARVIS.md."
+    "JARVIS.md.",
+    "",
+    "Correction 2026-08-16: an earlier version of this file described Angela as having no vault note at all. Wrong \u2014 Angela Gerlach is Gerlach Legal, an active client with a full Notion page and her own launch-protocol entry. What is missing is the August PAYMENT, not the client."
   ],
-
   "asOf": "2026-08-15",
   "reportedBy": "Evans",
-
   "metrics": {
     "revenue.outstanding": {
       "v": 0,
@@ -28,18 +28,17 @@
     },
     "revenue.collectedMTD": {
       "v": 3500,
-      "note": "mirror's $2,500 plus Robert's $500 balance and Angela's $500 August payment, which has no vault note yet"
+      "note": "mirror's $2,500 plus Robert Davis P.A.'s $500 balance and Angela Gerlach's (Gerlach Legal) $500 August payment \u2014 both clients are documented; it is the August payments the vault has not recorded"
     },
     "objective.current": {
       "v": 3500,
       "note": "same corrected collected figure the objective card measures against"
     }
   },
-
   "pipeline": {
     "ROBERT DAVIS P.A.": {
       "value": 2000,
-      "note": "$2,000 received · paid in full"
+      "note": "$2,000 received \u00b7 paid in full"
     }
   }
 }
