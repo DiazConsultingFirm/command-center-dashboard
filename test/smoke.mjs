@@ -171,11 +171,14 @@ check('faq: a source citation never becomes part of an answer', () => {
 check('faq-check: a half-filled answer fails', () => {
   const tmp = join(ROOT, 'test', '.tmp-faq.md');
   const src = readFileSync(join(ROOT, 'agents', 'faq.md'), 'utf8');
-  /* Anchored to the start of a line so this replaces a real ANSWER. An
-     unanchored match hits the prose in the preamble that merely mentions
-     [FILL IN], leaving every answer untouched — a test that passes while
-     proving nothing, which is worse than one that fails. */
-  const broken = src.replace(/^\[FILL IN[^\]]*\]/m, 'Grab a slot at <your booking link> and I will confirm.');
+  /* The fixture used to break a real [FILL IN] entry, which stopped working
+     the day the FAQ reached 100% coverage and had none left — a fixture that
+     depends on the file being unfinished expires when the file is finished.
+     Appending a fresh half-filled answer works at any coverage level, and the
+     parser sees an appended question exactly as it sees the others. */
+  const broken = src +
+    '\n**Can you send over your rates one more time?**\n' +
+    'Of course, the full sheet lives at <your rates link> and I will confirm.\n';
   assert(broken !== src, 'the fixture did not actually break an answer');
   execFileSync('bash', ['-c', `cat > ${JSON.stringify(tmp)}`], { input: broken });
   const r = run(['agents/faq-check.mjs', '--file', tmp]);

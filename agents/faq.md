@@ -41,14 +41,18 @@ specific job is a negotiation, and negotiations escalate.
 ## Services and scope
 
 **What exactly do you do?**
-[FILL IN]
+DCF is me with my company hat on. My days go to building sales pipeline
+infrastructure for a digital marketing agency. When I clock out, I build the
+same machinery for small Florida law firms: websites, Google presence,
+filing-ready documents, letterheads, and video content. Right now that means
+one attorney's AI video presence and another firm's new practice-area launch.
+You practice law. I build the machine around it.
 
-> Source: none. Deliberately open. Asked on 2026-08-15 and the answer was that
-> it depends, because DCF is not the only thing Evans does. The Operator needs
-> one sentence it can send a stranger, and only Evans can write it. Everything
-> documented points at law-firm websites and local search, but no page states a
-> positioning line, so nothing is written here. This file covers DCF only:
-> Evans's employment is out of scope for every agent in this repo.
+> Source: Evans, 2026-08-16, directing that the answer span both the client
+> work and the day-job infrastructure he builds. Two guardrails applied in the
+> wording: the employer is described but never named, because this file lives
+> in a public repo behind the wall check, and the client plays are generalized
+> because a client's growth strategy is theirs to announce, not ours.
 
 **What is not included in an engagement?**
 Hosting, email and the domain sit on your card, not mine. Hosting runs about
@@ -63,10 +67,13 @@ separately before I touch it.
 > $8.40/mo. The last sentence is the standing scope rule, not a vault quote.
 
 **Do you work with clients outside your usual industry?**
-[FILL IN]
+So far every client has been a Florida law firm, so that is where all my
+examples are. If you do something else, tell me what you are working on and I
+will say honestly whether it is a fit.
 
-> Source: none. Every documented engagement is a Florida law firm. The vault
-> has no statement of whether that is a preference or a boundary.
+> Source: Evans approved this wording on 2026-08-16. The track-record claim is
+> verified against the DCF sent mailbox: every client correspondent ever is a
+> law firm or its staff.
 
 ## Pricing
 
@@ -86,12 +93,17 @@ I quote the exact number after I have looked at your current site.
 > System $5,000 + $500/mo."
 
 **What is included at each tier?**
-[FILL IN]
+There is no fixed menu. Every prospect gets a three-tier proposal built for
+their firm: a foundation build, a local-growth push, and the full system with
+ongoing support, priced inside the published range. What lands in each tier
+depends on what you already have, which is why the first step is me looking
+at your current setup.
 
-> Source: none usable. The Echelon tiers name a Foundation build as an 8-page
-> rebuild in one week, but the middle and top tiers were never written out, and
-> that quote was scoped to one prospect who never signed. Answering this from
-> a single unaccepted proposal would publish a package that does not exist.
+> Source: Evans, 2026-08-16: the tiered breakdown first written for one
+> prospect is now the standard shape of every DCF proposal, tailored per
+> client. No fixed contents are published because none exist; specifics are
+> quoted per engagement, which keeps this consistent with the escalation rule
+> on pricing above.
 
 **Do you offer payment plans?**
 Yes. A deposit starts the work and the balance is due when the site goes live.
@@ -161,10 +173,12 @@ clients willing to leave a review.
 ## Availability
 
 **Are you taking new clients right now?**
-I take on a limited number at a time. Tell me what you are working on and I
-will say honestly whether it is a fit.
+By referral only right now. If a current client sent you, say who, and tell me
+what you are working on. You will get a straight answer on fit.
 
-> Source: Evans, 2026-08-15, choosing "Selectively".
+> Source: Evans, 2026-08-16 — supersedes the "selectively" stance of
+> 2026-08-15. DCF's outbound is paused while his focus is elsewhere; referrals
+> still get an honest look.
 
 **How quickly do you respond to email?**
 Within one to two business days.
@@ -174,11 +188,15 @@ Within one to two business days.
 ## Logistics
 
 **How do I book a call?**
-[FILL IN]
+DCF works by referral right now, so there is no booking page. If a current
+client pointed you here, reply to their introduction, or email
+diaz.diazconsultingfirm@gmail.com with two times that work and a line about
+what you need. Email is the main channel anyway, so anything that matters
+ends up written down.
 
-> Source: none, and this one is a trap. Every Calendly and Cal.com link in the
-> vault belongs to a client or a prospect, not to DCF. There is no DCF booking
-> page. The Operator must not improvise one.
+> Source: Evans, 2026-08-16: referral-only for now, no booking page built by
+> choice. Standing trap note stays true: every Calendly and Cal.com link in
+> the vault belongs to a client, and the Operator must never improvise one.
 
 **Where are you based / what hours do you keep?**
 Miami, Florida. Most of the work is with firms across Broward and Miami-Dade.
