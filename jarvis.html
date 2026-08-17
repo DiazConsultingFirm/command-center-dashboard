@@ -750,6 +750,15 @@ function drawOrb(dt) {
   orbCtx.fillStyle = core;
   orbCtx.beginPath(); orbCtx.arc(cx, cy, R * 1.9, 0, Math.PI * 2); orbCtx.fill();
 
+  /* The DCF mark, suspended at the sphere's centre. Drawn BEFORE the
+     particles so the lattice orbits over it — inside the sphere, not a
+     sticker on the glass. Faint by design: it breathes a little with the
+     voice, but the ceiling stays low, because at watermark opacity it reads
+     as part of the instrument and at full opacity it would read as a login
+     page. If ORB_LOGO_SRC is ever set to a real logo file (data URI), the
+     image replaces the drawn monogram with the same tint and behaviour. */
+  drawOrbMark(cx, cy, R, size.dpr);
+
   for (let i = 0; i < PARTICLES.length; i++) {
     const p = PARTICLES[i];
     /* rotate about Y, then tilt about X */
@@ -779,6 +788,71 @@ function drawOrb(dt) {
   orbCtx.beginPath();
   orbCtx.ellipse(cx, cy, R * 1.02, R * 1.02 * Math.abs(Math.sin(tiltX)) + 1, 0, 0, Math.PI * 2);
   orbCtx.stroke();
+}
+
+/* ------------------------------------------------- the mark in the sphere */
+
+/* Set this to a data: URI of the real DCF logo to replace the drawn
+   monogram. Left null, the monogram below renders instead — same tint, same
+   opacity, no external fetch (this page stays self-contained). */
+const ORB_LOGO_SRC = null;
+let orbLogoImg = null, orbLogoTinted = null;
+
+function tintLogo(img) {
+  /* Recolour the logo to the instrument cyan so any source file — black,
+     white, full colour — lands in the page's palette instead of fighting it. */
+  const c = document.createElement('canvas');
+  c.width = img.naturalWidth; c.height = img.naturalHeight;
+  const g = c.getContext('2d');
+  g.drawImage(img, 0, 0);
+  g.globalCompositeOperation = 'source-in';
+  g.fillStyle = '#7fdfff';
+  g.fillRect(0, 0, c.width, c.height);
+  return c;
+}
+
+if (ORB_LOGO_SRC) {
+  orbLogoImg = new Image();
+  orbLogoImg.onload = function () { orbLogoTinted = tintLogo(orbLogoImg); };
+  orbLogoImg.src = ORB_LOGO_SRC;
+}
+
+function drawOrbMark(cx, cy, R, dpr) {
+  const alpha = 0.10 + orbEnergy * 0.08;
+  orbCtx.save();
+  orbCtx.globalAlpha = alpha;
+  orbCtx.shadowColor = 'rgba(127,223,255,0.8)';
+  orbCtx.shadowBlur = 14 * dpr;
+
+  if (orbLogoTinted) {
+    const maxW = R * 1.1;
+    const scale = maxW / orbLogoTinted.width;
+    const lw = orbLogoTinted.width * scale, lh = orbLogoTinted.height * scale;
+    orbCtx.drawImage(orbLogoTinted, cx - lw / 2, cy - lh / 2, lw, lh);
+  } else {
+    /* The monogram: DCF in the page's own mono face, with the header's
+       letter-spacing, over a thin rule — typography as logo, matching how
+       the rest of this screen is built. */
+    orbCtx.fillStyle = '#7fdfff';
+    orbCtx.textAlign = 'center';
+    orbCtx.textBaseline = 'middle';
+    orbCtx.font = '700 ' + Math.round(R * 0.42) + 'px ' + '"SF Mono", "Roboto Mono", Menlo, Consolas, monospace';
+    /* letter-spacing via manual placement — canvas has no reliable CSS gap */
+    const gap = R * 0.34;
+    const letters = 'DCF';
+    for (let i = 0; i < letters.length; i++) {
+      orbCtx.fillText(letters[i], cx + (i - 1) * gap, cy - R * 0.02);
+    }
+    orbCtx.strokeStyle = 'rgba(127,223,255,0.9)';
+    orbCtx.lineWidth = 1 * dpr;
+    orbCtx.beginPath();
+    orbCtx.moveTo(cx - gap * 1.35, cy + R * 0.24);
+    orbCtx.lineTo(cx + gap * 1.35, cy + R * 0.24);
+    orbCtx.stroke();
+    orbCtx.font = '400 ' + Math.round(R * 0.115) + 'px ' + '"SF Mono", "Roboto Mono", Menlo, Consolas, monospace';
+    orbCtx.fillText('DIAZ CONSULTING FIRM', cx, cy + R * 0.40);
+  }
+  orbCtx.restore();
 }
 
 /* Tick marks around the outer ring, drawn once. */
