@@ -1,0 +1,24 @@
+# Terms that must never appear in this repo, stored as SHA-256 digests.
+#
+# This repo is the public mirror of Diaz Consulting Firm. Evans's employment is
+# a separate thing that belongs to someone else, and it does not get published
+# here — not the employer, not their staff, not their clients, not their work.
+#
+# The digests exist so this file can enforce a boundary without announcing what
+# is behind it. A plaintext list of forbidden names in a public repo publishes
+# the very thing it protects. agents/leak-check.mjs hashes every word and word
+# pair it finds and compares, so it can catch a term it cannot itself reveal.
+#
+# To add one:      node agents/leak-check.mjs --add some term
+# Then paste the printed digest below, and do not write the term itself here.
+#
+# Comments must stay generic. A helpful note like "# the COO" beside a hash
+# undoes the whole design.
+
+# employer, two spellings
+92c1943291523dbf6691ad4d1f8bbf5bd102341ba82fa404d14accbd0fee7c73
+411e03ef248bd78f5b37b01fe3bb324820c459c507bbaa9bf62705fe2784696b
+
+# two named people on that side of the wall
+4033bf06db656f14031c8ce3e73ab9f5dadc42ad37a9591d30215071cab61b35
+3ad23e696ee545345e96f63211113f2af7acfa9a4a3e0c28a7a0b2593770ab30

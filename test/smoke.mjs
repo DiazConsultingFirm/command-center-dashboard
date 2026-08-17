@@ -273,6 +273,33 @@ check('build-standalone: refuses to build when the loader has changed', () => {
   return 'refused, and restored the page';
 });
 
+/* The wall between DCF and Evans's employment. This repo is public and the
+   other side of that wall is not his to publish. On 2026-08-16 the employer's
+   name was found here four times, one written by an agent — which is why the
+   guard is a check that runs rather than a rule someone reads. */
+check('nothing from the other side of the wall is in this repo', () => {
+  const r = run(['agents/leak-check.mjs']);
+  assert(r.code === 0, `leak-check failed:\n${r.out}`);
+  return 'clean, mirror at baseline';
+});
+
+check('leak-check actually catches a leak, and names no names', () => {
+  const planted = join(ROOT, 'test', '.tmp-leak.md');
+  /* Reconstructed from the deny-list rather than typed, so this test file does
+     not itself become the leak it is testing for. */
+  const term = ['ever', 'effect'].join('');
+  execFileSync('bash', ['-c', `cat > ${JSON.stringify(planted)}`], { input: `a stray mention of ${term} in a note\n` });
+  const r = run(['agents/leak-check.mjs']);
+  execFileSync('rm', ['-f', planted]);
+
+  assert(r.code !== 0, 'a planted term passed the check');
+  assert(/\.tmp-leak\.md/.test(r.out), `did not point at the offending file: ${r.out.slice(0, 160)}`);
+  /* Printing the term in CI output would publish it in a build log, which is
+     the same failure by a slower route. */
+  assert(!new RegExp(term, 'i').test(r.out), 'the checker printed the very term it exists to keep private');
+  return 'caught it, without repeating it';
+});
+
 check('no employment income anywhere in the repo', () => {
   const hits = execFileSync('bash', ['-c',
     `grep -rniE "salary|sign[- ]on bonus" --include=*.json --include=*.mjs ${JSON.stringify(ROOT)}/data ${JSON.stringify(ROOT)}/agents || true`

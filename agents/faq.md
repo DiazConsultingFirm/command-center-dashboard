@@ -44,10 +44,11 @@ specific job is a negotiation, and negotiations escalate.
 [FILL IN]
 
 > Source: none. Deliberately open. Asked on 2026-08-15 and the answer was that
-> it depends — DCF runs three engagements while EverEffect is separate work.
-> The Operator needs one sentence it can send a stranger, and only Evans can
-> write it. Everything documented points at law-firm websites and local search,
-> but no page states a positioning line, so nothing is written here.
+> it depends, because DCF is not the only thing Evans does. The Operator needs
+> one sentence it can send a stranger, and only Evans can write it. Everything
+> documented points at law-firm websites and local search, but no page states a
+> positioning line, so nothing is written here. This file covers DCF only:
+> Evans's employment is out of scope for every agent in this repo.
 
 **What is not included in an engagement?**
 Hosting, email and the domain sit on your card, not mine. Hosting runs about
