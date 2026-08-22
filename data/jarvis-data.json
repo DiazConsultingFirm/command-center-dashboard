@@ -12,7 +12,7 @@
     "target": {
       "v": 6000,
       "source": "August consulting target — the three agreed pipeline figures (1,000 + 2,000 + 3,000)",
-      "asOf": "2026-08-21"
+      "asOf": "2026-08-22"
     },
     "current": {
       "v": 3500,
@@ -27,7 +27,7 @@
     "eta": {
       "v": "END OF MONTH",
       "source": "billing month boundary",
-      "asOf": "2026-08-21"
+      "asOf": "2026-08-22"
     }
   },
   "revenue": {
@@ -56,31 +56,31 @@
     "attention": {
       "v": 23,
       "source": "Command Center mirror (index.html) — KPI: Needs Attention",
-      "asOf": "2026-08-21"
+      "asOf": "2026-08-22"
     },
     "nextActions": {
       "v": 30,
       "source": "Command Center mirror (index.html) — sidebar count: Next Actions",
-      "asOf": "2026-08-21"
+      "asOf": "2026-08-22"
     },
     "clients": {
       "v": 7,
       "source": "Command Center mirror (index.html) — KPI: Clients",
-      "asOf": "2026-08-21"
+      "asOf": "2026-08-22"
     },
     "projects": {
       "v": 26,
       "source": "Command Center mirror (index.html) — KPI: Projects",
-      "asOf": "2026-08-21"
+      "asOf": "2026-08-22"
     },
     "parked": {
       "v": 0,
       "source": "Command Center mirror (index.html) — sidebar count: Parked",
-      "asOf": "2026-08-21"
+      "asOf": "2026-08-22"
     }
   },
   "pipeline": {
-    "asOf": "2026-08-21",
+    "asOf": "2026-08-22",
     "source": "Command Center mirror (index.html) — pipeline panel",
     "items": [
       {
@@ -104,26 +104,26 @@
     ]
   },
   "proximity": {
-    "asOf": "2026-08-21",
+    "asOf": "2026-08-22",
     "contacts": [
       {
         "label": "DCF HUB SHELL CANON",
-        "distance": 0.1333333333333333,
+        "distance": 0.1,
         "level": "warn"
       },
       {
         "label": "PROJECT REGISTRY",
-        "distance": 0.1333333333333333,
+        "distance": 0.1,
         "level": "bad"
       },
       {
         "label": "INCOME STREAM 2 TIKTO…",
-        "distance": 0.2666666666666667,
+        "distance": 0.23333333333333328,
         "level": "bad"
       },
       {
         "label": "CLAUDE DESIGN DCF SYS…",
-        "distance": 0.30000000000000004,
+        "distance": 0.2666666666666667,
         "level": "warn"
       }
     ]
