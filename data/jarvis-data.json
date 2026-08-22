@@ -54,12 +54,12 @@
   },
   "book": {
     "attention": {
-      "v": 24,
+      "v": 23,
       "source": "Command Center mirror (index.html) — KPI: Needs Attention",
       "asOf": "2026-08-21"
     },
     "nextActions": {
-      "v": 29,
+      "v": 30,
       "source": "Command Center mirror (index.html) — sidebar count: Next Actions",
       "asOf": "2026-08-21"
     },
@@ -69,7 +69,7 @@
       "asOf": "2026-08-21"
     },
     "projects": {
-      "v": 24,
+      "v": 25,
       "source": "Command Center mirror (index.html) — KPI: Projects",
       "asOf": "2026-08-21"
     },
